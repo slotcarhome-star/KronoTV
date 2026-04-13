@@ -2174,33 +2174,40 @@
 
         function broadcastState() {
             if(isTVMode) return; // Solo la App emite
+            const payload = {
+                pilot: pilotNameInput.value,
+                car: carModelInput.value,
+                raceMode: raceMode,
+                totalLaps: totalLaps,
+                currentLap: currentLap,
+                raceTimeLimit: raceTimeLimit,
+                lapHistory: lapHistory,
+                bestLapTime: bestLapTime,
+                lastCompletedLapTime: lastCompletedLapTime,
+                avgSpeed: avgSpeed,
+                maxSpeed: maxSpeed,
+                isRaceActive: isRaceActive,
+                isCountdown: isCountdown,
+                isPaused: isPaused,
+                raceAborted: raceAborted,
+                raceStartTime: raceStartTime,     // Necesario para que la TV siga contando
+                lapStartTimestamp: lapStartTimestamp, // Necesario para vuelta actual TV
+                currentLang: currentLang
+            };
+
             kronoChannel.postMessage({
                 type: 'STATE_UPDATE',
-                payload: {
-                    pilot: pilotNameInput.value,
-                    car: carModelInput.value,
-                    raceMode: raceMode,
-                    totalLaps: totalLaps,
-                    currentLap: currentLap,
-                    raceTimeLimit: raceTimeLimit,
-                    lapHistory: lapHistory,
-                    bestLapTime: bestLapTime,
-                    lastCompletedLapTime: lastCompletedLapTime,
-                    avgSpeed: avgSpeed,
-                    maxSpeed: maxSpeed,
-                    isRaceActive: isRaceActive,
-                    isCountdown: isCountdown,
-                    isPaused: isPaused,
-                    raceAborted: raceAborted,
-                    raceStartTime: raceStartTime,     // Necesario para que la TV siga contando
-                    lapStartTimestamp: lapStartTimestamp, // Necesario para vuelta actual TV
-                    currentLang: currentLang
-                }
+                payload: payload
             });
+
+            // Fallback robusto para entornos aislados (Sandboxes)
+            localStorage.setItem('krono_tv_state', JSON.stringify(payload));
         }
 
         // Si estamos en la App, enviamos estado cada segundo para sincronizar tiempo, o responder a requests
         if (!isTVMode) {
+            setTimeout(broadcastState, 500); // Emitir estado inicial
+
             setInterval(() => {
                 if(isRaceActive && !isPaused) broadcastState();
             }, 500); // Emisión suave. La TV interpola.
@@ -2236,6 +2243,15 @@
             
             // Pide estado al arrancar
             kronoChannel.postMessage({ type: 'REQUEST_STATE' });
+
+            // Carga inicial desde LocalStorage (Fallback)
+            try {
+                const savedState = localStorage.getItem('krono_tv_state');
+                if (savedState) {
+                    tvData = JSON.parse(savedState);
+                    updateTVUI();
+                }
+            } catch(e) {}
             
             kronoChannel.onmessage = (event) => {
                 if(event.data.type === 'STATE_UPDATE') {
@@ -2243,6 +2259,16 @@
                     updateTVUI();
                 }
             };
+
+            // Escuchar cambios de LocalStorage (Fallback multiplataforma)
+            window.addEventListener('storage', (event) => {
+                if (event.key === 'krono_tv_state' && event.newValue) {
+                    try {
+                        tvData = JSON.parse(event.newValue);
+                        updateTVUI();
+                    } catch(e) {}
+                }
+            });
 
             function updateTVUI() {
                 // Info Estática / Semiestática
