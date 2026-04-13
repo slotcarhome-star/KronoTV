@@ -9,17 +9,18 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="KRONO V.3">
-    <meta name="application-name" content="KRONO V.3">
+    <meta name="apple-mobile-web-app-title" content="KRONO V.4">
+    <meta name="application-name" content="KRONO V.4">
     <meta http-equiv="Permissions-Policy" content="camera=(self)">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
+    <!-- ACTUALIZACIÓN DE IMPORTACIONES DE FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, setLogLevel, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, setLogLevel, collection, addDoc, getDocs, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
@@ -48,7 +49,7 @@
                 // EXPORTAMOS DB Y FUNCIONES PARA EL SCRIPT PRINCIPAL
                 window.db = db;
                 window.auth = auth;
-                window.fs = { collection, addDoc, getDocs };
+                window.fs = { collection, addDoc, getDocs, doc, setDoc, onSnapshot };
             } catch (error) {
                 console.error("Error initializing Firebase:", error);
             }
@@ -369,8 +370,8 @@
                     <span class="text-xs font-bold uppercase tracking-wider" data-i18n="leaderboard">Ranking</span>
                 </button>
                 
-                <!-- NUEVO BOTÓN: MODO TV -->
-                <button id="open-tv-btn" class="flex items-center text-blue-600 hover:text-blue-800 transition-colors px-3 py-1 rounded-full hover:bg-blue-100 border border-transparent hover:border-blue-300 group" title="Pantalla TV / Dashboard">
+                <!-- BOTÓN: MODO TV -->
+                <button id="open-tv-btn" class="flex items-center text-blue-600 hover:text-blue-800 transition-colors px-3 py-1 rounded-full hover:bg-blue-100 border border-transparent hover:border-blue-300 group shadow-sm" title="Pantalla TV / Dashboard">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tv mr-2"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
                     <span class="text-xs font-bold uppercase tracking-wider" data-i18n="tvMode">TV</span>
                 </button>
@@ -391,7 +392,7 @@
         
         <!-- CONFIG PANEL SILVER -->
         <div id="config-panel" class="silver-panel w-full mb-4">
-            <!-- LANGUAGE SELECTOR ADDED HERE (Unobtrusive) -->
+            <!-- LANGUAGE SELECTOR -->
             <div class="mb-4 border-b border-gray-300 pb-2">
                  <div class="flex items-center justify-between">
                      <label for="lang-select" class="text-xs font-bold text-gray-500 uppercase flex items-center">
@@ -420,7 +421,6 @@
                     <input type="text" id="car-model-input" value="Porsche 911" class="silver-input w-full p-2 rounded-md" />
                 </div>
                 
-                <!-- NUEVO: SELECTOR DE MODO -->
                 <div>
                     <label for="race-mode-select" class="block text-xs font-bold text-blue-700 mb-1 uppercase" data-i18n="raceMode">Modo de Carrera</label>
                     <select id="race-mode-select" class="silver-input w-full p-2 rounded-md font-bold">
@@ -435,7 +435,6 @@
                         <input type="number" id="track-length-input" value="15" min="1" step="0.5" class="silver-input w-full p-2 rounded-md" />
                     </div>
                     <div>
-                        <!-- MODO VUELTAS (DEFAULT) -->
                         <div id="laps-config-container">
                             <label for="lap-limit-select" class="block text-xs font-bold text-gray-500 mb-1 flex items-center uppercase" data-i18n="lapLimit">Límite Vueltas</label>
                             <select id="lap-limit-select" class="silver-input w-full p-2 rounded-md">
@@ -446,7 +445,6 @@
                                 <option value="Infinity" data-i18n="infinite">Infinito</option>
                             </select>
                         </div>
-                        <!-- MODO TIEMPO (HIDDEN) -->
                         <div id="time-config-container" class="hidden">
                             <label for="time-limit-select" class="block text-xs font-bold text-gray-500 mb-1 flex items-center uppercase" data-i18n="timeLimit">Tiempo Límite</label>
                             <select id="time-limit-select" class="silver-input w-full p-2 rounded-md">
@@ -462,7 +460,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- NUEVO: TIEMPO DE SEGURIDAD -->
                 <div>
                     <label for="safety-time-select" class="block text-xs font-bold text-red-700 mb-1 uppercase flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -512,7 +509,6 @@
                 <div class="flex-1 border-l border-gray-400 pl-4 flex flex-col justify-end">
                     <p class="text-xs text-gray-500 font-bold tracking-widest" data-i18n="laps">VUELTAS</p>
                     <p id="lap-count" class="timer-value font-arial text-gray-800">0 / 10</p> 
-                    <!-- NUEVO: TARGET DISPLAY FOR TIME MODE -->
                     <p id="mode-target-display" class="text-xs text-blue-700 font-bold mt-0 font-arial hidden">--</p>
                 </div>
             </div>
@@ -558,20 +554,17 @@
             <div id="video-container">
                 <video id="webcam-feed" class="w-full shadow-inner" autoplay playsinline></video>
                 
-                <!-- NUEVO: OVERLAY DE CALIBRACION -->
                 <div id="calib-overlay" class="calib-overlay">
                     <div class="spinner"></div>
                     <h3 class="text-xl font-black uppercase tracking-widest drop-shadow-md" data-i18n="calibrating">Calibrando...</h3>
                     <p class="text-sm mt-2 font-bold bg-black/50 px-4 py-1 rounded-full" data-i18n="clearTrack">Despeja la pista</p>
                 </div>
 
-                <!-- NUEVO: ALERTA DE SALIDA NULA -->
                 <div id="false-start-alert">
                     <h2 class="text-3xl font-black uppercase tracking-widest mb-2 text-white drop-shadow-md" data-i18n="falseStart">¡SALIDA NULA!</h2>
                     <p class="text-xl font-bold text-yellow-300" data-i18n="penalty">Penalización aplicada</p>
                 </div>
 
-                <!-- NUEVO: OVERLAY BANDERA AMARILLA -->
                 <div id="yellow-flag-overlay">
                     <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="currentColor" class="yellow-flag-icon"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
                     <h3 class="text-3xl font-black text-yellow-400 uppercase tracking-widest mt-2" data-i18n="yellowFlag">BANDERA AMARILLA</h3>
@@ -587,7 +580,6 @@
             </div>
             <canvas id="video-canvas"></canvas>
             
-            <!-- CONTROL DE SENSOR FOTODETECTOR (Ultra Simplificado) -->
             <div class="mt-3 border-t border-gray-300 pt-3">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-3 w-full bg-gray-100 px-3 py-2 rounded-lg border border-gray-300 shadow-inner">
                     
@@ -613,7 +605,6 @@
 
         <!-- TELEMETRIA -->
         <div class="silver-panel w-full p-4 mb-4">
-            <!-- HEADER DE TELEMETRIA MODIFICADO -->
             <div class="flex justify-between items-center mb-4 border-b border-gray-300 pb-2">
                 <h2 class="text-base neon-silver-title uppercase tracking-widest text-left" data-i18n="telemetry">Telemetría</h2>
                 <button id="pause-btn" class="flex items-center px-3 py-1 rounded-md bg-gray-200 text-gray-700 border border-gray-300 hover:bg-white text-xs font-bold uppercase transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
@@ -676,6 +667,8 @@
             </div>
             <div class="text-right flex flex-col items-end">
                 <div id="tv-status" class="text-3xl font-black text-gray-500 uppercase tracking-widest bg-gray-800 px-4 py-2 rounded-lg border border-gray-700">ESPERANDO...</div>
+                <!-- MOSTRAR CODIGO DE SALA SI ESTA EN MODO NUBE -->
+                <span id="tv-cloud-code-display" class="text-xs text-blue-400 mt-1 font-bold tracking-widest hidden">CÓDIGO DE SALA: <span class="text-white"></span></span>
             </div>
         </div>
         
@@ -743,6 +736,48 @@
 
 
     <!-- ================= MODALES (COMPARTIDOS) ================= -->
+    
+    <!-- NUEVO: MODAL DE CONFIGURACIÓN TV (NUBE VS LOCAL) -->
+    <div id="tvSetupModal" class="modal-overlay hidden" style="z-index: 250;">
+        <div class="modal-content p-6 w-full max-w-md">
+            <div class="flex justify-between items-center border-b border-gray-300 pb-3 mb-4">
+                <h3 class="text-xl font-bold text-blue-600 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
+                    <span data-i18n="tvSetupTitle">Conectar Pantalla TV</span>
+                </h3>
+                <button id="close-tv-setup-btn" class="text-gray-500 hover:text-black font-bold text-xl">X</button>
+            </div>
+            
+            <div class="space-y-5 text-left">
+                <!-- Opción 1: Cloud Send -->
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl">
+                    <span class="font-black text-blue-800 text-lg block mb-2" data-i18n="tvCloudTitle">1. Smart TV Inalámbrica (Nube)</span>
+                    <p class="text-sm text-blue-900 mb-2 font-bold" data-i18n="tvCloudStep1">Abre esta web en el navegador de tu Smart TV e introduce este código:</p>
+                    <div class="text-center my-3">
+                        <span id="room-code-display" class="text-4xl font-black tracking-widest text-blue-600 bg-white border-2 border-blue-300 px-6 py-2 rounded-lg shadow-inner">----</span>
+                    </div>
+                </div>
+
+                <!-- Opción 2: Cloud Receive -->
+                <div class="bg-gray-800 text-white p-4 rounded-xl shadow-md border border-gray-700">
+                    <p class="text-sm font-bold mb-2 text-gray-300" data-i18n="tvReceivePrompt">¿Estás en la Smart TV ahora mismo?</p>
+                    <div class="flex space-x-2">
+                        <input type="text" id="tv-code-input" placeholder="CÓDIGO" class="flex-1 p-2 rounded-lg text-center font-black uppercase text-black" maxlength="4">
+                        <button id="btn-tv-connect" class="bg-blue-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-blue-500 transition shadow">CONECTAR</button>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-300"></div>
+
+                <!-- Opción 3: Local -->
+                <button id="btn-tv-local" class="w-full bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300 p-3 rounded-xl flex flex-col items-center hover:shadow-md transition text-center">
+                    <span class="font-bold text-gray-800 text-base" data-i18n="tvLocalTitle">Monitor Físico (Cable)</span>
+                    <span class="text-xs text-gray-600" data-i18n="tvLocalDesc">Abrir ventana sin internet para arrastrar a segundo monitor.</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <div id="resultsModal" class="modal-overlay hidden">
         <div class="modal-content p-6 w-full max-w-lg neon-border-box">
             <div class="text-center mb-6">
@@ -853,9 +888,14 @@
     </div>
 
     <script>
-        // --- DETECCIÓN DE MODO TV ---
-        const isTVMode = new URLSearchParams(window.location.search).get('tv') === 'true';
+        // --- DETECCIÓN DE MODO TV Y SALA NUBE ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const isTVMode = urlParams.get('tv') === 'true';
+        const cloudRoomCode = urlParams.get('room');
         const kronoChannel = new BroadcastChannel('krono_telemetry_channel');
+
+        // Generar el código de sala único para este dispositivo móvil (una vez por recarga)
+        window.myRoomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
 
         // Ocultar App y mostrar TV si estamos en modo TV
         if (isTVMode) {
@@ -871,6 +911,12 @@
                 langLabel: "Idioma / Language",
                 history: "Historial",
                 tvMode: "TV",
+                tvSetupTitle: "Conectar Pantalla TV",
+                tvLocalTitle: "Monitor Físico (Cable)",
+                tvLocalDesc: "Abrir ventana sin internet para arrastrar a segundo monitor.",
+                tvCloudTitle: "1. Smart TV Inalámbrica (Nube)",
+                tvCloudStep1: "Abre esta web en el navegador de tu Smart TV e introduce este código:",
+                tvReceivePrompt: "¿Estás en la Smart TV ahora mismo?",
                 pilotDataTitle: "Datos Piloto y Pista",
                 pilotName: "Nombre del Piloto",
                 carModel: "Modelo del Coche",
@@ -934,20 +980,14 @@
                 resume: "REANUDAR",
                 yellowFlag: "BANDERA AMARILLA",
                 racePaused: "CARRERA PAUSADA",
-                
-                // Nuevas traducciones para Ranking Global
                 leaderboard: "Ranking",
                 globalRanking: "Ranking Global",
                 noRecords: "Aún no hay récords mundiales.",
                 pos: "POS",
                 track: "PISTA",
-                
-                // Dropdowns
                 "5laps": "5 Vueltas", "10laps": "10 Vueltas", "25laps": "25 Vueltas", "50laps": "50 Vueltas", "infinite": "Infinito",
                 "1sec": "1 Segundo (Pistas muy cortas)", "3sec": "3 Segundos (Estándar)", "5sec": "5 Segundos (Pistas largas)", "10sec": "10 Segundos (Circuitos enormes)",
                 "beepClassic": "Beep Clásico (600 Hz)", "toneLow": "Tono Grave (400 Hz)", "beepHigh": "Beep Agudo (900 Hz)", "toneShort": "Pito Corto (1200 Hz)",
-                
-                // Voces y Dinámicos
                 voiceCalibrated: "Sensores calibrados.",
                 voiceFalseStart: "¡Salida Nula!",
                 voiceFinished: "Carrera finalizada.",
@@ -968,6 +1008,12 @@
                 langLabel: "Language / Idioma",
                 history: "History",
                 tvMode: "TV",
+                tvSetupTitle: "Connect TV Screen",
+                tvLocalTitle: "Wired Monitor (HDMI)",
+                tvLocalDesc: "Opens a new window to drag to a physically connected monitor.",
+                tvCloudTitle: "1. Wireless Smart TV (Cloud)",
+                tvCloudStep1: "Open this website on your Smart TV browser and enter this code:",
+                tvReceivePrompt: "Are you on the Smart TV right now?",
                 pilotDataTitle: "Pilot & Track Data",
                 pilotName: "Driver Name",
                 carModel: "Car Model",
@@ -1031,20 +1077,14 @@
                 resume: "RESUME",
                 yellowFlag: "YELLOW FLAG",
                 racePaused: "RACE PAUSED",
-                
-                // Nuevas traducciones para Ranking Global
                 leaderboard: "Ranking",
                 globalRanking: "Global Ranking",
                 noRecords: "No global records yet.",
                 pos: "POS",
                 track: "TRACK",
-                
-                 // Dropdowns
                 "5laps": "5 Laps", "10laps": "10 Laps", "25laps": "25 Laps", "50laps": "50 Laps", "infinite": "Infinite",
                 "1sec": "1 Second (Short tracks)", "3sec": "3 Seconds (Standard)", "5sec": "5 Seconds (Long tracks)", "10sec": "10 Seconds (Huge tracks)",
                 "beepClassic": "Classic Beep (600 Hz)", "toneLow": "Low Tone (400 Hz)", "beepHigh": "High Beep (900 Hz)", "toneShort": "Short Whistle (1200 Hz)",
-                
-                // Voces y Dinámicos
                 voiceCalibrated: "Sensors calibrated.",
                 voiceFalseStart: "False Start!",
                 voiceFinished: "Race finished.",
@@ -1065,6 +1105,12 @@
                 langLabel: "Langue / Language",
                 history: "Historique",
                 tvMode: "TV",
+                tvSetupTitle: "Connecter Écran TV",
+                tvLocalTitle: "Moniteur Filaire (HDMI)",
+                tvLocalDesc: "Ouvre une nouvelle fenêtre à glisser vers un moniteur connecté physiquement.",
+                tvCloudTitle: "1. Smart TV Sans Fil (Cloud)",
+                tvCloudStep1: "Ouvrez ce site Web sur le navigateur de votre Smart TV et entrez ce code:",
+                tvReceivePrompt: "Êtes-vous sur la Smart TV en ce moment?",
                 pilotDataTitle: "Données Pilote & Piste",
                 pilotName: "Nom du Pilote",
                 carModel: "Modèle de Voiture",
@@ -1128,20 +1174,14 @@
                 resume: "REPRENDRE",
                 yellowFlag: "DRAPEAU JAUNE",
                 racePaused: "COURSE PAUSÉE",
-                
-                // Nuevas traducciones pour Ranking Global
                 leaderboard: "Classement",
                 globalRanking: "Classement Mondial",
                 noRecords: "Aucun record mondial pour le moment.",
                 pos: "POS",
                 track: "PISTE",
-                
-                 // Dropdowns
                 "5laps": "5 Tours", "10laps": "10 Tours", "25laps": "25 Tours", "50laps": "50 Tours", "infinite": "Infini",
                 "1sec": "1 Seconde (Pistes courtes)", "3sec": "3 Secondes (Standard)", "5sec": "5 Secondes (Pistes longues)", "10sec": "10 Secondes (Pistes énormes)",
                 "beepClassic": "Bip Classique (600 Hz)", "toneLow": "Ton Grave (400 Hz)", "beepHigh": "Bip Aigu (900 Hz)", "toneShort": "Sifflet Court (1200 Hz)",
-                
-                // Voces y Dinámicos
                 voiceCalibrated: "Capteurs calibrés.",
                 voiceFalseStart: "Faux départ !",
                 voiceFinished: "Course terminée.",
@@ -1239,6 +1279,14 @@
         const closeRankingBtn = document.getElementById('close-ranking-btn');
         const rankingBody = document.getElementById('ranking-body');
         
+        // --- TV SETUP MODAL ---
+        const tvSetupModal = document.getElementById('tvSetupModal');
+        const closeTvSetupBtn = document.getElementById('close-tv-setup-btn');
+        const btnTvLocal = document.getElementById('btn-tv-local');
+        const btnTvConnect = document.getElementById('btn-tv-connect');
+        const tvCodeInput = document.getElementById('tv-code-input');
+        const roomCodeDisplay = document.getElementById('room-code-display');
+
         // --- OTROS MAIN ---
         const voiceToggle = document.getElementById('voice-toggle');
         const detectionValIndicator = document.getElementById('detection-val-indicator');
@@ -1617,8 +1665,9 @@
             speak(translations[currentLang].voiceFalseStart);
             resetRaceBtn.disabled = false;
 
-            broadcastState(); // Avisar TV
-
+            broadcastState(); // Local
+            syncToCloud();    // Firebase
+            
             setTimeout(() => {
                 falseStartAlert.classList.remove('show');
             }, 2000);
@@ -1659,7 +1708,8 @@
             document.getElementById('lap-time').textContent = formatTime(completedLapTime, false);
             updateLapDisplay();
             
-            broadcastState(); // Avisar a TV cada vez que hay vuelta
+            broadcastState(); // Local
+            syncToCloud();    // Firebase explícito en cada vuelta
 
             // Check win condition for LAPS mode
             if (raceMode === 'laps' && totalLaps !== Infinity && currentLap >= totalLaps) {
@@ -1716,7 +1766,7 @@
                 document.getElementById('lap-time').textContent = formatTime(elap, false);
             }, 30);
             
-            broadcastState(); // Enviar estado al iniciar tiempos
+            broadcastState(); // Local
         }
 
         async function startTrafficLight() {
@@ -1753,7 +1803,8 @@
             hasCrossedStart = false; 
             isLineBlocked = false; 
             
-            broadcastState(); // Estado de countdown
+            broadcastState(); // Local
+            syncToCloud();    // Firebase
 
             for (let i = 0; i < 5; i++) {
                 if(raceAborted) return;
@@ -1780,8 +1831,11 @@
             resetRaceBtn.disabled = false;
             
             lastRecordTime = Date.now() - blindTimeMs; 
+            
+            broadcastState(); // Local
+            syncToCloud();    // Firebase explicitly
         }
-        
+    
         // --- PAUSE LOGIC ---
         function togglePause() {
             if (!isRaceActive) return;
@@ -1802,7 +1856,9 @@
                 yellowFlagOverlay.classList.remove('active');
             }
             updatePauseUI();
-            broadcastState(); // Actualizar a TV
+            
+            broadcastState(); // Local
+            syncToCloud();    // Firebase
         }
 
         function updatePauseUI() {
@@ -1831,7 +1887,8 @@
             if (raceIntervalId) clearInterval(raceIntervalId);
             if (lapIntervalId) clearInterval(lapIntervalId);
             
-            broadcastState(); // Avisar TV parada
+            broadcastState(); // Local
+            syncToCloud();    // Firebase
 
             if (finished) {
                 saveRaceToHistory();
@@ -2058,12 +2115,19 @@
             updateLapDisplay();
         }
 
+        let cloudSyncTimeout;
+        function triggerDebouncedCloudSync() {
+            if (isTVMode) return;
+            clearTimeout(cloudSyncTimeout);
+            cloudSyncTimeout = setTimeout(syncToCloud, 500);
+        }
+
         if(!isTVMode) {
             langSelect.addEventListener('change', (e) => {
                 currentLang = e.target.value;
                 updateTexts();
                 localStorage.setItem('krono_lang', currentLang);
-                broadcastState(); // Inform TV of lang change
+                broadcastState(); triggerDebouncedCloudSync();
             });
             
             raceModeSelect.addEventListener('change', (e) => {
@@ -2077,19 +2141,19 @@
                 }
                 raceMode = mode;
                 updateLapDisplay();
-                broadcastState();
+                broadcastState(); triggerDebouncedCloudSync();
             });
             
-            timeLimitSelect.addEventListener('change', () => { updateLapDisplay(); broadcastState(); });
+            timeLimitSelect.addEventListener('change', () => { updateLapDisplay(); broadcastState(); triggerDebouncedCloudSync(); });
             lapLimitSelect.addEventListener('change', () => {
                 if (raceModeSelect.value === 'laps') {
                     totalLaps = lapLimitSelect.value === 'Infinity' ? Infinity : parseInt(lapLimitSelect.value);
                     updateLapDisplay();
-                    broadcastState();
+                    broadcastState(); triggerDebouncedCloudSync();
                 }
             });
-            pilotNameInput.addEventListener('input', (e) => { localStorage.setItem('krono_pilot_name', e.target.value); broadcastState(); });
-            carModelInput.addEventListener('input', (e) => { localStorage.setItem('krono_car_model', e.target.value); broadcastState(); });
+            pilotNameInput.addEventListener('input', (e) => { localStorage.setItem('krono_pilot_name', e.target.value); broadcastState(); triggerDebouncedCloudSync(); });
+            carModelInput.addEventListener('input', (e) => { localStorage.setItem('krono_car_model', e.target.value); broadcastState(); triggerDebouncedCloudSync(); });
 
             startRaceBtn.addEventListener('click', startTrafficLight);
             resetRaceBtn.addEventListener('click', () => stopRace(false));
@@ -2134,11 +2198,33 @@
             rankingBtn.addEventListener('click', () => { loadLeaderboard(); rankingModal.classList.remove('hidden'); setTimeout(()=>rankingModal.classList.add('open'),10); });
             closeRankingBtn.addEventListener('click', () => { rankingModal.classList.remove('open'); setTimeout(()=>rankingModal.classList.add('hidden'),300); });
             
-            // LÓGICA ABRIR TV
+            // --- NUEVA LÓGICA ABRIR TV ---
+            document.getElementById('room-code-display').textContent = window.myRoomCode;
+
             openTvBtn.addEventListener('click', () => {
-                // Obtener URL actual y asegurar que quitamos queries antiguas si las hubiera
+                tvSetupModal.classList.remove('hidden');
+                setTimeout(() => tvSetupModal.classList.add('open'), 10);
+                syncToCloud(); // Forzar sincronización inicial para que la sala se cree
+            });
+
+            closeTvSetupBtn.addEventListener('click', () => {
+                tvSetupModal.classList.remove('open');
+                setTimeout(() => tvSetupModal.classList.add('hidden'), 300);
+            });
+
+            btnTvLocal.addEventListener('click', () => {
                 const baseUrl = window.location.href.split('?')[0];
                 window.open(baseUrl + '?tv=true', '_blank', 'width=1024,height=768');
+                tvSetupModal.classList.remove('open');
+                setTimeout(() => tvSetupModal.classList.add('hidden'), 300);
+            });
+
+            btnTvConnect.addEventListener('click', () => {
+                const code = tvCodeInput.value.trim().toUpperCase();
+                if (code.length > 0) {
+                    const baseUrl = window.location.href.split('?')[0];
+                    window.location.href = baseUrl + '?tv=true&room=' + code;
+                }
             });
 
             // LOGICA PANTALLA COMPLETA
@@ -2172,11 +2258,10 @@
         // MÓDULO COMUNICACIÓN TV <-> APP
         // =========================================================================
 
-        function broadcastState() {
-            if(isTVMode) return; // Solo la App emite
-            const payload = {
-                pilot: pilotNameInput.value,
-                car: carModelInput.value,
+        function getPayload() {
+            return {
+                pilot: pilotNameInput.value || 'Piloto',
+                car: carModelInput.value || 'Coche',
                 raceMode: raceMode,
                 totalLaps: totalLaps,
                 currentLap: currentLap,
@@ -2190,27 +2275,40 @@
                 isCountdown: isCountdown,
                 isPaused: isPaused,
                 raceAborted: raceAborted,
-                raceStartTime: raceStartTime,     // Necesario para que la TV siga contando
-                lapStartTimestamp: lapStartTimestamp, // Necesario para vuelta actual TV
-                currentLang: currentLang
+                raceStartTime: raceStartTime,     
+                lapStartTimestamp: lapStartTimestamp,
+                currentLang: currentLang,
+                timestamp: Date.now()
             };
+        }
 
-            kronoChannel.postMessage({
-                type: 'STATE_UPDATE',
-                payload: payload
-            });
-
-            // Fallback robusto para entornos aislados (Sandboxes)
+        // EMISIÓN LOCAL (Para monitores por cable HDMI en el mismo dispositivo)
+        function broadcastState() {
+            if(isTVMode) return; 
+            const payload = getPayload();
+            kronoChannel.postMessage({ type: 'STATE_UPDATE', payload: payload });
             localStorage.setItem('krono_tv_state', JSON.stringify(payload));
         }
 
-        // Si estamos en la App, enviamos estado cada segundo para sincronizar tiempo, o responder a requests
+        // EMISIÓN CLOUD (Para Smart TVs conectadas por la red)
+        async function syncToCloud() {
+            if (isTVMode || !window.db || !window.auth || !window.auth.currentUser) return;
+            const payload = getPayload();
+            try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const docRef = window.fs.doc(window.db, 'artifacts', appId, 'public', 'data', 'tv_sessions', window.myRoomCode);
+                await window.fs.setDoc(docRef, payload);
+            } catch (e) {
+                console.error("Error sincronizando a la nube:", e);
+            }
+        }
+
         if (!isTVMode) {
-            setTimeout(broadcastState, 500); // Emitir estado inicial
+            setTimeout(() => { broadcastState(); syncToCloud(); }, 1500); // Emitir estado inicial con retraso para asegurar Firebase
 
             setInterval(() => {
-                if(isRaceActive && !isPaused) broadcastState();
-            }, 500); // Emisión suave. La TV interpola.
+                if(isRaceActive && !isPaused) broadcastState(); // Local es gratis, se puede spamear
+            }, 500); 
             
             kronoChannel.onmessage = (event) => {
                 if(event.data.type === 'REQUEST_STATE') {
@@ -2239,36 +2337,67 @@
             const tvAvgSpeedScale = document.getElementById('tv-avg-speed-scale');
             const tvMaxSpeedScale = document.getElementById('tv-max-speed-scale');
             const tvLapTbody = document.getElementById('tv-lap-tbody');
-            const tvBestLapContainer = document.getElementById('tv-best-lap-container');
+            const tvCloudCodeDisplay = document.getElementById('tv-cloud-code-display');
             
-            // Pide estado al arrancar
-            kronoChannel.postMessage({ type: 'REQUEST_STATE' });
+            if (cloudRoomCode) {
+                // ---- MODO NUBE (SMART TV REAL) ----
+                tvCloudCodeDisplay.querySelector('span').textContent = cloudRoomCode;
+                tvCloudCodeDisplay.classList.remove('hidden');
+                tvStatus.textContent = "CONECTANDO A NUBE...";
+                
+                // Esperar a que Firebase se inicie
+                const checkDb = setInterval(() => {
+                    if (window.db && window.auth && window.auth.currentUser) {
+                        clearInterval(checkDb);
+                        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                        const docRef = window.fs.doc(window.db, 'artifacts', appId, 'public', 'data', 'tv_sessions', cloudRoomCode);
+                        
+                        // Suscripción en tiempo real al documento de la sala
+                        window.fs.onSnapshot(docRef, (docSnap) => {
+                            if (docSnap.exists()) {
+                                tvData = docSnap.data();
+                                updateTVUI();
+                            } else {
+                                tvStatus.textContent = "CÓDIGO NO ENCONTRADO O SALA INACTIVA";
+                                tvStatus.classList.remove('text-gray-500');
+                                tvStatus.classList.add('text-red-500');
+                            }
+                        }, (err) => {
+                            console.error("Error al escuchar TV en la nube", err);
+                            tvStatus.textContent = "ERROR DE CONEXIÓN";
+                        });
+                    }
+                }, 500);
 
-            // Carga inicial desde LocalStorage (Fallback)
-            try {
-                const savedState = localStorage.getItem('krono_tv_state');
-                if (savedState) {
-                    tvData = JSON.parse(savedState);
-                    updateTVUI();
-                }
-            } catch(e) {}
-            
-            kronoChannel.onmessage = (event) => {
-                if(event.data.type === 'STATE_UPDATE') {
-                    tvData = event.data.payload;
-                    updateTVUI();
-                }
-            };
+            } else {
+                // ---- MODO LOCAL (NUEVA PESTAÑA / HDMI) ----
+                kronoChannel.postMessage({ type: 'REQUEST_STATE' });
 
-            // Escuchar cambios de LocalStorage (Fallback multiplataforma)
-            window.addEventListener('storage', (event) => {
-                if (event.key === 'krono_tv_state' && event.newValue) {
+                try {
+                    const savedState = localStorage.getItem('krono_tv_state');
+                    if (savedState) { tvData = JSON.parse(savedState); updateTVUI(); }
+                } catch(e) {}
+                
+                kronoChannel.onmessage = (event) => {
+                    if(event.data.type === 'STATE_UPDATE') { tvData = event.data.payload; updateTVUI(); }
+                };
+
+                window.addEventListener('storage', (event) => {
+                    if (event.key === 'krono_tv_state' && event.newValue) {
+                        try { tvData = JSON.parse(event.newValue); updateTVUI(); } catch(e) {}
+                    }
+                });
+
+                let lastSavedStateString = "";
+                setInterval(() => {
                     try {
-                        tvData = JSON.parse(event.newValue);
-                        updateTVUI();
+                        const savedState = localStorage.getItem('krono_tv_state');
+                        if (savedState && savedState !== lastSavedStateString) {
+                            lastSavedStateString = savedState; tvData = JSON.parse(savedState); updateTVUI();
+                        }
                     } catch(e) {}
-                }
-            });
+                }, 250);
+            }
 
             function updateTVUI() {
                 // Info Estática / Semiestática
@@ -2302,12 +2431,12 @@
                     tvStatus.textContent = "CARRERA FINALIZADA";
                     tvStatus.classList.add('text-blue-400');
                 } else {
-                    tvStatus.textContent = "ESPERANDO...";
+                    tvStatus.textContent = cloudRoomCode ? "SALA ACTIVA. ESPERANDO..." : "ESPERANDO...";
                     tvStatus.classList.add('text-gray-500');
                 }
 
                 // Tiempos Telemetría
-                tvBestLap.textContent = tvData.bestLapTime !== Infinity ? formatTime(tvData.bestLapTime, false) : "--.---";
+                tvBestLap.textContent = tvData.bestLapTime !== Infinity && tvData.bestLapTime !== null ? formatTime(tvData.bestLapTime, false) : "--.---";
                 tvLastLap.textContent = tvData.lastCompletedLapTime ? formatTime(tvData.lastCompletedLapTime, false) : "--.---";
                 
                 // Velocidades
@@ -2319,7 +2448,6 @@
                 // Tabla Historial
                 if(tvData.lapHistory) {
                     tvLapTbody.innerHTML = '';
-                    // Mostrar las más recientes primero (reverse) para que siempre se vean
                     const reversedLaps = [...tvData.lapHistory].reverse();
                     reversedLaps.forEach((l) => {
                         const row = document.createElement('tr');
@@ -2331,7 +2459,7 @@
                 }
             }
 
-            // Loop local para pintar el cronómetro suavemente en la TV sin saturar el BroadcastChannel
+            // Loop local para pintar el cronómetro suavemente en la TV (evitando latencia de red)
             if(tvIntervalId) clearInterval(tvIntervalId);
             tvIntervalId = setInterval(() => {
                 if (!tvData) return;
@@ -2344,7 +2472,6 @@
                     tvRaceTime.textContent = formatTime(elapRace, true);
                     tvCurrentLapTime.textContent = formatTime(elapLap, false);
                 } else if (!tvData.isRaceActive && tvData.lapHistory && tvData.lapHistory.length === 0) {
-                    // Reset visual
                     tvRaceTime.textContent = "00:00.000";
                     tvCurrentLapTime.textContent = "00.000";
                 }
