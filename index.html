@@ -977,36 +977,43 @@
             <div class="flex justify-between items-center border-b border-gray-300 pb-3 mb-4">
                 <h3 class="text-xl font-bold text-blue-600 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
-                    <span data-i18n="tvSetupTitle">Conectar Pantalla TV</span>
+                    <span>Sincronizar Pantallas</span>
                 </h3>
                 <button id="close-tv-setup-btn" class="text-gray-500 hover:text-black font-bold text-xl">X</button>
             </div>
             
             <div class="space-y-5 text-left">
-                <!-- Opción 1: Cloud Send -->
-                <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl">
-                    <span class="font-black text-blue-800 text-lg block mb-2" data-i18n="tvCloudTitle">1. Smart TV Inalámbrica (Nube)</span>
-                    <p class="text-sm text-blue-900 mb-2 font-bold" data-i18n="tvCloudStep1">Abre esta web en el navegador de tu Smart TV e introduce este código:</p>
+                <!-- Opción 1: Cloud Send (MÓVIL) -->
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-bl-lg">MÓVIL (SENSOR)</div>
+                    <span class="font-black text-blue-800 text-lg block mb-2">1. EMITIR (Tu Código)</span>
+                    <p class="text-sm text-blue-900 mb-2 font-medium">Para ver los tiempos en una <b>TV o Tablet</b>, abre esta misma web en ese dispositivo e introduce este código:</p>
                     <div class="text-center my-3">
                         <span id="room-code-display" class="text-4xl font-black tracking-widest text-blue-600 bg-white border-2 border-blue-300 px-6 py-2 rounded-lg shadow-inner">----</span>
                     </div>
+                    <p class="text-xs text-blue-700 text-center font-bold flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        Deja el móvil en esta pantalla con la cámara activa.
+                    </p>
                 </div>
 
-                <!-- Opción 2: Cloud Receive -->
-                <div class="bg-gray-800 text-white p-4 rounded-xl shadow-md border border-gray-700">
-                    <p class="text-sm font-bold mb-2 text-gray-300" data-i18n="tvReceivePrompt">¿Estás en la Smart TV ahora mismo?</p>
+                <!-- Opción 2: Cloud Receive (TABLET/TV) -->
+                <div class="bg-gray-800 text-white p-4 rounded-xl shadow-md border border-gray-700 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-gray-500 text-white text-[10px] font-black px-2 py-1 rounded-bl-lg">TABLET / TV</div>
+                    <span class="font-black text-gray-200 text-lg block mb-2">2. RECIBIR (Ver Tiempos)</span>
+                    <p class="text-sm font-medium mb-3 text-gray-300">Si estás usando este dispositivo como <b>pantalla gigante</b>, escribe aquí el código del móvil principal:</p>
                     <div class="flex space-x-2">
                         <input type="text" id="tv-code-input" placeholder="CÓDIGO" class="flex-1 p-2 rounded-lg text-center font-black uppercase text-black" maxlength="4">
-                        <button id="btn-tv-connect" class="bg-blue-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-blue-500 transition shadow">CONECTAR</button>
+                        <button id="btn-tv-connect" class="bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold px-4 py-2 rounded-lg hover:from-blue-500 hover:to-blue-400 transition shadow-lg border border-blue-400">CONECTAR</button>
                     </div>
                 </div>
 
                 <div class="border-t border-gray-300"></div>
 
-                <!-- Opción 3: Local -->
+                <!-- Opción 3: Local (PC 2 monitores) -->
                 <button id="btn-tv-local" class="w-full bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300 p-3 rounded-xl flex flex-col items-center hover:shadow-md transition text-center">
-                    <span class="font-bold text-gray-800 text-base" data-i18n="tvLocalTitle">Monitor Físico (Cable)</span>
-                    <span class="text-xs text-gray-600" data-i18n="tvLocalDesc">Abrir ventana sin internet para arrastrar a segundo monitor.</span>
+                    <span class="font-bold text-gray-800 text-base">Modo 2 Monitores (PC)</span>
+                    <span class="text-xs text-gray-600">Abre una ventana emergente para arrastrar por cable.</span>
                 </button>
             </div>
         </div>
@@ -1122,25 +1129,16 @@
     </div>
 
     <script>
-        // --- DETECCIÓN DE MODO TV Y SALA NUBE ---
+        // --- DETECCIÓN Y ESTADO ---
         const urlParams = new URLSearchParams(window.location.search);
         
-        // Restaurado para funcionar como App Móvil por defecto
-        const isTVMode = urlParams.get('tv') === 'true';
+        let isTVMode = false;
+        let cloudRoomCode = null;
         
-        const cloudRoomCode = urlParams.get('room');
         const kronoChannel = new BroadcastChannel('krono_telemetry_channel');
 
         // Generar el código de sala único para este dispositivo móvil (una vez por recarga)
         window.myRoomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-
-        // Ocultar App y mostrar TV si estamos en modo TV
-        if (isTVMode) {
-            document.getElementById('main-app-container').style.display = 'none';
-            document.getElementById('tv-dashboard').classList.remove('hidden');
-            document.getElementById('tv-dashboard').classList.add('flex');
-            document.title = "KRONO TV DASHBOARD";
-        }
 
         // --- TRADUCCIONES ---
         const translations = {
@@ -1673,12 +1671,6 @@
                 document.removeEventListener('pointercancel', endAction);
                 referencePixels = null; 
             }
-        }
-
-        if(!isTVMode) {
-            movableRectangle.addEventListener('pointerdown', e => { if (!e.target.classList.contains('resize-handle')) startAction(e, 'drag'); });
-            handleTL.addEventListener('pointerdown', e => startAction(e, 'resize', 'tl'));
-            handleBR.addEventListener('pointerdown', e => startAction(e, 'resize', 'br'));
         }
 
         // --- LÓGICA DE VISIÓN (IA - FOTODETECTOR MEJORADO) ---
@@ -2449,6 +2441,10 @@
         }
 
         if(!isTVMode) {
+            movableRectangle.addEventListener('pointerdown', e => { if (!e.target.classList.contains('resize-handle')) startAction(e, 'drag'); });
+            handleTL.addEventListener('pointerdown', e => startAction(e, 'resize', 'tl'));
+            handleBR.addEventListener('pointerdown', e => startAction(e, 'resize', 'br'));
+            
             langSelect.addEventListener('change', (e) => {
                 currentLang = e.target.value;
                 updateTexts();
@@ -2524,13 +2520,13 @@
             rankingBtn.addEventListener('click', () => { loadLeaderboard(); rankingModal.classList.remove('hidden'); setTimeout(()=>rankingModal.classList.add('open'),10); });
             closeRankingBtn.addEventListener('click', () => { rankingModal.classList.remove('open'); setTimeout(()=>rankingModal.classList.add('hidden'),300); });
             
-            // --- NUEVA LÓGICA ABRIR TV ---
+            // --- NUEVA LÓGICA ABRIR TV (MODIFICADA PARA SPA) ---
             document.getElementById('room-code-display').textContent = window.myRoomCode;
 
             openTvBtn.addEventListener('click', () => {
                 tvSetupModal.classList.remove('hidden');
                 setTimeout(() => tvSetupModal.classList.add('open'), 10);
-                syncToCloud(); // Forzar sincronización inicial para que la sala se cree
+                syncToCloud(); 
             });
 
             closeTvSetupBtn.addEventListener('click', () => {
@@ -2538,18 +2534,26 @@
                 setTimeout(() => tvSetupModal.classList.add('hidden'), 300);
             });
 
+            // Local fallback (Intentamos abrir popup normal)
             btnTvLocal.addEventListener('click', () => {
                 const baseUrl = window.location.href.split('?')[0];
-                window.open(baseUrl + '?tv=true', '_blank', 'width=1024,height=768');
+                const newWin = window.open(baseUrl + '?tv=true', '_blank');
+                if (!newWin) {
+                    alert("Tu navegador bloqueó la ventana emergente. Usa la opción 'Nube' conectándote con otra pestaña.");
+                }
                 tvSetupModal.classList.remove('open');
                 setTimeout(() => tvSetupModal.classList.add('hidden'), 300);
             });
 
+            // Nube fallback SPA (Transforma la pantalla actual sin recargar)
             btnTvConnect.addEventListener('click', () => {
                 const code = tvCodeInput.value.trim().toUpperCase();
                 if (code.length > 0) {
-                    const baseUrl = window.location.href.split('?')[0];
-                    window.location.href = baseUrl + '?tv=true&room=' + code;
+                    tvSetupModal.classList.remove('open');
+                    setTimeout(() => {
+                        tvSetupModal.classList.add('hidden');
+                        if (window.startTVMode) window.startTVMode(code);
+                    }, 300);
                 }
             });
 
@@ -2609,7 +2613,6 @@
             };
         }
 
-        // EMISIÓN LOCAL (Para monitores por cable HDMI en el mismo dispositivo)
         function broadcastState() {
             if(isTVMode) return; 
             const payload = getPayload();
@@ -2617,7 +2620,6 @@
             localStorage.setItem('krono_tv_state', JSON.stringify(payload));
         }
 
-        // EMISIÓN CLOUD (Para Smart TVs conectadas por la red)
         async function syncToCloud() {
             if (isTVMode || !window.db || !window.auth || !window.auth.currentUser) return;
             const payload = getPayload();
@@ -2630,27 +2632,25 @@
             }
         }
 
-        if (!isTVMode) {
-            setTimeout(() => { broadcastState(); syncToCloud(); }, 1500); // Emitir estado inicial con retraso para asegurar Firebase
-
-            setInterval(() => {
-                if(isRaceActive && !isPaused) broadcastState(); // Local es gratis, se puede spamear
-            }, 500); 
-            
-            kronoChannel.onmessage = (event) => {
-                if(event.data.type === 'REQUEST_STATE') {
-                    broadcastState();
-                }
-            };
-        }
-
         // =========================================================================
-        // LÓGICA RECEPTORA MODO TV
+        // LÓGICA RECEPTORA MODO TV (AHORA ENCAPSULADA EN SPA)
         // =========================================================================
-        
         let tvData = {};
         
-        if (isTVMode) {
+        window.startTVMode = function(roomCode) {
+            isTVMode = true;
+            cloudRoomCode = roomCode;
+
+            // UI Switch
+            document.getElementById('main-app-container').style.display = 'none';
+            document.getElementById('tv-dashboard').classList.remove('hidden');
+            document.getElementById('tv-dashboard').classList.add('flex');
+            document.title = "KRONO TV DASHBOARD";
+
+            // Cleanup Main App
+            if(cameraStream) cameraStream.getTracks().forEach(t=>t.stop());
+            if(isProcessing) isProcessing = false;
+
             const tvPilotCar = document.getElementById('tv-pilot-car');
             const tvStatus = document.getElementById('tv-status');
             const tvRaceTime = document.getElementById('tv-race-time');
@@ -2661,27 +2661,25 @@
             const tvLastLap = document.getElementById('tv-last-lap');
             const tvAvgSpeed = document.getElementById('tv-avg-speed');
             const tvMaxSpeed = document.getElementById('tv-max-speed');
-            const tvConsistency = document.getElementById('tv-consistency'); // NUEVO
+            const tvConsistency = document.getElementById('tv-consistency'); 
             const tvAvgSpeedScale = document.getElementById('tv-avg-speed-scale');
             const tvMaxSpeedScale = document.getElementById('tv-max-speed-scale');
             const tvLapTbody = document.getElementById('tv-lap-tbody');
             const tvCloudCodeDisplay = document.getElementById('tv-cloud-code-display');
-            const tvLapDelta = document.getElementById('tv-lap-delta'); // NUEVO
-            const tvLapDeltaContainer = document.getElementById('tv-lap-delta-container'); // NUEVO
+            const tvLapDelta = document.getElementById('tv-lap-delta'); 
+            const tvLapDeltaContainer = document.getElementById('tv-lap-delta-container'); 
             
-            // Función para dibujar el gráfico en la TV
             function drawTVLapGraph(laps, bestLap) {
                 const canvas = document.getElementById('tv-lap-graph');
                 if(!canvas) return;
                 const ctx = canvas.getContext('2d');
-                const w = canvas.parentElement.offsetWidth - 32; // padding
-                const h = canvas.parentElement.offsetHeight - 40; // padding + title
+                const w = canvas.parentElement.offsetWidth - 32;
+                const h = canvas.parentElement.offsetHeight - 40;
                 canvas.width = w; canvas.height = h;
                 ctx.clearRect(0,0,w,h);
                 
                 if(!laps || laps.length === 0) return;
 
-                // Mostrar solo las últimas 15 vueltas para que el gráfico en TV se vea limpio
                 const displayLaps = laps.slice(-15);
                 const times = displayLaps.map(l => l.time);
                 
@@ -2689,35 +2687,29 @@
                 const min = Math.min(...times);
                 const range = max - min || 1;
                 
-                const barW = (w / displayLaps.length) - 4; // 4px espaciado
+                const barW = (w / displayLaps.length) - 4;
 
                 displayLaps.forEach((lapData, i) => {
                     const t = lapData.time;
-                    const normalizedH = range === 0 ? h * 0.5 : (h * (1 - (t-min)/range)*0.6 + h*0.3); // Min 30% altura
+                    const normalizedH = range === 0 ? h * 0.5 : (h * (1 - (t-min)/range)*0.6 + h*0.3);
                     const x = i * (barW + 4);
                     const y = h - normalizedH;
 
-                    // Color de la barra
                     if (t === bestLap) {
-                        ctx.fillStyle = '#34d399'; // Verde Esmeralda Neon
+                        ctx.fillStyle = '#34d399';
                         ctx.shadowColor = 'rgba(52, 211, 153, 0.5)';
                         ctx.shadowBlur = 10;
                     } else {
-                        ctx.fillStyle = '#3b82f6'; // Azul Slate
+                        ctx.fillStyle = '#3b82f6';
                         ctx.shadowColor = 'transparent';
                         ctx.shadowBlur = 0;
                     }
 
-                    // Dibujar barra con bordes superiores redondeados (si el navegador lo soporta, fallback a rect)
                     ctx.beginPath();
-                    if(ctx.roundRect) {
-                        ctx.roundRect(x, y, barW, normalizedH, [4, 4, 0, 0]);
-                    } else {
-                        ctx.rect(x, y, barW, normalizedH);
-                    }
+                    if(ctx.roundRect) ctx.roundRect(x, y, barW, normalizedH, [4, 4, 0, 0]);
+                    else ctx.rect(x, y, barW, normalizedH);
                     ctx.fill();
                     
-                    // Número de vuelta debajo
                     ctx.fillStyle = '#94a3b8';
                     ctx.font = '10px JetBrains Mono';
                     ctx.textAlign = 'center';
@@ -2725,20 +2717,105 @@
                 });
             }
 
+            function updateTVUI() {
+                if(!tvData) return;
+                tvPilotCar.textContent = `${tvData.pilot || 'Piloto'} / ${tvData.car || 'Coche'}`;
+                
+                const maxLapsText = tvData.totalLaps === Infinity ? '∞' : tvData.totalLaps;
+                if (tvData.raceMode === 'time') {
+                    tvLapCount.textContent = tvData.currentLap || 0;
+                    tvModeTarget.textContent = `TARGET: ${(tvData.raceTimeLimit || 0) / 60000} MIN`;
+                } else {
+                    tvLapCount.textContent = tvData.currentLap || 0;
+                    tvModeTarget.textContent = `OBJETIVO: ${maxLapsText} VUELTAS`;
+                }
+
+                tvStatus.className = "text-xl lg:text-2xl font-rajdhani font-bold uppercase tracking-widest px-6 py-2 rounded-xl border shadow-lg transition-colors duration-300 ";
+                
+                if (tvData.isPaused) {
+                    tvStatus.textContent = "BANDERA AMARILLA (PAUSA)";
+                    tvStatus.className += "bg-yellow-900/40 border-yellow-500/50 text-yellow-400 tv-pulse";
+                } else if (tvData.raceAborted) {
+                    tvStatus.textContent = "SALIDA NULA";
+                    tvStatus.className += "bg-red-900/40 border-red-500/50 text-red-500 tv-pulse";
+                } else if (tvData.isCountdown) {
+                    tvStatus.textContent = "PREPARADOS...";
+                    tvStatus.className += "bg-orange-900/40 border-orange-500/50 text-orange-400";
+                } else if (tvData.isRaceActive) {
+                    tvStatus.textContent = "CARRERA EN CURSO";
+                    tvStatus.className += "bg-emerald-900/30 border-emerald-500/30 text-emerald-400";
+                } else if (tvData.lapHistory && tvData.lapHistory.length > 0) {
+                    tvStatus.textContent = "CARRERA FINALIZADA";
+                    tvStatus.className += "bg-blue-900/30 border-blue-500/30 text-blue-400";
+                } else {
+                    tvStatus.textContent = cloudRoomCode ? "SALA ACTIVA. ESPERANDO..." : "ESPERANDO...";
+                    tvStatus.className += "bg-slate-800/80 border-slate-600 text-slate-400";
+                }
+
+                tvBestLap.textContent = tvData.bestLapTime !== Infinity && tvData.bestLapTime != null ? formatTime(tvData.bestLapTime, false) : "--.---";
+                tvLastLap.textContent = tvData.lastCompletedLapTime ? formatTime(tvData.lastCompletedLapTime, false) : "--.---";
+                
+                if (tvConsistency) tvConsistency.textContent = tvData.consistency > 0 ? `${tvData.consistency.toFixed(1)}%` : "--%";
+
+                tvAvgSpeed.textContent = tvData.avgSpeed > 0 ? tvData.avgSpeed.toFixed(1) : "--.-";
+                if(tvAvgSpeedScale) tvAvgSpeedScale.textContent = tvData.avgSpeed > 0 ? (tvData.avgSpeed * 32).toFixed(1) : "--.-";
+                
+                tvMaxSpeed.textContent = tvData.maxSpeed > 0 ? tvData.maxSpeed.toFixed(1) : "--.-";
+                if(tvMaxSpeedScale) tvMaxSpeedScale.textContent = tvData.maxSpeed > 0 ? (tvData.maxSpeed * 32).toFixed(1) : "--.-";
+
+                if(tvData.lapHistory && tvData.lapHistory.length > 0) {
+                    tvLapTbody.innerHTML = '';
+                    const reversedLaps = [...tvData.lapHistory].reverse();
+                    
+                    const lastLapData = tvData.lapHistory[tvData.lapHistory.length - 1];
+                    if (lastLapData.delta === 0 || tvData.lapHistory.length === 1) {
+                        tvLapDeltaContainer.classList.add('hidden');
+                    } else {
+                        tvLapDeltaContainer.classList.remove('hidden');
+                        if (lastLapData.delta < 0) {
+                            tvLapDelta.textContent = `-${formatDeltaTime(Math.abs(lastLapData.delta))}`;
+                            tvLapDelta.className = "tv-font text-3xl font-bold rounded-lg px-4 py-1.5 shadow-lg bg-emerald-900/50 text-emerald-400 border border-emerald-500/50";
+                        } else {
+                            tvLapDelta.textContent = `+${formatDeltaTime(lastLapData.delta)}`;
+                            tvLapDelta.className = "tv-font text-3xl font-bold rounded-lg px-4 py-1.5 shadow-lg bg-red-900/50 text-red-400 border border-red-500/50";
+                        }
+                    }
+
+                    reversedLaps.forEach((l) => {
+                        const row = document.createElement('tr');
+                        const isBest = l.time === tvData.bestLapTime;
+                        
+                        row.className = isBest ? "text-emerald-400 font-bold bg-emerald-900/20" : "text-slate-200 border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors";
+                        
+                        const dText = l.delta === 0 ? '-' : (l.delta < 0 ? `-${formatDeltaTime(Math.abs(l.delta))}` : `+${formatDeltaTime(l.delta)}`);
+                        const dColor = l.delta === 0 ? 'text-slate-500' : (l.delta < 0 ? 'text-emerald-400' : 'text-red-400');
+
+                        row.innerHTML = `
+                            <td class="py-2 px-2 xl:px-4 rounded-l-lg ${isBest ? '' : 'text-slate-400'}">${l.lap}</td>
+                            <td class="py-2 px-2 xl:px-4 ${isBest ? '' : 'text-white font-medium'}">${formatTime(l.time, false)}</td>
+                            <td class="py-2 px-2 xl:px-4 text-center ${dColor} font-medium">${dText}</td>
+                            <td class="py-2 px-2 xl:px-4 text-right rounded-r-lg ${isBest ? 'text-emerald-400' : 'text-blue-300'}">${l.speed.toFixed(1)}</td>
+                        `;
+                        tvLapTbody.appendChild(row);
+                    });
+                    
+                    drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
+                } else {
+                    tvLapDeltaContainer.classList.add('hidden');
+                }
+            }
+
             if (cloudRoomCode) {
-                // ---- MODO NUBE (SMART TV REAL) ----
                 tvCloudCodeDisplay.querySelector('span').textContent = cloudRoomCode;
                 tvCloudCodeDisplay.classList.remove('hidden');
                 tvStatus.textContent = "CONECTANDO A NUBE...";
                 
-                // Esperar a que Firebase se inicie
                 const checkDb = setInterval(() => {
                     if (window.db && window.auth && window.auth.currentUser) {
                         clearInterval(checkDb);
                         const appId = "app_krono";
                         const docRef = window.fs.doc(window.db, 'artifacts', appId, 'public', 'data', 'tv_sessions', cloudRoomCode);
                         
-                        // Suscripción en tiempo real al documento de la sala
                         window.fs.onSnapshot(docRef, (docSnap) => {
                             if (docSnap.exists()) {
                                 tvData = docSnap.data();
@@ -2749,14 +2826,13 @@
                                 tvStatus.classList.add('text-red-500');
                             }
                         }, (err) => {
-                            console.error("Error al escuchar TV en la nube", err);
+                            console.error("Error al escuchar TV", err);
                             tvStatus.textContent = "ERROR DE CONEXIÓN";
                         });
                     }
                 }, 500);
-
             } else {
-                // ---- MODO LOCAL (NUEVA PESTAÑA / HDMI) ----
+                // Modo Local
                 kronoChannel.postMessage({ type: 'REQUEST_STATE' });
 
                 try {
@@ -2785,113 +2861,13 @@
                 }, 250);
             }
 
-            function updateTVUI() {
-                // Info Estática / Semiestática
-                tvPilotCar.textContent = `${tvData.pilot} / ${tvData.car}`;
-                
-                // Vueltas (Laps)
-                const maxLapsText = tvData.totalLaps === Infinity ? '∞' : tvData.totalLaps;
-                if (tvData.raceMode === 'time') {
-                    tvLapCount.textContent = tvData.currentLap;
-                    tvModeTarget.textContent = `TARGET: ${tvData.raceTimeLimit / 60000} MIN`;
-                } else {
-                    tvLapCount.textContent = tvData.currentLap;
-                    tvModeTarget.textContent = `OBJETIVO: ${maxLapsText} VUELTAS`;
-                }
-
-                // Status Styling Update
-                tvStatus.className = "text-xl lg:text-2xl font-rajdhani font-bold uppercase tracking-widest px-6 py-2 rounded-xl border shadow-lg transition-colors duration-300 ";
-                
-                if (tvData.isPaused) {
-                    tvStatus.textContent = "BANDERA AMARILLA (PAUSA)";
-                    tvStatus.className += "bg-yellow-900/40 border-yellow-500/50 text-yellow-400 tv-pulse";
-                } else if (tvData.raceAborted) {
-                    tvStatus.textContent = "SALIDA NULA";
-                    tvStatus.className += "bg-red-900/40 border-red-500/50 text-red-500 tv-pulse";
-                } else if (tvData.isCountdown) {
-                    tvStatus.textContent = "PREPARADOS...";
-                    tvStatus.className += "bg-orange-900/40 border-orange-500/50 text-orange-400";
-                } else if (tvData.isRaceActive) {
-                    tvStatus.textContent = "CARRERA EN CURSO";
-                    tvStatus.className += "bg-emerald-900/30 border-emerald-500/30 text-emerald-400";
-                } else if (tvData.lapHistory && tvData.lapHistory.length > 0) {
-                    tvStatus.textContent = "CARRERA FINALIZADA";
-                    tvStatus.className += "bg-blue-900/30 border-blue-500/30 text-blue-400";
-                } else {
-                    tvStatus.textContent = cloudRoomCode ? "SALA ACTIVA. ESPERANDO..." : "ESPERANDO...";
-                    tvStatus.className += "bg-slate-800/80 border-slate-600 text-slate-400";
-                }
-
-                // Tiempos Telemetría
-                tvBestLap.textContent = tvData.bestLapTime !== Infinity && tvData.bestLapTime !== null ? formatTime(tvData.bestLapTime, false) : "--.---";
-                tvLastLap.textContent = tvData.lastCompletedLapTime ? formatTime(tvData.lastCompletedLapTime, false) : "--.---";
-                
-                // Consistencia
-                if (tvConsistency) tvConsistency.textContent = tvData.consistency > 0 ? `${tvData.consistency.toFixed(1)}%` : "--%";
-
-                // Velocidades (Real y Escala 1:32)
-                tvAvgSpeed.textContent = tvData.avgSpeed > 0 ? tvData.avgSpeed.toFixed(1) : "--.-";
-                if(tvAvgSpeedScale) tvAvgSpeedScale.textContent = tvData.avgSpeed > 0 ? (tvData.avgSpeed * 32).toFixed(1) : "--.-";
-                
-                tvMaxSpeed.textContent = tvData.maxSpeed > 0 ? tvData.maxSpeed.toFixed(1) : "--.-";
-                if(tvMaxSpeedScale) tvMaxSpeedScale.textContent = tvData.maxSpeed > 0 ? (tvData.maxSpeed * 32).toFixed(1) : "--.-";
-
-                // Tabla Historial y Delta Gigante
-                if(tvData.lapHistory && tvData.lapHistory.length > 0) {
-                    tvLapTbody.innerHTML = '';
-                    const reversedLaps = [...tvData.lapHistory].reverse();
-                    
-                    // Mostrar Delta Grande (De la última vuelta registrada)
-                    const lastLapData = tvData.lapHistory[tvData.lapHistory.length - 1];
-                    if (lastLapData.delta === 0 || tvData.lapHistory.length === 1) {
-                        tvLapDeltaContainer.classList.add('hidden');
-                    } else {
-                        tvLapDeltaContainer.classList.remove('hidden');
-                        if (lastLapData.delta < 0) {
-                            tvLapDelta.textContent = `-${formatDeltaTime(Math.abs(lastLapData.delta))}`;
-                            tvLapDelta.className = "tv-font text-3xl font-bold rounded-lg px-4 py-1.5 shadow-lg bg-emerald-900/50 text-emerald-400 border border-emerald-500/50";
-                        } else {
-                            tvLapDelta.textContent = `+${formatDeltaTime(lastLapData.delta)}`;
-                            tvLapDelta.className = "tv-font text-3xl font-bold rounded-lg px-4 py-1.5 shadow-lg bg-red-900/50 text-red-400 border border-red-500/50";
-                        }
-                    }
-
-                    reversedLaps.forEach((l) => {
-                        const row = document.createElement('tr');
-                        const isBest = l.time === tvData.bestLapTime;
-                        
-                        row.className = isBest ? "text-emerald-400 font-bold bg-emerald-900/20" : "text-slate-200 border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors";
-                        
-                        // Formatear Delta para la tabla
-                        const dText = l.delta === 0 ? '-' : (l.delta < 0 ? `-${formatDeltaTime(Math.abs(l.delta))}` : `+${formatDeltaTime(l.delta)}`);
-                        const dColor = l.delta === 0 ? 'text-slate-500' : (l.delta < 0 ? 'text-emerald-400' : 'text-red-400');
-
-                        row.innerHTML = `
-                            <td class="py-2 px-2 xl:px-4 rounded-l-lg ${isBest ? '' : 'text-slate-400'}">${l.lap}</td>
-                            <td class="py-2 px-2 xl:px-4 ${isBest ? '' : 'text-white font-medium'}">${formatTime(l.time, false)}</td>
-                            <td class="py-2 px-2 xl:px-4 text-center ${dColor} font-medium">${dText}</td>
-                            <td class="py-2 px-2 xl:px-4 text-right rounded-r-lg ${isBest ? 'text-emerald-400' : 'text-blue-300'}">${l.speed.toFixed(1)}</td>
-                        `;
-                        tvLapTbody.appendChild(row);
-                    });
-                    
-                    // Dibujar el gráfico en la TV
-                    drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
-                } else {
-                    tvLapDeltaContainer.classList.add('hidden');
-                }
-            }
-
-            // Loop local para pintar el cronómetro suavemente en la TV (evitando latencia de red)
             if(tvIntervalId) clearInterval(tvIntervalId);
             tvIntervalId = setInterval(() => {
                 if (!tvData) return;
-                
                 if (tvData.isRaceActive && !tvData.isPaused) {
                     const now = Date.now();
                     const elapRace = now - tvData.raceStartTime;
                     const elapLap = now - tvData.lapStartTimestamp;
-                    
                     tvRaceTime.textContent = formatTime(elapRace, true);
                     tvCurrentLapTime.textContent = formatTime(elapLap, false);
                 } else if (!tvData.isRaceActive && tvData.lapHistory && tvData.lapHistory.length === 0) {
@@ -2900,19 +2876,19 @@
                 }
             }, 30);
             
-            // Re-dibujar gráfico si la ventana cambia de tamaño
             window.addEventListener('resize', () => {
-                if(tvData && tvData.lapHistory) {
-                    drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
-                }
+                if(tvData && tvData.lapHistory) drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
             });
-        }
+        };
 
         // =========================================================================
-        // INICIO GENERAL (Compartido)
+        // INICIO GENERAL
         // =========================================================================
         window.onload = () => {
-            if(!isTVMode) {
+            if (urlParams.get('tv') === 'true') {
+                window.startTVMode(urlParams.get('room'));
+            } else {
+                // Init App Main
                 if(window.speechSynthesis) window.speechSynthesis.getVoices();
                 if (!movableRectangle.style.left) movableRectangle.style.left = '10%';
                 if (!movableRectangle.style.top) movableRectangle.style.top = '40%';
@@ -2934,6 +2910,17 @@
                 
                 const snd = document.getElementById('soundSelect');
                 snd.addEventListener('change', e => { selectedSoundIndex=parseInt(e.target.value); playSound(soundOptions[selectedSoundIndex].freq, 0.1); });
+                
+                // Emit state to potential local listeners
+                setTimeout(() => { broadcastState(); triggerDebouncedCloudSync(); }, 1500); 
+
+                setInterval(() => {
+                    if(isRaceActive && !isPaused) broadcastState(); 
+                }, 500); 
+                
+                kronoChannel.onmessage = (event) => {
+                    if(event.data.type === 'REQUEST_STATE') broadcastState();
+                };
             }
         };
     </script>
