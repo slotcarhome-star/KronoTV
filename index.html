@@ -826,8 +826,14 @@
             </div>
             
             <div class="flex flex-col items-end">
-                <div id="tv-status" class="text-xl lg:text-2xl font-rajdhani font-bold uppercase tracking-widest px-6 py-2 rounded-xl bg-slate-800/80 border border-slate-600 text-slate-400 shadow-lg">
-                    ESPERANDO...
+                <div class="flex items-center space-x-3">
+                    <div id="tv-status" class="text-xl lg:text-2xl font-rajdhani font-bold uppercase tracking-widest px-6 py-2 rounded-xl bg-slate-800/80 border border-slate-600 text-slate-400 shadow-lg">
+                        ESPERANDO...
+                    </div>
+                    <button id="tv-fullscreen-btn" class="p-3 rounded-xl bg-slate-800/80 border border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700 transition shadow-lg" title="Pantalla Completa">
+                        <svg id="tv-fs-enter" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                        <svg id="tv-fs-exit" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1787,22 +1793,29 @@
             } catch(e) { crossed = false; }
 
             // Lógica visual del Hitbox
-            if (isObstruction) {
-                movableRectangle.classList.add('roi-locked');
-                movableRectangle.classList.remove('roi-detected');
-                testMsg.style.display = "block";
-                testMsg.textContent = translations[currentLang].obs || "OBSTRUCCIÓN";
-            } else if (crossed) {
-                movableRectangle.classList.add('roi-detected');
-                movableRectangle.classList.remove('roi-locked');
-                testMsg.style.color = "#10b981"; // Reset green
+            const isModalOpen = !resultsModal.classList.contains('hidden');
+            
+            if (isModalOpen) {
+                movableRectangle.classList.remove('roi-detected', 'roi-locked');
+                testMsg.style.display = "none";
             } else {
-                movableRectangle.classList.remove('roi-detected');
-                movableRectangle.classList.remove('roi-locked');
-                testMsg.style.color = "#10b981"; // Reset green
+                if (isObstruction) {
+                    movableRectangle.classList.add('roi-locked');
+                    movableRectangle.classList.remove('roi-detected');
+                    testMsg.style.display = "block";
+                    testMsg.textContent = translations[currentLang].obs || "OBSTRUCCIÓN";
+                } else if (crossed) {
+                    movableRectangle.classList.add('roi-detected');
+                    movableRectangle.classList.remove('roi-locked');
+                    testMsg.style.color = "#10b981"; // Reset green
+                } else {
+                    movableRectangle.classList.remove('roi-detected');
+                    movableRectangle.classList.remove('roi-locked');
+                    testMsg.style.color = "#10b981"; // Reset green
+                }
             }
 
-            if (!isCalibrating) {
+            if (!isCalibrating && !isModalOpen) {
                 // TEST MODE
                 if (!isRaceActive && !isCountdown && !isObstruction) {
                     testMsg.style.display = crossed ? 'block' : 'none';
@@ -2187,6 +2200,8 @@
             isRaceActive = false; isCountdown = false; hasCrossedStart = false; isPaused = false;
             pauseBtn.disabled = true;
             yellowFlagOverlay.classList.remove('active');
+            isLineBlocked = false;
+            stuckFrameCount = 0;
             updatePauseUI();
 
             if (raceIntervalId) clearInterval(raceIntervalId);
@@ -2480,7 +2495,12 @@
             startRaceBtn.addEventListener('click', startTrafficLight);
             resetRaceBtn.addEventListener('click', () => stopRace(false));
             centralConfigBtn.addEventListener('click', () => configPanel.classList.toggle('open'));
-            modalRestartBtn.addEventListener('click', () => { resultsModal.classList.remove('open'); setTimeout(()=>resultsModal.classList.add('hidden'),300); stopRace(false); });
+            modalRestartBtn.addEventListener('click', () => { 
+                resultsModal.classList.remove('open'); 
+                setTimeout(()=>resultsModal.classList.add('hidden'),300); 
+                stopRace(false); 
+                referencePixels = null; // Reiniciar fondo de cámara tras cerrar modal
+            });
             
             cameraOnBtn.addEventListener('click', async () => {
                 try {
@@ -2556,33 +2576,43 @@
                     }, 300);
                 }
             });
+        }
 
-            // LOGICA PANTALLA COMPLETA
-            function toggleFullScreen() {
-                const doc = window.document;
-                const docEl = doc.documentElement;
-                const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-                const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
-                if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
-                    if (requestFullScreen) { requestFullScreen.call(docEl); } 
-                    else { alert("Tu navegador no soporta el modo pantalla completa."); }
-                } else {
-                    if (cancelFullScreen) { cancelFullScreen.call(doc); }
-                }
+        // =========================================================================
+        // LÓGICA PANTALLA COMPLETA GLOBAL (COMPARTIDA)
+        // =========================================================================
+        function toggleFullScreen() {
+            const doc = window.document;
+            const docEl = doc.documentElement;
+            const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+            const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+            if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+                if (requestFullScreen) requestFullScreen.call(docEl);
+            } else {
+                if (cancelFullScreen) cancelFullScreen.call(doc);
             }
+        }
 
-            function updateFsIcons() {
-                const isFs = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+        function updateFsIcons() {
+            const isFs = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+            const fsIconEnter = document.getElementById('fs-icon-enter');
+            const fsIconExit = document.getElementById('fs-icon-exit');
+            if (fsIconEnter && fsIconExit) {
                 if (isFs) { fsIconEnter.classList.add('hidden'); fsIconExit.classList.remove('hidden'); } 
                 else { fsIconEnter.classList.remove('hidden'); fsIconExit.classList.add('hidden'); }
             }
-            
-            fullscreenBtn.addEventListener('click', toggleFullScreen);
-            document.addEventListener('fullscreenchange', updateFsIcons);
-            document.addEventListener('webkitfullscreenchange', updateFsIcons);
-            document.addEventListener('mozfullscreenchange', updateFsIcons);
-            document.addEventListener('MSFullscreenChange', updateFsIcons);
+            const tvFsEnter = document.getElementById('tv-fs-enter');
+            const tvFsExit = document.getElementById('tv-fs-exit');
+            if (tvFsEnter && tvFsExit) {
+                if (isFs) { tvFsEnter.classList.add('hidden'); tvFsExit.classList.remove('hidden'); } 
+                else { tvFsEnter.classList.remove('hidden'); tvFsExit.classList.add('hidden'); }
+            }
         }
+        
+        document.addEventListener('fullscreenchange', updateFsIcons);
+        document.addEventListener('webkitfullscreenchange', updateFsIcons);
+        document.addEventListener('mozfullscreenchange', updateFsIcons);
+        document.addEventListener('MSFullscreenChange', updateFsIcons);
 
         // =========================================================================
         // MÓDULO COMUNICACIÓN TV <-> APP
@@ -2885,6 +2915,11 @@
         // INICIO GENERAL
         // =========================================================================
         window.onload = () => {
+            // Asignar eventos de pantalla completa (Globales)
+            if(fullscreenBtn) fullscreenBtn.addEventListener('click', toggleFullScreen);
+            const tvFullscreenBtn = document.getElementById('tv-fullscreen-btn');
+            if(tvFullscreenBtn) tvFullscreenBtn.addEventListener('click', toggleFullScreen);
+
             if (urlParams.get('tv') === 'true') {
                 window.startTVMode(urlParams.get('room'));
             } else {
