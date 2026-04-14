@@ -22,8 +22,16 @@
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, setLogLevel, collection, addDoc, getDocs, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const appId = "app_krono";
+        const firebaseConfig = {
+          apiKey: "AIzaSyDW-2Yc4kvZJYbNOVeesPZWdRThYe0noUI",
+          authDomain: "correo-95e58.firebaseapp.com",
+          projectId: "correo-95e58",
+          storageBucket: "correo-95e58.firebasestorage.app",
+          messagingSenderId: "977860532946",
+          appId: "1:977860532946:web:3738c6b7165201bce7ab0b",
+          measurementId: "G-6DMG51VQ92"
+        };
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         let app;
@@ -2049,7 +2057,7 @@
         async function saveToLeaderboard() {
             if (isTVMode || !window.db || !window.auth || !window.auth.currentUser || bestLapTime === Infinity) return;
             try {
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const appId = "app_krono";
                 const colRef = window.fs.collection(window.db, 'artifacts', appId, 'public', 'data', 'leaderboard');
                 await window.fs.addDoc(colRef, {
                     pilot: pilotNameInput.value || 'Piloto Anónimo',
@@ -2071,7 +2079,7 @@
             }
             rankingBody.innerHTML = `<tr><td colspan="4" class="text-center p-4">Cargando datos globales...</td></tr>`;
             try {
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const appId = "app_krono";
                 const colRef = window.fs.collection(window.db, 'artifacts', appId, 'public', 'data', 'leaderboard');
                 const snapshot = await window.fs.getDocs(colRef);
                 let records = [];
@@ -2295,7 +2303,7 @@
             if (isTVMode || !window.db || !window.auth || !window.auth.currentUser) return;
             const payload = getPayload();
             try {
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const appId = "app_krono";
                 const docRef = window.fs.doc(window.db, 'artifacts', appId, 'public', 'data', 'tv_sessions', window.myRoomCode);
                 await window.fs.setDoc(docRef, payload);
             } catch (e) {
@@ -2349,7 +2357,7 @@
                 const checkDb = setInterval(() => {
                     if (window.db && window.auth && window.auth.currentUser) {
                         clearInterval(checkDb);
-                        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                        const appId = "app_krono";
                         const docRef = window.fs.doc(window.db, 'artifacts', appId, 'public', 'data', 'tv_sessions', cloudRoomCode);
                         
                         // Suscripción en tiempo real al documento de la sala
