@@ -115,15 +115,15 @@
             text-align: left; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;
         }
         
-        .traffic-light-container.five-lights { display: flex; gap: 10px; }
+        .traffic-light-container.five-lights { display: flex; gap: 12px; }
         .light {
-            width: 30px; height: 30px; border-radius: 50%;
-            background-color: #333; border: 2px solid #555; 
-            box-shadow: inset 0 0 5px #000;
+            width: 45px; height: 45px; border-radius: 50%;
+            background-color: #333; border: 3px solid #555; 
+            box-shadow: inset 0 0 8px #000;
             transition: background-color 0.1s ease, box-shadow 0.1s ease;
         }
-        .light.red { background-color: #ef4444; box-shadow: 0 0 15px #ef4444, inset 0 0 10px rgba(255,255,255,0.5); }
-        .light.green { background-color: #10b981; box-shadow: 0 0 15px #10b981, inset 0 0 10px rgba(255,255,255,0.5); }
+        .light.red { background-color: #ef4444; box-shadow: 0 0 20px #ef4444, inset 0 0 10px rgba(255,255,255,0.5); }
+        .light.green { background-color: #10b981; box-shadow: 0 0 20px #10b981, inset 0 0 10px rgba(255,255,255,0.5); }
 
         #video-container {
             position: relative; width: 100%; 
@@ -215,6 +215,7 @@
             display: flex; flex-direction: column; padding: 8px; border-radius: 6px;
             background: linear-gradient(to bottom, #f9fafb, #e5e7eb);
             border: 1px solid #d1d5db; box-shadow: inset 0 1px 0 #fff, 0 1px 3px rgba(0,0,0,0.1);
+            position: relative;
         }
         .telemetry-label {
             font-size: 0.75rem; font-weight: 700; color: #6b7280; margin-bottom: 2px;
@@ -251,9 +252,8 @@
         
         .control-icon { width: 20px; height: 20px; margin-bottom: 4px; }
         @media (max-width: 640px) {
-            .light { width: 20px; height: 20px; }
-            .traffic-light-container.five-lights { gap: 5px; }
-            .header-flex { flex-direction: column; }
+            .light { width: 32px; height: 32px; border-width: 2px; }
+            .traffic-light-container.five-lights { gap: 8px; }
             #webcam-feed { max-height: 200px; }
         }
         
@@ -406,44 +406,75 @@
     <!-- ================= CONTENEDOR MODO APP (DEFAULT) ================= -->
     <div id="main-app-container" class="container w-full max-w-3xl mx-auto p-4">
 
-        <!-- HEADER SILVER -->
-        <div class="silver-panel flex flex-col sm:flex-row justify-between items-center w-full py-3 px-4 mt-4 mb-4 header-flex">
-            <div class="flex items-center space-x-2 mb-2 sm:mb-0">
-                <div class="flex flex-col mr-3">
-                    <h1 class="text-base sm:text-lg neon-silver-title tracking-wider leading-tight">
+        <!-- HEADER SILVER REDISEÑADO -->
+        <div class="silver-panel w-full p-4 mt-4 mb-4 flex flex-col gap-4">
+            
+            <!-- Fila 1: Título y Botones -->
+            <div class="flex flex-col md:flex-row justify-between items-center w-full gap-3">
+                <!-- Título -->
+                <div class="flex flex-col items-center md:items-start text-center md:text-left">
+                    <h1 class="text-xl sm:text-2xl neon-silver-title tracking-wider leading-tight">
                         KRONO V.4.0
                     </h1>
-                    <span class="text-[10px] font-normal text-gray-500">TrueColor Engine AI</span>
+                    <span class="text-[10px] font-bold text-gray-400 tracking-widest mt-0.5 uppercase">By Albert Closa</span>
                 </div>
                 
-                <button id="history-btn" class="flex items-center text-gray-500 hover:text-black transition-colors px-3 py-1 rounded-full hover:bg-gray-200 border border-transparent hover:border-gray-300 group" title="Ver Historial">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history mr-2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/><path d="M3 3v9h9"/><path d="M12 7v5l4 2"/></svg>
-                    <span class="text-xs font-bold uppercase tracking-wider" data-i18n="history">Historial</span>
-                </button>
-                
-                <button id="ranking-btn" class="flex items-center text-green-600 hover:text-green-800 transition-colors px-3 py-1 rounded-full hover:bg-green-100 border border-transparent hover:border-green-300 group" title="Ranking Global">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-globe mr-2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-                    <span class="text-xs font-bold uppercase tracking-wider" data-i18n="leaderboard">Ranking</span>
-                </button>
-                
-                <!-- BOTÓN: MODO TV -->
-                <button id="open-tv-btn" class="flex items-center text-blue-600 hover:text-blue-800 transition-colors px-3 py-1 rounded-full hover:bg-blue-100 border border-transparent hover:border-blue-300 group shadow-sm" title="Pantalla TV / Dashboard">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tv mr-2"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
-                    <span class="text-xs font-bold uppercase tracking-wider" data-i18n="tvMode">TV</span>
-                </button>
+                <!-- Botones -->
+                <div class="flex items-center justify-center flex-wrap gap-2">
+                    <button id="history-btn" class="flex items-center text-gray-500 hover:text-black transition-colors px-3 py-1.5 rounded-full hover:bg-gray-200 border border-transparent hover:border-gray-300 group shadow-sm" title="Ver Historial">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5">
+                            <circle cx="12" cy="13" r="8" fill="currentColor" fill-opacity="0.15"/>
+                            <path d="M12 9v4l2 2"/>
+                            <path d="M5 3L2 6"/>
+                            <path d="m22 6-3-3"/>
+                            <path d="M6.38 18.7 4 21"/>
+                            <path d="M17.64 18.67 20 21"/>
+                        </svg>
+                        <span class="text-[11px] font-bold uppercase tracking-wider" data-i18n="history">Historial</span>
+                    </button>
+                    
+                    <button id="ranking-btn" class="flex items-center text-green-600 hover:text-green-800 transition-colors px-3 py-1.5 rounded-full hover:bg-green-100 border border-transparent hover:border-green-300 group shadow-sm" title="Ranking Global">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5">
+                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                            <path d="M4 22h16"/>
+                            <path d="M10 14h4"/>
+                            <path d="M12 17v5"/>
+                            <path d="M21 17.02l.7-4.14a2 2 0 0 0-1.92-2.14H4.22a2 2 0 0 0-1.92 2.14l.7 4.14" fill="currentColor" fill-opacity="0.2"/>
+                            <path d="M15 17H9"/>
+                        </svg>
+                        <span class="text-[11px] font-bold uppercase tracking-wider" data-i18n="leaderboard">Ranking</span>
+                    </button>
+                    
+                    <!-- BOTÓN: MODO TV -->
+                    <button id="open-tv-btn" class="flex items-center text-blue-600 hover:text-blue-800 transition-colors px-3 py-1.5 rounded-full hover:bg-blue-100 border border-transparent hover:border-blue-300 group shadow-sm" title="Pantalla TV / Dashboard">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5">
+                            <rect x="2" y="4" width="20" height="15" rx="2" ry="2" fill="currentColor" fill-opacity="0.15"/>
+                            <path d="M2 15h.01"/>
+                            <path d="M2 11a4 4 0 0 1 4 4"/>
+                            <path d="M2 7a8 8 0 0 1 8 8"/>
+                        </svg>
+                        <span class="text-[11px] font-bold uppercase tracking-wider" data-i18n="tvMode">TV</span>
+                    </button>
 
-                <button id="fullscreen-btn" class="flex items-center text-gray-500 hover:text-black transition-colors px-3 py-1 rounded-full hover:bg-gray-200 border border-transparent hover:border-gray-300 group" title="Pantalla Completa">
-                     <svg id="fs-icon-enter" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
-                     <svg id="fs-icon-exit" class="hidden lucide lucide-minimize" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
-                </button>
+                    <button id="fullscreen-btn" class="flex items-center text-gray-500 hover:text-black transition-colors px-3 py-1.5 rounded-full hover:bg-gray-200 border border-transparent hover:border-gray-300 group shadow-sm" title="Pantalla Completa">
+                         <svg id="fs-icon-enter" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                         <svg id="fs-icon-exit" class="hidden lucide lucide-minimize" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+                    </button>
+                </div>
             </div>
-            <div id="traffic-light-module" class="traffic-light-container five-lights mt-2 sm:mt-0">
-                <div id="light-1" class="light"></div>
-                <div id="light-2" class="light"></div>
-                <div id="light-3" class="light"></div>
-                <div id="light-4" class="light"></div>
-                <div id="light-5" class="light"></div>
+
+            <!-- Fila 2: Semáforo Centrado -->
+            <div class="flex justify-center items-center w-full py-3 bg-gray-900/5 rounded-xl border border-gray-400/30 shadow-inner">
+                <div id="traffic-light-module" class="traffic-light-container five-lights">
+                    <div id="light-1" class="light"></div>
+                    <div id="light-2" class="light"></div>
+                    <div id="light-3" class="light"></div>
+                    <div id="light-4" class="light"></div>
+                    <div id="light-5" class="light"></div>
+                </div>
             </div>
+            
         </div>
         
         <!-- CONFIG PANEL SILVER -->
@@ -670,14 +701,23 @@
                 </button>
             </div>
 
+            <!-- GRID AHORA TIENE 8 ELEMENTOS PARA SER SIMÉTRICA Y AÑADIR DELTA Y CONSISTENCIA -->
             <div class="telemetry-grid">
                 <div class="telemetry-item">
                     <p class="telemetry-label" data-i18n="pilotCar">PILOTO / COCHE</p>
                     <p id="telemetry-pilot-car" class="telemetry-data">N/A / N/A</p>
                 </div>
                 <div class="telemetry-item">
+                    <p class="telemetry-label" data-i18n="consistency">CONSISTENCIA</p>
+                    <p id="telemetry-consistency" class="telemetry-data font-arial text-lg text-blue-600">--%</p>
+                </div>
+                <div class="telemetry-item">
                     <p class="telemetry-label" data-i18n="lastLap">ÚLTIMA VUELTA</p>
                     <p id="telemetry-last-lap-time" class="telemetry-data yellow font-arial text-lg">--.---</p>
+                </div>
+                <div class="telemetry-item">
+                    <p class="telemetry-label" data-i18n="lastDelta">DELTA (ÚLT. VUELTA)</p>
+                    <p id="telemetry-last-delta" class="telemetry-data font-arial text-lg text-gray-500">--.---</p>
                 </div>
                 <div class="telemetry-item">
                     <p class="telemetry-label" data-i18n="bestLap">MEJOR VUELTA</p>
@@ -689,16 +729,28 @@
                 </div>
                 <div class="telemetry-item">
                     <p class="telemetry-label" data-i18n="avgSpeed">VELOCIDAD MEDIA (Km/h)</p>
-                    <div class="flex items-baseline space-x-2">
-                        <p id="telemetry-avg-speed" class="telemetry-data text-xl font-arial">--.-</p>
-                        <span id="telemetry-avg-speed-scale" class="text-[10px] text-gray-500 font-bold" title="Velocidad a Escala 1:32">(--.- @1:32)</span>
+                    <div class="flex flex-col mt-1 space-y-1">
+                        <div class="flex items-baseline justify-between">
+                            <span class="text-xs text-gray-500 font-bold uppercase">Real</span>
+                            <p id="telemetry-avg-speed" class="telemetry-data text-xl font-arial">--.-</p>
+                        </div>
+                        <div class="flex items-baseline justify-between border-t border-gray-200 pt-1">
+                            <span class="text-xs text-blue-600/80 font-bold uppercase">1:32</span>
+                            <p id="telemetry-avg-speed-scale" class="text-xl font-arial font-bold text-blue-600">--.-</p>
+                        </div>
                     </div>
                 </div>
                 <div class="telemetry-item">
                     <p class="telemetry-label" data-i18n="maxSpeed">VELOCIDAD MÁXIMA (Km/h)</p>
-                    <div class="flex items-baseline space-x-2">
-                        <p id="telemetry-max-speed" class="telemetry-data text-xl font-arial">--.-</p>
-                        <span id="telemetry-max-speed-scale" class="text-[10px] text-gray-500 font-bold" title="Velocidad a Escala 1:32">(--.- @1:32)</span>
+                    <div class="flex flex-col mt-1 space-y-1">
+                        <div class="flex items-baseline justify-between">
+                            <span class="text-xs text-gray-500 font-bold uppercase">Real</span>
+                            <p id="telemetry-max-speed" class="telemetry-data text-xl font-arial">--.-</p>
+                        </div>
+                        <div class="flex items-baseline justify-between border-t border-gray-200 pt-1">
+                            <span class="text-xs text-blue-600/80 font-bold uppercase">1:32</span>
+                            <p id="telemetry-max-speed-scale" class="text-xl font-arial font-bold text-blue-600">--.-</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -812,9 +864,16 @@
                 <div class="tv-panel p-8 flex flex-col items-center justify-center flex-[2] relative overflow-hidden">
                     <div class="absolute -top-20 -right-20 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl"></div>
                     <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest text-lg mb-4">Vuelta Actual</span>
+                    
                     <span id="tv-current-lap-time" class="tv-font text-7xl xl:text-[7rem] font-black neon-yellow-text leading-none tabular-nums tracking-tighter">
                         00.000
                     </span>
+                    
+                    <!-- NUEVO: DELTA EN TIEMPO REAL AL PASAR POR META -->
+                    <div id="tv-lap-delta-container" class="mt-4 flex items-center justify-center hidden">
+                        <span id="tv-lap-delta" class="tv-font text-3xl font-bold rounded-lg px-4 py-1.5 shadow-lg"></span>
+                    </div>
+
                     <div class="mt-6 flex space-x-8">
                         <div class="text-center">
                             <span class="block text-xs text-slate-500 font-rajdhani uppercase tracking-widest">Última Vuelta</span>
@@ -836,27 +895,43 @@
             <!-- COLUMNA DERECHA: Telemetría y Gráficos (Span 4) -->
             <div class="col-span-4 flex flex-col space-y-6 min-h-0">
                 
-                <!-- Panel de Velocidad -->
+                <!-- Panel de Velocidad y Consistencia -->
                 <div class="tv-panel p-4 flex justify-around items-center">
-                    <div class="text-center">
-                        <span class="block text-xs text-slate-400 font-rajdhani font-semibold uppercase tracking-widest mb-1">Vel. Media</span>
-                        <div class="flex flex-col items-center justify-center">
-                            <div class="flex items-end justify-center">
-                                <span id="tv-avg-speed" class="tv-font text-3xl font-bold text-white">--.-</span>
-                                <span class="text-sm text-slate-500 ml-1 mb-1">km/h</span>
+                    <div class="text-center flex-1">
+                        <span class="block text-[10px] xl:text-xs text-slate-400 font-rajdhani font-semibold uppercase tracking-widest mb-2">Vel. Media</span>
+                        <div class="flex flex-col items-center justify-center space-y-1">
+                            <div class="flex items-end justify-center" title="Velocidad Real">
+                                <span id="tv-avg-speed" class="tv-font text-xl xl:text-2xl font-bold text-white">--.-</span>
+                                <span class="text-[10px] text-slate-500 ml-1 mb-0.5">R</span>
                             </div>
-                            <span id="tv-avg-speed-scale" class="text-xs text-blue-400 font-rajdhani font-bold mt-1 tracking-widest">(--.- @1:32)</span>
+                            <div class="flex items-end justify-center border-t border-slate-700/50 pt-1" title="Escala 1:32">
+                                <span id="tv-avg-speed-scale" class="tv-font text-xl xl:text-2xl font-bold text-blue-400">--.-</span>
+                                <span class="text-[10px] text-blue-400/80 ml-1 mb-0.5">1:32</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="w-px h-12 bg-slate-700/50"></div>
-                    <div class="text-center">
-                        <span class="block text-xs text-slate-400 font-rajdhani font-semibold uppercase tracking-widest mb-1">Vel. Máxima</span>
-                        <div class="flex flex-col items-center justify-center">
-                            <div class="flex items-end justify-center">
-                                <span id="tv-max-speed" class="tv-font text-3xl font-bold text-white">--.-</span>
-                                <span class="text-sm text-slate-500 ml-1 mb-1">km/h</span>
+                    <div class="w-px h-16 bg-slate-700/50"></div>
+                    
+                    <!-- NUEVO: CONSISTENCIA EN MODO TV -->
+                    <div class="text-center flex-1">
+                        <span class="block text-[10px] xl:text-xs text-blue-400 font-rajdhani font-semibold uppercase tracking-widest mb-2">Consistencia</span>
+                        <div class="flex flex-col items-center justify-center h-full">
+                            <span id="tv-consistency" class="tv-font text-2xl xl:text-3xl font-bold text-blue-300">--%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="w-px h-16 bg-slate-700/50"></div>
+                    <div class="text-center flex-1">
+                        <span class="block text-[10px] xl:text-xs text-slate-400 font-rajdhani font-semibold uppercase tracking-widest mb-2">Vel. Máx</span>
+                        <div class="flex flex-col items-center justify-center space-y-1">
+                            <div class="flex items-end justify-center" title="Velocidad Real">
+                                <span id="tv-max-speed" class="tv-font text-xl xl:text-2xl font-bold text-white">--.-</span>
+                                <span class="text-[10px] text-slate-500 ml-1 mb-0.5">R</span>
                             </div>
-                            <span id="tv-max-speed-scale" class="text-xs text-blue-400 font-rajdhani font-bold mt-1 tracking-widest">(--.- @1:32)</span>
+                            <div class="flex items-end justify-center border-t border-slate-700/50 pt-1" title="Escala 1:32">
+                                <span id="tv-max-speed-scale" class="tv-font text-xl xl:text-2xl font-bold text-blue-400">--.-</span>
+                                <span class="text-[10px] text-blue-400/80 ml-1 mb-0.5">1:32</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -876,12 +951,13 @@
                         <table class="w-full text-left">
                             <thead class="sticky top-0 bg-slate-800/90 backdrop-blur z-10">
                                 <tr>
-                                    <th class="py-2 px-4 text-slate-400 font-rajdhani font-bold uppercase text-xs">V</th>
-                                    <th class="py-2 px-4 text-slate-400 font-rajdhani font-bold uppercase text-xs">Tiempo</th>
-                                    <th class="py-2 px-4 text-slate-400 font-rajdhani font-bold uppercase text-xs text-right">Km/h</th>
+                                    <th class="py-2 px-2 xl:px-4 text-slate-400 font-rajdhani font-bold uppercase text-xs">V</th>
+                                    <th class="py-2 px-2 xl:px-4 text-slate-400 font-rajdhani font-bold uppercase text-xs">Tiempo</th>
+                                    <th class="py-2 px-2 xl:px-4 text-slate-400 font-rajdhani font-bold uppercase text-xs text-center">Delta</th>
+                                    <th class="py-2 px-2 xl:px-4 text-slate-400 font-rajdhani font-bold uppercase text-xs text-right">Km/h</th>
                                 </tr>
                             </thead>
-                            <tbody id="tv-lap-tbody" class="text-lg tv-font text-slate-200">
+                            <tbody id="tv-lap-tbody" class="text-base xl:text-lg tv-font text-slate-200">
                                 <!-- Las vueltas se insertan aquí -->
                             </tbody>
                         </table>
@@ -962,8 +1038,8 @@
                     <div id="modal-best-lap" class="text-green-700 font-arial font-bold text-lg"></div>
                 </div>
                 <div class="bg-gray-100 p-3 rounded-lg border border-gray-300 shadow-inner">
-                    <div class="text-xs text-gray-500 uppercase font-bold mb-1" data-i18n="avg">Media</div>
-                    <div id="modal-average-time" class="text-gray-800 font-arial font-bold"></div>
+                    <div class="text-xs text-gray-500 uppercase font-bold mb-1" data-i18n="consistency">Consistencia</div>
+                    <div id="modal-consistency" class="text-blue-700 font-arial font-bold"></div>
                 </div>
                 <div class="bg-gray-100 p-3 rounded-lg border border-gray-300 shadow-inner">
                     <div class="text-xs text-gray-500 uppercase font-bold mb-1" data-i18n="avgSpeedSimple">Vel. Media</div>
@@ -976,8 +1052,8 @@
                     <h4 class="text-sm font-bold text-gray-600 uppercase tracking-widest" data-i18n="lapDetail">Detalle de Vueltas</h4>
                 </div>
                 <div class="max-h-40 overflow-y-auto">
-                    <table id="lap-history-table" class="w-full text-sm">
-                        <thead class="bg-gray-100 sticky top-0"><tr><th class="text-gray-600 py-2 px-4">#</th><th class="text-gray-600 py-2 px-4" data-i18n="time">Tiempo</th><th class="text-gray-600 py-2 px-4">Km/h</th></tr></thead>
+                    <table id="lap-history-table" class="w-full text-sm text-center">
+                        <thead class="bg-gray-100 sticky top-0"><tr><th class="text-gray-600 py-2 px-2 text-left">#</th><th class="text-gray-600 py-2 px-2" data-i18n="time">Tiempo</th><th class="text-gray-600 py-2 px-2" data-i18n="delta">Delta</th><th class="text-gray-600 py-2 px-2 text-right">Km/h</th></tr></thead>
                         <tbody id="lap-history-body" class="text-gray-700 divide-y divide-gray-200"></tbody>
                     </table>
                 </div>
@@ -1119,6 +1195,9 @@
                 avgTime: "TIEMPO MEDIO",
                 avgSpeed: "VELOCIDAD MEDIA (Km/h)",
                 maxSpeed: "VELOCIDAD MÁXIMA (Km/h)",
+                consistency: "CONSISTENCIA",
+                lastDelta: "DELTA (ÚLT. VUELTA)",
+                delta: "DELTA",
                 timeGraph: "Gráfica de Tiempos",
                 noData: "Sin datos",
                 raceFinished: "¡Carrera Finalizada!",
@@ -1216,6 +1295,9 @@
                 avgTime: "AVERAGE TIME",
                 avgSpeed: "AVG SPEED (Km/h)",
                 maxSpeed: "MAX SPEED (Km/h)",
+                consistency: "CONSISTENCY",
+                lastDelta: "DELTA (LAST LAP)",
+                delta: "DELTA",
                 timeGraph: "Lap Graph",
                 noData: "No data",
                 raceFinished: "Race Finished!",
@@ -1313,6 +1395,9 @@
                 avgTime: "TEMPS MOYEN",
                 avgSpeed: "VITESSE MOYENNE (Km/h)",
                 maxSpeed: "VITESSE MAX (Km/h)",
+                consistency: "RÉGULARITÉ",
+                lastDelta: "DELTA (DERNIER TOUR)",
+                delta: "DELTA",
                 timeGraph: "Graphique des Temps",
                 noData: "Pas de données",
                 raceFinished: "Course Terminée !",
@@ -1419,6 +1504,8 @@
         const telemetryMaxSpeedScale = document.getElementById('telemetry-max-speed-scale');
         const telemetryAvgSpeed = document.getElementById('telemetry-avg-speed');
         const telemetryAvgSpeedScale = document.getElementById('telemetry-avg-speed-scale');
+        const telemetryConsistency = document.getElementById('telemetry-consistency');
+        const telemetryLastDelta = document.getElementById('telemetry-last-delta');
         const graphCanvas = document.getElementById('lap-graph-canvas');
         const graphCtx = graphCanvas?.getContext('2d');
         const graphStatus = document.getElementById('graph-status');
@@ -1466,6 +1553,7 @@
         let isCountdown = false; 
         let raceAborted = false;
         let isCalibrating = false;
+        let isShowingAILearning = false;
         
         // --- PAUSE STATE ---
         let isPaused = false;
@@ -1506,6 +1594,8 @@
         let maxSpeed = 0.0;
         let avgSpeed = 0.0;
         let lastCompletedLapTime = 0;
+        let consistency = 0; // NUEVO: % de consistencia
+        let lastDelta = 0;   // NUEVO: Delta de la última vuelta
 
         // Audio
         const soundOptions = [
@@ -1675,6 +1765,9 @@
                             if (isDynamicAI) noiseFloor = 0;
                             crossed = false;
                             isObstruction = false;
+                            
+                            // IA APRENDE: Si el sensor estuvo atascado en falso positivo mucho rato, era demasiado sensible
+                            autoAdjustMargin(2);
                         }
                     } else {
                         stuckFrameCount = 0;
@@ -1694,8 +1787,10 @@
                             }
                         }
                     }
-                    let displaySens = isDynamicAI ? aiMargin + " (Auto)" : sensitivity;
-                    detectionValIndicator.textContent = `Dif: ${currentChangePct.toFixed(1)}% | Umbral: ${sensitivity}`;
+                    if (!isShowingAILearning) {
+                        detectionValIndicator.textContent = `Dif: ${currentChangePct.toFixed(1)}% | Umbral: ${sensitivity}`;
+                        detectionValIndicator.style.backgroundColor = 'rgba(0,0,0,0.6)';
+                    }
                 }
             } catch(e) { crossed = false; }
 
@@ -1817,6 +1912,33 @@
             speak(translations[currentLang].voiceCalibrated);
         }
 
+        // --- APRENDIZAJE IA AUTOMÁTICO ---
+        function autoAdjustMargin(increment) {
+            if(isTVMode) return;
+            let newMargin = aiMargin + increment;
+            newMargin = Math.max(5, Math.min(40, newMargin));
+            
+            if (newMargin !== aiMargin) {
+                aiMargin = newMargin;
+                thresholdSlider.value = aiMargin; // El deslizador se mueve solo
+                
+                // Feedback visual en el deslizador (brillo rojo indicando que se puso más estricto)
+                thresholdSlider.classList.add('transition-all', 'duration-300');
+                const shadowColor = 'rgba(239, 68, 68, 0.8)'; 
+                thresholdSlider.style.boxShadow = `0 0 15px ${shadowColor}`;
+                
+                isShowingAILearning = true;
+                detectionValIndicator.textContent = `IA APRENDE (+${increment}): ${aiMargin}`;
+                detectionValIndicator.style.backgroundColor = shadowColor;
+
+                setTimeout(() => {
+                    thresholdSlider.style.boxShadow = 'none';
+                    isShowingAILearning = false;
+                    detectionValIndicator.style.backgroundColor = 'rgba(0,0,0,0.6)';
+                }, 2000);
+            }
+        }
+
         // --- LÓGICA DE CARRERA ---
         function handleFalseStart() {
             raceAborted = true;
@@ -1828,6 +1950,9 @@
 
             broadcastState(); // Local
             syncToCloud();    // Firebase
+            
+            // IA APRENDE: Sube el margen automáticamente porque detectó una salida nula por error de luz/ruido
+            autoAdjustMargin(3);
             
             setTimeout(() => {
                 falseStartAlert.classList.remove('show');
@@ -1845,7 +1970,12 @@
             const completedLapTime = now - lapStartTimestamp;
             const lapSpeed = calculateSpeed(completedLapTime);
             
-            const lapData = { lap: currentLap + 1, time: completedLapTime, speed: lapSpeed };
+            // NUEVO: Calcular Delta comparado con la Mejor Vuelta ANTES de actualizar la estadística
+            const previousBest = bestLapTime;
+            const lapDelta = previousBest === Infinity ? 0 : completedLapTime - previousBest;
+            lastDelta = lapDelta;
+            
+            const lapData = { lap: currentLap + 1, time: completedLapTime, speed: lapSpeed, delta: lapDelta };
             lapHistory.push(lapData);
             lastCompletedLapTime = completedLapTime;
             
@@ -1887,6 +2017,10 @@
             currentAverageTime = totalLapTime / lapHistory.length;
             if (speed > maxSpeed) maxSpeed = speed;
             avgSpeed = lapHistory.reduce((a,b)=>a+b.speed,0) / lapHistory.length;
+            
+            // NUEVO: Calcular Consistencia (%)
+            consistency = currentAverageTime > 0 ? (bestLapTime / currentAverageTime) * 100 : 0;
+            
             updateTelemetryDisplay();
             return best;
         }
@@ -1898,9 +2032,27 @@
             telemetryBestTime.textContent = bestLapTime !== Infinity ? formatTime(bestLapTime, false) : "--.---";
             telemetryAverageTime.textContent = currentAverageTime ? formatTime(currentAverageTime, false) : "--.---";
             telemetryAvgSpeed.textContent = avgSpeed > 0 ? avgSpeed.toFixed(1) : "--.-";
-            telemetryAvgSpeedScale.textContent = avgSpeed > 0 ? `(${(avgSpeed * 32).toFixed(1)} @1:32)` : "(--.- @1:32)";
+            telemetryAvgSpeedScale.textContent = avgSpeed > 0 ? (avgSpeed * 32).toFixed(1) : "--.-";
             telemetryMaxSpeed.textContent = maxSpeed > 0 ? maxSpeed.toFixed(1) : "--.-";
-            telemetryMaxSpeedScale.textContent = maxSpeed > 0 ? `(${(maxSpeed * 32).toFixed(1)} @1:32)` : "(--.- @1:32)";
+            telemetryMaxSpeedScale.textContent = maxSpeed > 0 ? (maxSpeed * 32).toFixed(1) : "--.-";
+            
+            // Render Consistencia y Delta
+            if (telemetryConsistency) telemetryConsistency.textContent = consistency > 0 ? `${consistency.toFixed(1)}%` : "--%";
+            if (telemetryLastDelta) {
+                if (lastDelta === 0) { 
+                    telemetryLastDelta.textContent = "--.---"; 
+                    telemetryLastDelta.className = "telemetry-data font-arial text-lg text-gray-500"; 
+                }
+                else if (lastDelta < 0) { 
+                    telemetryLastDelta.textContent = `-${formatDeltaTime(Math.abs(lastDelta))}`; 
+                    telemetryLastDelta.className = "telemetry-data font-arial text-lg text-green-600"; 
+                }
+                else { 
+                    telemetryLastDelta.textContent = `+${formatDeltaTime(lastDelta)}`; 
+                    telemetryLastDelta.className = "telemetry-data font-arial text-lg text-red-600"; 
+                }
+            }
+            
             drawLapGraph();
         }
 
@@ -2061,12 +2213,18 @@
                     document.getElementById('modal-best-lap').textContent = formatTime(bestLapTime, false);
                     document.getElementById('modal-average-time').textContent = formatTime(currentAverageTime, false);
                     document.getElementById('modal-avg-speed').textContent = `${avgSpeed.toFixed(1)} Km/h`;
+                    document.getElementById('modal-consistency').textContent = consistency > 0 ? `${consistency.toFixed(1)}%` : "--%";
                     
                     const tbody = document.getElementById('lap-history-body'); tbody.innerHTML = '';
                     lapHistory.forEach(l => {
                         const row = document.createElement('tr');
                         if(l.time === bestLapTime) row.className = "bg-green-100 font-bold";
-                        row.innerHTML = `<td class="py-2 px-4">${l.lap}</td><td class="py-2 px-4">${(l.time/1000).toFixed(3)}</td><td class="py-2 px-4">${l.speed.toFixed(1)}</td>`;
+                        
+                        // Añadir Delta a la tabla de resultados
+                        const dText = l.delta === 0 ? '-' : (l.delta < 0 ? `-${formatDeltaTime(Math.abs(l.delta))}` : `+${formatDeltaTime(l.delta)}`);
+                        const dColor = l.delta === 0 ? 'text-gray-500' : (l.delta < 0 ? 'text-green-600' : 'text-red-600');
+
+                        row.innerHTML = `<td class="py-2 px-2 text-left">${l.lap}</td><td class="py-2 px-2">${(l.time/1000).toFixed(3)}</td><td class="py-2 px-2 ${dColor}">${dText}</td><td class="py-2 px-2 text-right">${l.speed.toFixed(1)}</td>`;
                         tbody.appendChild(row);
                     });
                     resultsModal.classList.remove('hidden');
@@ -2075,6 +2233,7 @@
             } else {
                 currentLap = 0; lapHistory = []; bestLapTime = Infinity; totalLapTime = 0;
                 currentAverageTime = 0; maxSpeed = 0; avgSpeed = 0; lastCompletedLapTime = 0;
+                consistency = 0; lastDelta = 0;
                 
                 if(!isTVMode){
                     document.getElementById('race-time').textContent = "00:00.000";
@@ -2124,6 +2283,12 @@
             if (ms === Infinity || ms <= 0) return full ? "00:00.000" : "--.---";
             const min = Math.floor(ms/60000); const sec = Math.floor((ms%60000)/1000); const mil = Math.floor(ms%1000);
             return full ? `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}.${String(mil).padStart(3,'0')}` : `${String(sec).padStart(2,'0')}.${String(mil).padStart(3,'0')}`;
+        }
+        function formatDeltaTime(ms) {
+            if (ms === 0) return "0.000";
+            const sec = Math.floor(ms / 1000);
+            const mil = Math.floor(ms % 1000);
+            return `${sec}.${String(mil).padStart(3, '0')}`;
         }
         
         function speak(text) {
@@ -2176,9 +2341,9 @@
         // --- EXPORTAR / HISTORIAL ---
         function exportToExcel() {
             if(!lapHistory.length) return;
-            let csv = `\uFEFFKRONO REPORTE\n${translations[currentLang].date};${translations[currentLang].pilotCar};${translations[currentLang].totalTime};${translations[currentLang].bestLap};${translations[currentLang].avgSpeedSimple}\n`;
-            csv += `${new Date().toLocaleString()};${pilotNameInput.value};${carModelInput.value};${formatTime(finalRaceTimeMs,true)};${formatTime(bestLapTime,false)};${avgSpeed.toFixed(2)}\n\n${translations[currentLang].laps};${translations[currentLang].time};KMH\n`;
-            lapHistory.forEach(l => csv += `${l.lap};${(l.time/1000).toFixed(3).replace('.',',')};${l.speed.toFixed(2).replace('.',',')}\n`);
+            let csv = `\uFEFFKRONO REPORTE\n${translations[currentLang].date};${translations[currentLang].pilotCar};${translations[currentLang].totalTime};${translations[currentLang].bestLap};${translations[currentLang].avgSpeedSimple};${translations[currentLang].consistency}\n`;
+            csv += `${new Date().toLocaleString()};${pilotNameInput.value};${carModelInput.value};${formatTime(finalRaceTimeMs,true)};${formatTime(bestLapTime,false)};${avgSpeed.toFixed(2)};${consistency.toFixed(1)}%\n\n${translations[currentLang].laps};${translations[currentLang].time};${translations[currentLang].delta};KMH\n`;
+            lapHistory.forEach(l => csv += `${l.lap};${(l.time/1000).toFixed(3).replace('.',',')};${l.delta === 0 ? '-' : (l.delta/1000).toFixed(3).replace('.',',')};${l.speed.toFixed(2).replace('.',',')}\n`);
             const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a"); link.href = url; link.download = `krono_${Date.now()}.csv`;
@@ -2432,6 +2597,7 @@
                 lastCompletedLapTime: lastCompletedLapTime,
                 avgSpeed: avgSpeed,
                 maxSpeed: maxSpeed,
+                consistency: consistency,
                 isRaceActive: isRaceActive,
                 isCountdown: isCountdown,
                 isPaused: isPaused,
@@ -2495,10 +2661,13 @@
             const tvLastLap = document.getElementById('tv-last-lap');
             const tvAvgSpeed = document.getElementById('tv-avg-speed');
             const tvMaxSpeed = document.getElementById('tv-max-speed');
+            const tvConsistency = document.getElementById('tv-consistency'); // NUEVO
             const tvAvgSpeedScale = document.getElementById('tv-avg-speed-scale');
             const tvMaxSpeedScale = document.getElementById('tv-max-speed-scale');
             const tvLapTbody = document.getElementById('tv-lap-tbody');
             const tvCloudCodeDisplay = document.getElementById('tv-cloud-code-display');
+            const tvLapDelta = document.getElementById('tv-lap-delta'); // NUEVO
+            const tvLapDeltaContainer = document.getElementById('tv-lap-delta-container'); // NUEVO
             
             // Función para dibujar el gráfico en la TV
             function drawTVLapGraph(laps, bestLap) {
@@ -2657,33 +2826,59 @@
                 tvBestLap.textContent = tvData.bestLapTime !== Infinity && tvData.bestLapTime !== null ? formatTime(tvData.bestLapTime, false) : "--.---";
                 tvLastLap.textContent = tvData.lastCompletedLapTime ? formatTime(tvData.lastCompletedLapTime, false) : "--.---";
                 
+                // Consistencia
+                if (tvConsistency) tvConsistency.textContent = tvData.consistency > 0 ? `${tvData.consistency.toFixed(1)}%` : "--%";
+
                 // Velocidades (Real y Escala 1:32)
                 tvAvgSpeed.textContent = tvData.avgSpeed > 0 ? tvData.avgSpeed.toFixed(1) : "--.-";
-                if(tvAvgSpeedScale) tvAvgSpeedScale.textContent = tvData.avgSpeed > 0 ? `(${(tvData.avgSpeed * 32).toFixed(1)} @1:32)` : "(--.- @1:32)";
+                if(tvAvgSpeedScale) tvAvgSpeedScale.textContent = tvData.avgSpeed > 0 ? (tvData.avgSpeed * 32).toFixed(1) : "--.-";
                 
                 tvMaxSpeed.textContent = tvData.maxSpeed > 0 ? tvData.maxSpeed.toFixed(1) : "--.-";
-                if(tvMaxSpeedScale) tvMaxSpeedScale.textContent = tvData.maxSpeed > 0 ? `(${(tvData.maxSpeed * 32).toFixed(1)} @1:32)` : "(--.- @1:32)";
+                if(tvMaxSpeedScale) tvMaxSpeedScale.textContent = tvData.maxSpeed > 0 ? (tvData.maxSpeed * 32).toFixed(1) : "--.-";
 
-                // Tabla Historial
-                if(tvData.lapHistory) {
+                // Tabla Historial y Delta Gigante
+                if(tvData.lapHistory && tvData.lapHistory.length > 0) {
                     tvLapTbody.innerHTML = '';
                     const reversedLaps = [...tvData.lapHistory].reverse();
+                    
+                    // Mostrar Delta Grande (De la última vuelta registrada)
+                    const lastLapData = tvData.lapHistory[tvData.lapHistory.length - 1];
+                    if (lastLapData.delta === 0 || tvData.lapHistory.length === 1) {
+                        tvLapDeltaContainer.classList.add('hidden');
+                    } else {
+                        tvLapDeltaContainer.classList.remove('hidden');
+                        if (lastLapData.delta < 0) {
+                            tvLapDelta.textContent = `-${formatDeltaTime(Math.abs(lastLapData.delta))}`;
+                            tvLapDelta.className = "tv-font text-3xl font-bold rounded-lg px-4 py-1.5 shadow-lg bg-emerald-900/50 text-emerald-400 border border-emerald-500/50";
+                        } else {
+                            tvLapDelta.textContent = `+${formatDeltaTime(lastLapData.delta)}`;
+                            tvLapDelta.className = "tv-font text-3xl font-bold rounded-lg px-4 py-1.5 shadow-lg bg-red-900/50 text-red-400 border border-red-500/50";
+                        }
+                    }
+
                     reversedLaps.forEach((l) => {
                         const row = document.createElement('tr');
                         const isBest = l.time === tvData.bestLapTime;
                         
-                        row.className = isBest ? "text-emerald-400 font-bold bg-emerald-900/20" : "border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors";
+                        row.className = isBest ? "text-emerald-400 font-bold bg-emerald-900/20" : "text-slate-200 border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors";
                         
+                        // Formatear Delta para la tabla
+                        const dText = l.delta === 0 ? '-' : (l.delta < 0 ? `-${formatDeltaTime(Math.abs(l.delta))}` : `+${formatDeltaTime(l.delta)}`);
+                        const dColor = l.delta === 0 ? 'text-slate-500' : (l.delta < 0 ? 'text-emerald-400' : 'text-red-400');
+
                         row.innerHTML = `
-                            <td class="py-2 px-4 rounded-l-lg">${l.lap}</td>
-                            <td class="py-2 px-4">${formatTime(l.time, false)}</td>
-                            <td class="py-2 px-4 text-right rounded-r-lg ${isBest ? 'text-emerald-500/80' : 'text-slate-500'}">${l.speed.toFixed(1)}</td>
+                            <td class="py-2 px-2 xl:px-4 rounded-l-lg ${isBest ? '' : 'text-slate-400'}">${l.lap}</td>
+                            <td class="py-2 px-2 xl:px-4 ${isBest ? '' : 'text-white font-medium'}">${formatTime(l.time, false)}</td>
+                            <td class="py-2 px-2 xl:px-4 text-center ${dColor} font-medium">${dText}</td>
+                            <td class="py-2 px-2 xl:px-4 text-right rounded-r-lg ${isBest ? 'text-emerald-400' : 'text-blue-300'}">${l.speed.toFixed(1)}</td>
                         `;
                         tvLapTbody.appendChild(row);
                     });
                     
                     // Dibujar el gráfico en la TV
                     drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
+                } else {
+                    tvLapDeltaContainer.classList.add('hidden');
                 }
             }
 
