@@ -1049,9 +1049,8 @@
         // --- DETECCIÓN DE MODO TV Y SALA NUBE ---
         const urlParams = new URLSearchParams(window.location.search);
         
-        // ¡CAMBIO TEMPORAL PARA VISTA PREVIA EN PIZARRA! 
-        // Forzamos que isTVMode sea true para que veas el diseño directamente.
-        const isTVMode = true; // Original: urlParams.get('tv') === 'true';
+        // Restaurado para funcionar como App Móvil por defecto
+        const isTVMode = urlParams.get('tv') === 'true';
         
         const cloudRoomCode = urlParams.get('room');
         const kronoChannel = new BroadcastChannel('krono_telemetry_channel');
@@ -2687,34 +2686,6 @@
                     drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
                 }
             }
-
-            // --- DATOS DE PRUEBA (MOCK DATA) PARA QUE VEAS EL DISEÑO ---
-            setTimeout(() => {
-                if (isTVMode) {
-                    tvData = {
-                        pilot: "Fernando Alonso",
-                        car: "Aston Martin AMR24",
-                        totalLaps: 50,
-                        currentLap: 14,
-                        raceMode: 'laps',
-                        bestLapTime: 8250,
-                        lastCompletedLapTime: 8520,
-                        avgSpeed: 29.5,
-                        maxSpeed: 32.2,
-                        isRaceActive: true,
-                        isPaused: false,
-                        lapHistory: [
-                            { lap: 10, time: 8600, speed: 28.1 },
-                            { lap: 11, time: 8520, speed: 28.5 },
-                            { lap: 12, time: 8250, speed: 30.1 },
-                            { lap: 13, time: 8300, speed: 29.8 },
-                            { lap: 14, time: 8520, speed: 28.6 }
-                        ]
-                    };
-                    updateTVUI();
-                }
-            }, 500);
-            // -----------------------------------------------------------
 
             // Loop local para pintar el cronómetro suavemente en la TV (evitando latencia de red)
             if(tvIntervalId) clearInterval(tvIntervalId);
