@@ -15,6 +15,11 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    
+    <!-- NUEVAS FUENTES PARA MODO TV (ESTILO RACING) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 
     <!-- ACTUALIZACIÓN DE IMPORTACIONES DE FIREBASE -->
     <script type="module">
@@ -348,10 +353,53 @@
         .yellow-flag-icon { width: 64px; height: 64px; color: #facc15; animation: wave 1s infinite ease-in-out; }
         @keyframes wave { 0%, 100% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } }
 
-        /* --- ESTILOS MODO TV --- */
-        .tv-font { font-family: 'JetBrains Mono', 'Courier New', monospace; }
+        /* --- ESTILOS MODO TV (NUEVO DISEÑO SMART RACE) --- */
+        .font-rajdhani { font-family: 'Rajdhani', sans-serif; }
+        .tv-font { font-family: 'JetBrains Mono', monospace; }
+        
+        .tv-bg {
+            background-color: #0b0f19;
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 50%, #020617 100%);
+        }
+        
+        .tv-panel {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+
         .tv-pulse { animation: tv-pulse-anim 1s infinite alternate; }
-        @keyframes tv-pulse-anim { from { opacity: 0.8; transform: scale(1); } to { opacity: 1; transform: scale(1.05); } }
+        @keyframes tv-pulse-anim { from { opacity: 0.8; transform: scale(1); } to { opacity: 1; transform: scale(1.02); } }
+        
+        /* Animación para el destello del logo */
+        @keyframes shimmer {
+            0% { transform: translateX(-150%) translateY(-150%) rotate(45deg); }
+            100% { transform: translateX(150%) translateY(150%) rotate(45deg); }
+        }
+        .animate-shimmer { animation: shimmer 3s infinite linear; }
+        
+        .neon-blue-text {
+            color: #60a5fa; 
+            text-shadow: 0 0 10px rgba(96, 165, 250, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .neon-green-text {
+            color: #34d399;
+            text-shadow: 0 0 10px rgba(52, 211, 153, 0.5), 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .neon-yellow-text {
+            color: #fbbf24;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5), 0 0 20px rgba(245, 158, 11, 0.3);
+        }
+        
+        /* Scrollbar personalizado para TV */
+        .tv-scrollbar::-webkit-scrollbar { width: 6px; }
+        .tv-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+        .tv-scrollbar::-webkit-scrollbar-thumb { background: rgba(96, 165, 250, 0.3); border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -663,81 +711,183 @@
         </div>
     </div> <!-- FIN CONTENEDOR APP -->
 
-    <!-- ================= CONTENEDOR MODO TV (OCULTO POR DEFECTO) ================= -->
-    <div id="tv-dashboard" class="hidden min-h-screen bg-gray-900 text-white w-full flex-col font-sans">
-        <div class="bg-gray-800 p-4 flex justify-between items-center border-b border-gray-700 shadow-md">
-            <div>
-                <h1 class="text-3xl font-black text-blue-500 tracking-wider flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>
-                    KRONO TV DASHBOARD
-                </h1>
-                <h2 id="tv-pilot-car" class="text-xl text-gray-400 font-bold mt-1 uppercase">Piloto / Coche</h2>
-            </div>
-            <div class="text-right flex flex-col items-end">
-                <div id="tv-status" class="text-3xl font-black text-gray-500 uppercase tracking-widest bg-gray-800 px-4 py-2 rounded-lg border border-gray-700">ESPERANDO...</div>
-                <!-- MOSTRAR CODIGO DE SALA SI ESTA EN MODO NUBE -->
-                <span id="tv-cloud-code-display" class="text-xs text-blue-400 mt-1 font-bold tracking-widest hidden">CÓDIGO DE SALA: <span class="text-white"></span></span>
-            </div>
-        </div>
+    <!-- ================= CONTENEDOR MODO TV (NUEVO DISEÑO HORIZONTAL) ================= -->
+    <div id="tv-dashboard" class="hidden h-screen tv-bg text-white w-full flex-col font-sans overflow-hidden p-4 lg:p-6">
         
-        <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
-            <!-- Col 1: Tiempos Globales -->
-            <div class="flex flex-col space-y-6">
-                <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg flex flex-col items-center justify-center">
-                    <span class="text-gray-400 font-bold uppercase tracking-widest mb-2 text-lg">Tiempo Carrera</span>
-                    <span id="tv-race-time" class="tv-font text-6xl font-bold text-white">00:00.000</span>
+        <!-- HEADER TV -->
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center space-x-5">
+                
+                <!-- LOGO REDISEÑADO PREMIUM -->
+                <div class="relative group">
+                    <!-- Resplandor exterior de fondo -->
+                    <div class="absolute inset-0 bg-blue-600/40 rounded-2xl blur-xl group-hover:bg-blue-500/60 transition-all duration-500"></div>
+                    
+                    <!-- Contenedor del Logo (Glassmorphism) -->
+                    <div class="relative bg-gradient-to-br from-slate-800 to-slate-900 p-3.5 rounded-2xl border border-blue-400/50 shadow-[0_0_25px_rgba(59,130,246,0.3)] flex items-center justify-center overflow-hidden">
+                        <!-- Brillo dinámico animado (shimmer) -->
+                        <div class="absolute w-[250%] h-[250%] bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+                        
+                        <!-- Icono Geométrico / Telemetría -->
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="url(#logo-gradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="relative z-10 drop-shadow-md">
+                            <defs>
+                                <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#93c5fd" /> <!-- blue-300 -->
+                                    <stop offset="50%" stop-color="#3b82f6" /> <!-- blue-500 -->
+                                    <stop offset="100%" stop-color="#1e3a8a" /> <!-- blue-900 -->
+                                </linearGradient>
+                            </defs>
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg flex flex-col items-center justify-center">
-                    <span class="text-gray-400 font-bold uppercase tracking-widest mb-2 text-lg">Vueltas</span>
-                    <span id="tv-lap-count" class="tv-font text-7xl font-black text-blue-400">0</span>
-                    <span id="tv-mode-target" class="text-sm font-bold text-blue-600 mt-2"></span>
-                </div>
-                <div class="bg-gradient-to-br from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 shadow-lg flex flex-col items-center justify-center relative overflow-hidden">
-                    <span class="text-gray-400 font-bold uppercase tracking-widest mb-2 text-lg">Tiempo Vuelta Actual</span>
-                    <span id="tv-current-lap-time" class="tv-font text-6xl font-bold text-yellow-400">00.000</span>
+
+                <!-- TÍTULO Y FIRMA -->
+                <div class="flex flex-col justify-center">
+                    <h1 class="text-3xl lg:text-5xl font-black font-rajdhani tracking-[0.1em] leading-none flex items-center drop-shadow-2xl">
+                        <span class="text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-300">KRONO</span>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-br from-blue-400 via-blue-500 to-blue-700 ml-3 relative">
+                            TV
+                            <!-- Indicador Rojo "En Directo" / Rec -->
+                            <span class="absolute -top-1 -right-4 flex h-3 w-3">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
+                            </span>
+                        </span>
+                    </h1>
+                    
+                    <div class="flex items-center space-x-4 mt-2.5">
+                        <!-- INSIGNIA: BY ALBERT CLOSA -->
+                        <div class="relative">
+                            <div class="absolute inset-0 bg-blue-600/20 blur-md rounded-full"></div>
+                            <span class="relative px-4 py-1 rounded-full bg-gradient-to-r from-slate-800 to-slate-900 text-[10px] text-blue-200 font-bold uppercase tracking-[0.25em] border border-blue-500/30 flex items-center shadow-lg">
+                                <span class="text-slate-500 font-normal mr-1.5">BY</span> ALBERT CLOSA
+                            </span>
+                        </div>
+                        
+                        <!-- DISPLAY DEL CÓDIGO DE SALA (NUBE) -->
+                        <span id="tv-cloud-code-display" class="hidden px-3 py-1 bg-slate-800/80 rounded-md border border-slate-700 text-xs text-blue-400 font-rajdhani font-bold tracking-[0.2em] shadow-inner">
+                            SALA: <span class="text-white font-black"></span>
+                        </span>
+                    </div>
                 </div>
             </div>
             
-            <!-- Col 2: Telemetría Específica -->
-            <div class="flex flex-col space-y-6">
-                <div id="tv-best-lap-container" class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300">
-                    <div class="absolute top-0 w-full h-2 bg-green-500"></div>
-                    <span class="text-gray-400 font-bold uppercase tracking-widest mb-2 text-lg">Mejor Vuelta</span>
-                    <span id="tv-best-lap" class="tv-font text-6xl font-bold text-green-400">--.---</span>
+            <div class="flex flex-col items-end">
+                <div id="tv-status" class="text-xl lg:text-2xl font-rajdhani font-bold uppercase tracking-widest px-6 py-2 rounded-xl bg-slate-800/80 border border-slate-600 text-slate-400 shadow-lg">
+                    ESPERANDO...
                 </div>
-                <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg flex flex-col items-center justify-center">
-                    <span class="text-gray-400 font-bold uppercase tracking-widest mb-2 text-lg">Última Vuelta</span>
-                    <span id="tv-last-lap" class="tv-font text-5xl font-bold text-gray-200">--.---</span>
+            </div>
+        </div>
+        
+        <!-- MAIN GRID TV (3 COLUMNAS) -->
+        <div class="flex-1 grid grid-cols-12 gap-6 min-h-0">
+            
+            <!-- COLUMNA IZQUIERDA: Piloto & Tiempos Globales (Span 3) -->
+            <div class="col-span-3 flex flex-col space-y-6">
+                <!-- Tarjeta Piloto -->
+                <div class="tv-panel p-5 flex flex-col items-center justify-center relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest text-sm mb-1 z-10">Piloto / Coche</span>
+                    <span id="tv-pilot-car" class="text-xl xl:text-2xl font-bold text-white text-center z-10 leading-tight">Cargando...</span>
                 </div>
-                 <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg grid grid-cols-2 gap-4">
-                    <div class="text-center flex flex-col items-center justify-center">
-                        <span class="block text-sm text-gray-400 font-bold uppercase mb-1">Vel. Media</span>
-                        <span id="tv-avg-speed" class="tv-font text-3xl font-bold text-white">--.- <span class="text-sm text-gray-500 font-normal">km/h</span></span>
-                        <span id="tv-avg-speed-scale" class="text-xs text-blue-400 font-bold mt-1">--.- @1:32</span>
+
+                <!-- Tarjeta Tiempo Total -->
+                <div class="tv-panel p-6 flex flex-col items-center justify-center flex-1 relative">
+                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest text-sm mb-2">Tiempo de Carrera</span>
+                    <span id="tv-race-time" class="tv-font text-5xl xl:text-6xl font-black text-slate-100 drop-shadow-md">00:00.0</span>
+                </div>
+
+                <!-- Tarjeta Vueltas -->
+                <div class="tv-panel p-6 flex flex-col items-center justify-center flex-1 relative border-b-4 border-b-blue-500">
+                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest text-sm mb-2">Vueltas Completadas</span>
+                    <span id="tv-lap-count" class="tv-font text-7xl xl:text-8xl font-black neon-blue-text leading-none">0</span>
+                    <span id="tv-mode-target" class="text-sm font-rajdhani font-bold text-blue-400 tracking-wider mt-3"></span>
+                </div>
+            </div>
+            
+            <!-- COLUMNA CENTRAL: Foco Principal en Crono (Span 5) -->
+            <div class="col-span-5 flex flex-col space-y-6">
+                <!-- Tarjeta Principal Vuelta Actual -->
+                <div class="tv-panel p-8 flex flex-col items-center justify-center flex-[2] relative overflow-hidden">
+                    <div class="absolute -top-20 -right-20 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl"></div>
+                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest text-lg mb-4">Vuelta Actual</span>
+                    <span id="tv-current-lap-time" class="tv-font text-7xl xl:text-[7rem] font-black neon-yellow-text leading-none tabular-nums tracking-tighter">
+                        00.000
+                    </span>
+                    <div class="mt-6 flex space-x-8">
+                        <div class="text-center">
+                            <span class="block text-xs text-slate-500 font-rajdhani uppercase tracking-widest">Última Vuelta</span>
+                            <span id="tv-last-lap" class="tv-font text-3xl font-bold text-slate-300">--.---</span>
+                        </div>
                     </div>
-                    <div class="text-center flex flex-col items-center justify-center border-l border-gray-700 pl-4">
-                        <span class="block text-sm text-gray-400 font-bold uppercase mb-1">Vel. Máxima</span>
-                        <span id="tv-max-speed" class="tv-font text-3xl font-bold text-white">--.- <span class="text-sm text-gray-500 font-normal">km/h</span></span>
-                        <span id="tv-max-speed-scale" class="text-xs text-blue-400 font-bold mt-1">--.- @1:32</span>
+                </div>
+
+                <!-- Tarjeta Mejor Vuelta (Destacada) -->
+                <div class="tv-panel p-6 flex flex-col items-center justify-center flex-1 relative border-t-4 border-t-emerald-500 bg-emerald-900/10">
+                    <div class="absolute top-4 right-4 text-emerald-500/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                     </div>
+                    <span class="text-emerald-400 font-rajdhani font-bold uppercase tracking-[0.2em] text-lg mb-2">Mejor Vuelta Global</span>
+                    <span id="tv-best-lap" class="tv-font text-6xl xl:text-7xl font-black neon-green-text drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]">--.---</span>
                 </div>
             </div>
 
-            <!-- Col 3: Tabla Historial Dinámico -->
-            <div class="bg-gray-800 rounded-xl border border-gray-700 shadow-lg flex flex-col overflow-hidden max-h-[85vh]">
-                <div class="bg-gray-900 p-4 border-b border-gray-700">
-                    <h3 class="text-center text-gray-300 font-bold uppercase tracking-widest">Historial de Vueltas</h3>
+            <!-- COLUMNA DERECHA: Telemetría y Gráficos (Span 4) -->
+            <div class="col-span-4 flex flex-col space-y-6 min-h-0">
+                
+                <!-- Panel de Velocidad -->
+                <div class="tv-panel p-4 flex justify-around items-center">
+                    <div class="text-center">
+                        <span class="block text-xs text-slate-400 font-rajdhani font-semibold uppercase tracking-widest mb-1">Vel. Media</span>
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="flex items-end justify-center">
+                                <span id="tv-avg-speed" class="tv-font text-3xl font-bold text-white">--.-</span>
+                                <span class="text-sm text-slate-500 ml-1 mb-1">km/h</span>
+                            </div>
+                            <span id="tv-avg-speed-scale" class="text-xs text-blue-400 font-rajdhani font-bold mt-1 tracking-widest">(--.- @1:32)</span>
+                        </div>
+                    </div>
+                    <div class="w-px h-12 bg-slate-700/50"></div>
+                    <div class="text-center">
+                        <span class="block text-xs text-slate-400 font-rajdhani font-semibold uppercase tracking-widest mb-1">Vel. Máxima</span>
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="flex items-end justify-center">
+                                <span id="tv-max-speed" class="tv-font text-3xl font-bold text-white">--.-</span>
+                                <span class="text-sm text-slate-500 ml-1 mb-1">km/h</span>
+                            </div>
+                            <span id="tv-max-speed-scale" class="text-xs text-blue-400 font-rajdhani font-bold mt-1 tracking-widest">(--.- @1:32)</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex-1 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-gray-600">
-                    <table class="w-full text-left">
-                        <thead class="sticky top-0 bg-gray-800 shadow-sm">
-                            <tr><th class="py-3 px-4 text-gray-400 font-bold uppercase">Vuelta</th><th class="py-3 px-4 text-gray-400 font-bold uppercase">Tiempo</th><th class="py-3 px-4 text-gray-400 font-bold uppercase">Km/h</th></tr>
-                        </thead>
-                        <tbody id="tv-lap-tbody" class="text-xl tv-font divide-y divide-gray-700">
-                            <!-- Las vueltas se insertan aquí -->
-                        </tbody>
-                    </table>
+
+                <!-- Gráfico de Vueltas -->
+                <div class="tv-panel p-4 flex flex-col h-40 shrink-0 relative">
+                    <span class="text-xs text-slate-400 font-rajdhani font-bold uppercase tracking-widest mb-2 absolute top-4 left-4 z-10">Rendimiento (Últimas Vueltas)</span>
+                    <canvas id="tv-lap-graph" class="w-full h-full mt-4"></canvas>
                 </div>
+
+                <!-- Tabla de Historial -->
+                <div class="tv-panel flex flex-col flex-1 min-h-0 overflow-hidden relative">
+                    <div class="bg-slate-800/50 p-3 border-b border-slate-700/50 shrink-0">
+                        <h3 class="text-center text-slate-300 font-rajdhani font-bold uppercase tracking-widest text-sm">Historial en Vivo</h3>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-2 tv-scrollbar">
+                        <table class="w-full text-left">
+                            <thead class="sticky top-0 bg-slate-800/90 backdrop-blur z-10">
+                                <tr>
+                                    <th class="py-2 px-4 text-slate-400 font-rajdhani font-bold uppercase text-xs">V</th>
+                                    <th class="py-2 px-4 text-slate-400 font-rajdhani font-bold uppercase text-xs">Tiempo</th>
+                                    <th class="py-2 px-4 text-slate-400 font-rajdhani font-bold uppercase text-xs text-right">Km/h</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tv-lap-tbody" class="text-lg tv-font text-slate-200">
+                                <!-- Las vueltas se insertan aquí -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
             </div>
         </div>
     </div>
@@ -898,7 +1048,11 @@
     <script>
         // --- DETECCIÓN DE MODO TV Y SALA NUBE ---
         const urlParams = new URLSearchParams(window.location.search);
-        const isTVMode = urlParams.get('tv') === 'true';
+        
+        // ¡CAMBIO TEMPORAL PARA VISTA PREVIA EN PIZARRA! 
+        // Forzamos que isTVMode sea true para que veas el diseño directamente.
+        const isTVMode = true; // Original: urlParams.get('tv') === 'true';
+        
         const cloudRoomCode = urlParams.get('room');
         const kronoChannel = new BroadcastChannel('krono_telemetry_channel');
 
@@ -2347,6 +2501,62 @@
             const tvLapTbody = document.getElementById('tv-lap-tbody');
             const tvCloudCodeDisplay = document.getElementById('tv-cloud-code-display');
             
+            // Función para dibujar el gráfico en la TV
+            function drawTVLapGraph(laps, bestLap) {
+                const canvas = document.getElementById('tv-lap-graph');
+                if(!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const w = canvas.parentElement.offsetWidth - 32; // padding
+                const h = canvas.parentElement.offsetHeight - 40; // padding + title
+                canvas.width = w; canvas.height = h;
+                ctx.clearRect(0,0,w,h);
+                
+                if(!laps || laps.length === 0) return;
+
+                // Mostrar solo las últimas 15 vueltas para que el gráfico en TV se vea limpio
+                const displayLaps = laps.slice(-15);
+                const times = displayLaps.map(l => l.time);
+                
+                const max = Math.max(...times);
+                const min = Math.min(...times);
+                const range = max - min || 1;
+                
+                const barW = (w / displayLaps.length) - 4; // 4px espaciado
+
+                displayLaps.forEach((lapData, i) => {
+                    const t = lapData.time;
+                    const normalizedH = range === 0 ? h * 0.5 : (h * (1 - (t-min)/range)*0.6 + h*0.3); // Min 30% altura
+                    const x = i * (barW + 4);
+                    const y = h - normalizedH;
+
+                    // Color de la barra
+                    if (t === bestLap) {
+                        ctx.fillStyle = '#34d399'; // Verde Esmeralda Neon
+                        ctx.shadowColor = 'rgba(52, 211, 153, 0.5)';
+                        ctx.shadowBlur = 10;
+                    } else {
+                        ctx.fillStyle = '#3b82f6'; // Azul Slate
+                        ctx.shadowColor = 'transparent';
+                        ctx.shadowBlur = 0;
+                    }
+
+                    // Dibujar barra con bordes superiores redondeados (si el navegador lo soporta, fallback a rect)
+                    ctx.beginPath();
+                    if(ctx.roundRect) {
+                        ctx.roundRect(x, y, barW, normalizedH, [4, 4, 0, 0]);
+                    } else {
+                        ctx.rect(x, y, barW, normalizedH);
+                    }
+                    ctx.fill();
+                    
+                    // Número de vuelta debajo
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '10px JetBrains Mono';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(lapData.lap, x + barW/2, h - 2);
+                });
+            }
+
             if (cloudRoomCode) {
                 // ---- MODO NUBE (SMART TV REAL) ----
                 tvCloudCodeDisplay.querySelector('span').textContent = cloudRoomCode;
@@ -2367,7 +2577,7 @@
                                 updateTVUI();
                             } else {
                                 tvStatus.textContent = "CÓDIGO NO ENCONTRADO O SALA INACTIVA";
-                                tvStatus.classList.remove('text-gray-500');
+                                tvStatus.classList.remove('text-slate-400');
                                 tvStatus.classList.add('text-red-500');
                             }
                         }, (err) => {
@@ -2417,41 +2627,43 @@
                     tvLapCount.textContent = tvData.currentLap;
                     tvModeTarget.textContent = `TARGET: ${tvData.raceTimeLimit / 60000} MIN`;
                 } else {
-                    tvLapCount.textContent = `${tvData.currentLap} / ${maxLapsText}`;
-                    tvModeTarget.textContent = "";
+                    tvLapCount.textContent = tvData.currentLap;
+                    tvModeTarget.textContent = `OBJETIVO: ${maxLapsText} VUELTAS`;
                 }
 
-                // Status
-                tvStatus.classList.remove('text-yellow-400', 'text-green-500', 'text-red-500', 'text-gray-500', 'tv-pulse');
+                // Status Styling Update
+                tvStatus.className = "text-xl lg:text-2xl font-rajdhani font-bold uppercase tracking-widest px-6 py-2 rounded-xl border shadow-lg transition-colors duration-300 ";
+                
                 if (tvData.isPaused) {
                     tvStatus.textContent = "BANDERA AMARILLA (PAUSA)";
-                    tvStatus.classList.add('text-yellow-400', 'tv-pulse');
+                    tvStatus.className += "bg-yellow-900/40 border-yellow-500/50 text-yellow-400 tv-pulse";
                 } else if (tvData.raceAborted) {
                     tvStatus.textContent = "SALIDA NULA";
-                    tvStatus.classList.add('text-red-500', 'tv-pulse');
+                    tvStatus.className += "bg-red-900/40 border-red-500/50 text-red-500 tv-pulse";
                 } else if (tvData.isCountdown) {
                     tvStatus.textContent = "PREPARADOS...";
-                    tvStatus.classList.add('text-yellow-400');
+                    tvStatus.className += "bg-orange-900/40 border-orange-500/50 text-orange-400";
                 } else if (tvData.isRaceActive) {
                     tvStatus.textContent = "CARRERA EN CURSO";
-                    tvStatus.classList.add('text-green-500');
+                    tvStatus.className += "bg-emerald-900/30 border-emerald-500/30 text-emerald-400";
                 } else if (tvData.lapHistory && tvData.lapHistory.length > 0) {
                     tvStatus.textContent = "CARRERA FINALIZADA";
-                    tvStatus.classList.add('text-blue-400');
+                    tvStatus.className += "bg-blue-900/30 border-blue-500/30 text-blue-400";
                 } else {
                     tvStatus.textContent = cloudRoomCode ? "SALA ACTIVA. ESPERANDO..." : "ESPERANDO...";
-                    tvStatus.classList.add('text-gray-500');
+                    tvStatus.className += "bg-slate-800/80 border-slate-600 text-slate-400";
                 }
 
                 // Tiempos Telemetría
                 tvBestLap.textContent = tvData.bestLapTime !== Infinity && tvData.bestLapTime !== null ? formatTime(tvData.bestLapTime, false) : "--.---";
                 tvLastLap.textContent = tvData.lastCompletedLapTime ? formatTime(tvData.lastCompletedLapTime, false) : "--.---";
                 
-                // Velocidades
-                tvAvgSpeed.innerHTML = tvData.avgSpeed > 0 ? `${tvData.avgSpeed.toFixed(1)} <span class="text-sm text-gray-500 font-normal">km/h</span>` : `--.- <span class="text-sm text-gray-500 font-normal">km/h</span>`;
-                tvAvgSpeedScale.textContent = tvData.avgSpeed > 0 ? `(${(tvData.avgSpeed * 32).toFixed(1)} @1:32)` : "(--.- @1:32)";
-                tvMaxSpeed.innerHTML = tvData.maxSpeed > 0 ? `${tvData.maxSpeed.toFixed(1)} <span class="text-sm text-gray-500 font-normal">km/h</span>` : `--.- <span class="text-sm text-gray-500 font-normal">km/h</span>`;
-                tvMaxSpeedScale.textContent = tvData.maxSpeed > 0 ? `(${(tvData.maxSpeed * 32).toFixed(1)} @1:32)` : "(--.- @1:32)";
+                // Velocidades (Real y Escala 1:32)
+                tvAvgSpeed.textContent = tvData.avgSpeed > 0 ? tvData.avgSpeed.toFixed(1) : "--.-";
+                if(tvAvgSpeedScale) tvAvgSpeedScale.textContent = tvData.avgSpeed > 0 ? `(${(tvData.avgSpeed * 32).toFixed(1)} @1:32)` : "(--.- @1:32)";
+                
+                tvMaxSpeed.textContent = tvData.maxSpeed > 0 ? tvData.maxSpeed.toFixed(1) : "--.-";
+                if(tvMaxSpeedScale) tvMaxSpeedScale.textContent = tvData.maxSpeed > 0 ? `(${(tvData.maxSpeed * 32).toFixed(1)} @1:32)` : "(--.- @1:32)";
 
                 // Tabla Historial
                 if(tvData.lapHistory) {
@@ -2460,12 +2672,49 @@
                     reversedLaps.forEach((l) => {
                         const row = document.createElement('tr');
                         const isBest = l.time === tvData.bestLapTime;
-                        if(isBest) row.className = "text-green-400 font-bold bg-gray-800";
-                        row.innerHTML = `<td class="py-2 px-4 border-b border-gray-700">${l.lap}</td><td class="py-2 px-4 border-b border-gray-700">${formatTime(l.time, false)}</td><td class="py-2 px-4 border-b border-gray-700 text-gray-400">${l.speed.toFixed(1)}</td>`;
+                        
+                        row.className = isBest ? "text-emerald-400 font-bold bg-emerald-900/20" : "border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors";
+                        
+                        row.innerHTML = `
+                            <td class="py-2 px-4 rounded-l-lg">${l.lap}</td>
+                            <td class="py-2 px-4">${formatTime(l.time, false)}</td>
+                            <td class="py-2 px-4 text-right rounded-r-lg ${isBest ? 'text-emerald-500/80' : 'text-slate-500'}">${l.speed.toFixed(1)}</td>
+                        `;
                         tvLapTbody.appendChild(row);
                     });
+                    
+                    // Dibujar el gráfico en la TV
+                    drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
                 }
             }
+
+            // --- DATOS DE PRUEBA (MOCK DATA) PARA QUE VEAS EL DISEÑO ---
+            setTimeout(() => {
+                if (isTVMode) {
+                    tvData = {
+                        pilot: "Fernando Alonso",
+                        car: "Aston Martin AMR24",
+                        totalLaps: 50,
+                        currentLap: 14,
+                        raceMode: 'laps',
+                        bestLapTime: 8250,
+                        lastCompletedLapTime: 8520,
+                        avgSpeed: 29.5,
+                        maxSpeed: 32.2,
+                        isRaceActive: true,
+                        isPaused: false,
+                        lapHistory: [
+                            { lap: 10, time: 8600, speed: 28.1 },
+                            { lap: 11, time: 8520, speed: 28.5 },
+                            { lap: 12, time: 8250, speed: 30.1 },
+                            { lap: 13, time: 8300, speed: 29.8 },
+                            { lap: 14, time: 8520, speed: 28.6 }
+                        ]
+                    };
+                    updateTVUI();
+                }
+            }, 500);
+            // -----------------------------------------------------------
 
             // Loop local para pintar el cronómetro suavemente en la TV (evitando latencia de red)
             if(tvIntervalId) clearInterval(tvIntervalId);
@@ -2480,10 +2729,17 @@
                     tvRaceTime.textContent = formatTime(elapRace, true);
                     tvCurrentLapTime.textContent = formatTime(elapLap, false);
                 } else if (!tvData.isRaceActive && tvData.lapHistory && tvData.lapHistory.length === 0) {
-                    tvRaceTime.textContent = "00:00.000";
+                    tvRaceTime.textContent = "00:00.0";
                     tvCurrentLapTime.textContent = "00.000";
                 }
             }, 30);
+            
+            // Re-dibujar gráfico si la ventana cambia de tamaño
+            window.addEventListener('resize', () => {
+                if(tvData && tvData.lapHistory) {
+                    drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
+                }
+            });
         }
 
         // =========================================================================
