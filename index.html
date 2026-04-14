@@ -404,28 +404,40 @@
         /* ESTILOS PARA WIDGETS ARRASTRABLES (SMART DASHBOARD) */
         .tv-widget {
             transition: box-shadow 0.2s ease, border-color 0.2s ease;
-            container-type: inline-size; /* Permite escalar la fuente según el ancho del widget */
+            container-type: size; /* CRUCIAL: Evalúa ambos ejes (W y H) continuamente */
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Garantiza que el contenido jamás fuerce el tamaño del grid */
         }
         .tv-widget:hover {
             border-color: rgba(34, 211, 238, 0.3);
         }
         
-        /* TIPOGRAFÍA DINÁMICA ESCALABLE (CSS Container Queries) */
-        .cq-text-xxs { font-size: clamp(0.5rem, 2cqi, 1rem); line-height: 1.2; }
-        .cq-text-xs { font-size: clamp(0.6rem, 3cqi, 1.25rem); line-height: 1.2; }
-        .cq-text-sm { font-size: clamp(0.75rem, 4cqi, 1.5rem); line-height: 1.2; }
-        .cq-text-base { font-size: clamp(0.875rem, 5cqi, 2rem); line-height: 1.2; }
-        .cq-text-lg { font-size: clamp(1rem, 6cqi, 2.5rem); line-height: 1.2; }
-        .cq-text-xl { font-size: clamp(1.25rem, 8cqi, 3.5rem); line-height: 1.1; }
-        .cq-text-2xl { font-size: clamp(1.5rem, 10cqi, 4.5rem); line-height: 1.1; }
-        .cq-text-3xl { font-size: clamp(1.875rem, 12cqi, 5.5rem); line-height: 1.1; }
-        .cq-text-4xl { font-size: clamp(2.25rem, 16cqi, 7.5rem); line-height: 1.1; }
-        .cq-text-5xl { font-size: clamp(3rem, 20cqi, 9rem); line-height: 1; }
-        .cq-text-giant { font-size: clamp(4rem, 26cqi, 15rem); line-height: 0.9; }
+        /* TIPOGRAFÍA DINÁMICA ESCALABLE PURA (Comportamiento ROI / SVG) */
+        /* min(ancho_seguro_cqi, alto_seguro_cqh). Detiene el crecimiento si choca con cualquiera de los bordes */
+        .cq-text-label    { font-size: min(4.5cqi, 12cqh); line-height: 1.1; }
+        .cq-text-label-sm { font-size: min(3cqi, 8cqh); line-height: 1.1; }
+        .cq-text-value-sm { font-size: min(6cqi, 15cqh); line-height: 1.1; }
+        .cq-text-value-md { font-size: min(8cqi, 20cqh); line-height: 1.1; }
+        .cq-text-value-lg { font-size: min(12cqi, 30cqh); line-height: 1.1; }
+        .cq-text-value-xl { font-size: min(15cqi, 40cqh); line-height: 1.1; }
         
-        /* Textos especiales adaptativos para las tablas de historial */
-        .cq-text-table { font-size: clamp(0.75rem, 2.5cqi, 1.25rem); line-height: 1.2; }
-        .cq-text-table-header { font-size: clamp(0.6rem, 1.8cqi, 1rem); line-height: 1.2; }
+        /* Gigantes ajustados matemáticamente a la longitud de los strings (ej. 00.000 vs 0) */
+        .cq-text-giant-crono { font-size: min(17cqi, 65cqh); line-height: 0.9; } 
+        .cq-text-giant-lap   { font-size: min(35cqi, 65cqh); line-height: 0.9; }
+        
+        /* Específicos para 3 columnas (Widget 7) donde el ancho de celda es ~33cqi */
+        .cq-text-col3-val { font-size: min(8cqi, 25cqh); line-height: 1.1; }
+        
+        /* Tabla (Usa límite de PX para que el scroll funcione fluidamente en vertical) */
+        .cq-text-table-header { font-size: min(2.5cqi, 14px); line-height: 1.2; }
+        .cq-text-table-row { font-size: min(3.5cqi, 16px); line-height: 1.2; }
+
+        /* Espaciados Relativos (Gaps y Paddings escalables sin píxeles fijos) */
+        .cq-p { padding: min(3cqi, 4cqh); }
+        .cq-gap-sm { gap: min(1.5cqi, 2cqh); }
+        .cq-gap-md { gap: min(3cqi, 4cqh); }
+        .cq-gap-lg { gap: min(5cqi, 6cqh); }
 
         .drag-handle { 
             cursor: grab; 
@@ -901,8 +913,8 @@
                     <div class="flex items-center space-x-4 mt-3">
                         <!-- INSIGNIA TEXTUAL: BY ALBERT CLOSA (SIN RECUADRO) -->
                         <div class="flex items-center font-rajdhani text-[11px] sm:text-xs tracking-[0.3em] uppercase opacity-90">
-                            <div class="text-slate-500">DEV <div class="inline-block mx-1 text-cyan-500/40">/></div></div>
-                            <div class="text-cyan-400 font-bold relative ml-1 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">
+                            <div class="text-slate-500 mr-1.5">BY</div>
+                            <div class="text-cyan-400 font-bold relative drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">
                                 ALBERT CLOSA
                                 <div class="absolute -bottom-1 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-70"></div>
                             </div>
@@ -940,21 +952,20 @@
         </div>
         
         <!-- GRID TV MODULAR Y ARRASTRABLE CON REDIMENSIONAMIENTO (ESCALA) -->
-        <div id="tv-grid-container" class="flex-1 grid grid-cols-1 md:grid-cols-6 xl:grid-cols-12 gap-4 lg:gap-5 min-h-0 overflow-y-auto tv-scrollbar pb-6 grid-flow-dense auto-rows-max">
+        <div id="tv-grid-container" class="flex-1 grid grid-cols-1 md:grid-cols-6 xl:grid-cols-12 gap-4 lg:gap-5 min-h-0 overflow-y-auto tv-scrollbar pb-6 grid-flow-dense auto-rows-[100px] md:auto-rows-[115px] xl:auto-rows-[130px]">
             
             <!-- WIDGET 1: Piloto -->
             <div id="w-pilot" class="tv-widget col-span-1 md:col-span-3 xl:col-span-3 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
-                <!-- Icono de Redimensionamiento -->
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400" title="Arrastra para escalar">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex flex-col items-center justify-center relative overflow-hidden min-h-[120px]">
+                <div class="cq-p flex-1 flex flex-col items-center justify-center relative overflow-hidden h-full w-full min-w-0 min-h-0 cq-gap-sm">
                     <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-xs mb-1 z-10 pointer-events-none">Piloto / Coche</span>
-                    <span id="tv-pilot-car" class="cq-text-xl font-bold text-white text-center z-10 leading-tight pointer-events-none">Cargando...</span>
+                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-label z-10 pointer-events-none whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">Piloto / Coche</span>
+                    <span id="tv-pilot-car" class="cq-text-value-md font-bold text-white text-center z-10 leading-tight pointer-events-none whitespace-nowrap overflow-hidden text-ellipsis w-full">Cargando...</span>
                 </div>
             </div>
 
@@ -966,9 +977,9 @@
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex flex-col items-center justify-center min-h-[120px] pointer-events-none">
-                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-xs mb-1">Tiempo de Carrera</span>
-                    <span id="tv-race-time" class="tv-font cq-text-4xl font-black text-slate-100 drop-shadow-md">00:00.0</span>
+                <div class="cq-p flex-1 flex flex-col items-center justify-center pointer-events-none h-full w-full min-w-0 min-h-0 cq-gap-sm">
+                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-label whitespace-nowrap">Tiempo de Carrera</span>
+                    <span id="tv-race-time" class="tv-font cq-text-value-lg font-black text-slate-100 drop-shadow-md whitespace-nowrap">00:00.0</span>
                 </div>
             </div>
 
@@ -980,10 +991,10 @@
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex flex-col items-center justify-center min-h-[120px] pointer-events-none">
-                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-xs mb-1">Vueltas Completadas</span>
-                    <span id="tv-lap-count" class="tv-font cq-text-5xl font-black neon-blue-text leading-none">0</span>
-                    <span id="tv-mode-target" class="cq-text-xxs font-rajdhani font-bold text-blue-400 tracking-wider mt-1"></span>
+                <div class="cq-p flex-1 flex flex-col items-center justify-center pointer-events-none h-full w-full min-w-0 min-h-0 cq-gap-sm">
+                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-label whitespace-nowrap">Vueltas Completadas</span>
+                    <span id="tv-lap-count" class="tv-font cq-text-giant-lap font-black neon-blue-text leading-none whitespace-nowrap">0</span>
+                    <span id="tv-mode-target" class="cq-text-label-sm font-rajdhani font-bold text-blue-400 tracking-wider whitespace-nowrap"></span>
                 </div>
             </div>
             
@@ -995,91 +1006,91 @@
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex flex-col items-center justify-center min-h-[120px] pointer-events-none">
-                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-xs mb-1">Última Vuelta</span>
-                    <span id="tv-last-lap" class="tv-font cq-text-4xl font-bold text-slate-300">--.---</span>
+                <div class="cq-p flex-1 flex flex-col items-center justify-center pointer-events-none h-full w-full min-w-0 min-h-0 cq-gap-sm">
+                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-label whitespace-nowrap">Última Vuelta</span>
+                    <span id="tv-last-lap" class="tv-font cq-text-value-lg font-bold text-slate-300 whitespace-nowrap">--.---</span>
                 </div>
             </div>
 
             <!-- WIDGET 5: CRONO PRINCIPAL GIGANTE -->
-            <div id="w-current" class="tv-widget col-span-1 md:col-span-6 xl:col-span-6 row-span-2 tv-panel flex flex-col relative group cursor-move overflow-hidden min-h-[250px]">
+            <div id="w-current" class="tv-widget col-span-1 md:col-span-6 xl:col-span-6 row-span-2 tv-panel flex flex-col relative group cursor-move overflow-hidden">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-6 flex-1 flex flex-col items-center justify-center relative pointer-events-none">
-                    <div class="absolute -top-20 -right-20 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-sm mb-4">Vuelta Actual</span>
+                <div class="cq-p flex-1 flex flex-col items-center justify-center relative pointer-events-none h-full w-full min-w-0 min-h-0 cq-gap-md">
+                    <div class="absolute -top-20 -right-20 w-[40cqmin] h-[40cqmin] bg-yellow-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-label whitespace-nowrap">Vuelta Actual</span>
                     
-                    <span id="tv-current-lap-time" class="tv-font cq-text-giant font-black neon-yellow-text leading-none tabular-nums tracking-tighter">00.000</span>
+                    <span id="tv-current-lap-time" class="tv-font cq-text-giant-crono font-black neon-yellow-text leading-none tabular-nums tracking-tighter whitespace-nowrap">00.000</span>
                     
-                    <div id="tv-lap-delta-container" class="mt-6 flex items-center justify-center hidden">
-                        <span id="tv-lap-delta" class="tv-font cq-text-3xl font-bold rounded-lg px-4 py-1.5 shadow-lg"></span>
+                    <div id="tv-lap-delta-container" class="flex items-center justify-center hidden w-full cq-gap-sm">
+                        <span id="tv-lap-delta" class="tv-font cq-text-value-sm font-bold rounded-lg px-[2cqmin] py-[1cqmin] shadow-lg whitespace-nowrap"></span>
                     </div>
                 </div>
             </div>
 
             <!-- WIDGET 6: MEJOR VUELTA GLOBAL -->
-            <div id="w-best" class="tv-widget col-span-1 md:col-span-6 xl:col-span-6 tv-panel flex flex-col relative group cursor-move border-t-4 border-t-emerald-500 bg-emerald-900/10 min-h-[140px]">
+            <div id="w-best" class="tv-widget col-span-1 md:col-span-6 xl:col-span-6 tv-panel flex flex-col relative group cursor-move border-t-4 border-t-emerald-500 bg-emerald-900/10">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-emerald-500 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-emerald-600 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="absolute top-4 left-6 text-emerald-500/30 pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <div class="absolute top-[4cqh] left-[4cqi] text-emerald-500/30 pointer-events-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20cqh" height="20cqh" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                 </div>
-                <div class="p-6 flex-1 flex flex-col items-center justify-center pointer-events-none">
-                    <span class="text-emerald-400 font-rajdhani font-bold uppercase tracking-[0.2em] cq-text-sm mb-1">Mejor Vuelta Global</span>
-                    <span id="tv-best-lap" class="tv-font cq-text-5xl font-black neon-green-text drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]">--.---</span>
+                <div class="cq-p flex-1 flex flex-col items-center justify-center pointer-events-none h-full w-full min-w-0 min-h-0 cq-gap-sm">
+                    <span class="text-emerald-400 font-rajdhani font-bold uppercase tracking-[0.2em] cq-text-label whitespace-nowrap">Mejor Vuelta Global</span>
+                    <span id="tv-best-lap" class="tv-font cq-text-value-xl font-black neon-green-text drop-shadow-[0_0_15px_rgba(16,185,129,0.5)] whitespace-nowrap">--.---</span>
                 </div>
             </div>
 
             <!-- WIDGET 7: VELOCIDADES Y CONSISTENCIA -->
-            <div id="w-speeds" class="tv-widget col-span-1 md:col-span-6 xl:col-span-6 tv-panel flex flex-col relative group cursor-move min-h-[140px]">
+            <div id="w-speeds" class="tv-widget col-span-1 md:col-span-6 xl:col-span-6 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex justify-around items-center pointer-events-none">
-                    <div class="text-center flex-1">
-                        <span class="block cq-text-xs text-slate-400 font-rajdhani font-semibold uppercase tracking-widest mb-2">Vel. Media</span>
-                        <div class="flex flex-col items-center justify-center space-y-1">
+                <div class="cq-p flex-1 flex justify-around items-center pointer-events-none h-full w-full min-w-0 min-h-0 cq-gap-sm">
+                    <div class="text-center flex-1 flex flex-col h-full items-center justify-center min-w-0 min-h-0 cq-gap-sm">
+                        <span class="block cq-text-label text-slate-400 font-rajdhani font-semibold uppercase tracking-widest whitespace-nowrap">Vel. Media</span>
+                        <div class="flex flex-col items-center justify-center cq-gap-sm">
                             <div class="flex items-end justify-center" title="Velocidad Real">
-                                <span id="tv-avg-speed" class="tv-font cq-text-2xl font-bold text-white">--.-</span>
-                                <span class="cq-text-xxs text-slate-500 ml-1 mb-0.5">R</span>
+                                <span id="tv-avg-speed" class="tv-font cq-text-col3-val font-bold text-white whitespace-nowrap">--.-</span>
+                                <span class="cq-text-label-sm text-slate-500 ml-[1cqi]">R</span>
                             </div>
-                            <div class="flex items-end justify-center border-t border-slate-700/50 pt-1" title="Escala 1:32">
-                                <span id="tv-avg-speed-scale" class="tv-font cq-text-2xl font-bold text-blue-400">--.-</span>
-                                <span class="cq-text-xxs text-blue-400/80 ml-1 mb-0.5">1:32</span>
+                            <div class="flex items-end justify-center border-t border-slate-700/50 pt-[1cqh]" title="Escala 1:32">
+                                <span id="tv-avg-speed-scale" class="tv-font cq-text-col3-val font-bold text-blue-400 whitespace-nowrap">--.-</span>
+                                <span class="cq-text-label-sm text-blue-400/80 ml-[1cqi]">1:32</span>
                             </div>
                         </div>
                     </div>
-                    <div class="w-px h-16 bg-slate-700/50"></div>
+                    <div class="w-px h-[80cqh] bg-slate-700/50"></div>
                     
-                    <div class="text-center flex-1">
-                        <span class="block cq-text-xs text-blue-400 font-rajdhani font-semibold uppercase tracking-widest mb-2">Consistencia</span>
+                    <div class="text-center flex-1 flex flex-col h-full items-center justify-center min-w-0 min-h-0 cq-gap-sm">
+                        <span class="block cq-text-label text-blue-400 font-rajdhani font-semibold uppercase tracking-widest whitespace-nowrap">Consistencia</span>
                         <div class="flex flex-col items-center justify-center h-full">
-                            <span id="tv-consistency" class="tv-font cq-text-3xl font-bold text-blue-300">--%</span>
+                            <span id="tv-consistency" class="tv-font cq-text-value-lg font-bold text-blue-300 whitespace-nowrap">--%</span>
                         </div>
                     </div>
                     
-                    <div class="w-px h-16 bg-slate-700/50"></div>
-                    <div class="text-center flex-1">
-                        <span class="block cq-text-xs text-slate-400 font-rajdhani font-semibold uppercase tracking-widest mb-2">Vel. Máx</span>
-                        <div class="flex flex-col items-center justify-center space-y-1">
+                    <div class="w-px h-[80cqh] bg-slate-700/50"></div>
+                    <div class="text-center flex-1 flex flex-col h-full items-center justify-center min-w-0 min-h-0 cq-gap-sm">
+                        <span class="block cq-text-label text-slate-400 font-rajdhani font-semibold uppercase tracking-widest whitespace-nowrap">Vel. Máx</span>
+                        <div class="flex flex-col items-center justify-center cq-gap-sm">
                             <div class="flex items-end justify-center" title="Velocidad Real">
-                                <span id="tv-max-speed" class="tv-font cq-text-2xl font-bold text-white">--.-</span>
-                                <span class="cq-text-xxs text-slate-500 ml-1 mb-0.5">R</span>
+                                <span id="tv-max-speed" class="tv-font cq-text-col3-val font-bold text-white whitespace-nowrap">--.-</span>
+                                <span class="cq-text-label-sm text-slate-500 ml-[1cqi]">R</span>
                             </div>
-                            <div class="flex items-end justify-center border-t border-slate-700/50 pt-1" title="Escala 1:32">
-                                <span id="tv-max-speed-scale" class="tv-font cq-text-2xl font-bold text-blue-400">--.-</span>
-                                <span class="cq-text-xxs text-blue-400/80 ml-1 mb-0.5">1:32</span>
+                            <div class="flex items-end justify-center border-t border-slate-700/50 pt-[1cqh]" title="Escala 1:32">
+                                <span id="tv-max-speed-scale" class="tv-font cq-text-col3-val font-bold text-blue-400 whitespace-nowrap">--.-</span>
+                                <span class="cq-text-label-sm text-blue-400/80 ml-[1cqi]">1:32</span>
                             </div>
                         </div>
                     </div>
@@ -1087,41 +1098,41 @@
             </div>
 
             <!-- WIDGET 8: GRÁFICO (ANCHO) -->
-            <div id="w-graph" class="tv-widget col-span-1 md:col-span-6 xl:col-span-8 tv-panel flex flex-col relative group cursor-move min-h-[220px]">
+            <div id="w-graph" class="tv-widget col-span-1 md:col-span-6 xl:col-span-8 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
-                    <span class="cq-text-xs text-slate-400 font-rajdhani font-bold uppercase tracking-widest mb-1 z-10">Rendimiento (Últimas Vueltas)</span>
-                    <canvas id="tv-lap-graph" class="w-full flex-1 mt-2"></canvas>
+                <div class="cq-p flex-1 flex flex-col h-full w-full relative pointer-events-none min-h-0 min-w-0 cq-gap-sm">
+                    <span class="cq-text-label text-slate-400 font-rajdhani font-bold uppercase tracking-widest z-10 whitespace-nowrap">Rendimiento (Últimas Vueltas)</span>
+                    <canvas id="tv-lap-graph" class="w-full flex-1 min-h-0"></canvas>
                 </div>
             </div>
 
-            <!-- WIDGET 9: TABLA DE HISTORIAL (ESTRECHO Y ALTO) -->
-            <div id="w-history" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move min-h-[220px]">
+            <!-- WIDGET 9: TABLA DE HISTORIAL -->
+            <div id="w-history" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="bg-slate-800/50 p-3 border-b border-slate-700/50 shrink-0 rounded-t-xl pointer-events-none">
-                    <h3 class="text-center text-slate-300 font-rajdhani font-bold uppercase tracking-widest cq-text-xs">Historial en Vivo</h3>
+                <div class="bg-slate-800/50 cq-p border-b border-slate-700/50 shrink-0 rounded-t-xl pointer-events-none">
+                    <h3 class="text-center text-slate-300 font-rajdhani font-bold uppercase tracking-widest cq-text-label whitespace-nowrap">Historial en Vivo</h3>
                 </div>
-                <div class="flex-1 overflow-y-auto p-2 tv-scrollbar h-48 xl:h-auto pointer-events-none">
+                <div class="flex-1 overflow-y-auto cq-p tv-scrollbar h-full pointer-events-none">
                     <table class="w-full text-left">
                         <thead class="sticky top-0 bg-slate-800/90 backdrop-blur z-10">
                             <tr>
-                                <th class="py-2 px-2 text-slate-400 font-rajdhani font-bold uppercase cq-text-table-header">V</th>
-                                <th class="py-2 px-2 text-slate-400 font-rajdhani font-bold uppercase cq-text-table-header">Tiempo</th>
-                                <th class="py-2 px-2 text-slate-400 font-rajdhani font-bold uppercase cq-text-table-header text-center">Delta</th>
-                                <th class="py-2 px-2 text-slate-400 font-rajdhani font-bold uppercase cq-text-table-header text-right">Km/h</th>
+                                <th class="py-[1cqh] px-[1cqi] text-slate-400 font-rajdhani font-bold uppercase cq-text-table-header whitespace-nowrap">V</th>
+                                <th class="py-[1cqh] px-[1cqi] text-slate-400 font-rajdhani font-bold uppercase cq-text-table-header whitespace-nowrap">Tiempo</th>
+                                <th class="py-[1cqh] px-[1cqi] text-slate-400 font-rajdhani font-bold uppercase cq-text-table-header text-center whitespace-nowrap">Delta</th>
+                                <th class="py-[1cqh] px-[1cqi] text-slate-400 font-rajdhani font-bold uppercase cq-text-table-header text-right whitespace-nowrap">Km/h</th>
                             </tr>
                         </thead>
-                        <tbody id="tv-lap-tbody" class="cq-text-table tv-font text-slate-200">
+                        <tbody id="tv-lap-tbody" class="cq-text-table-row tv-font text-slate-200">
                             <!-- Vueltas insertadas por JS -->
                         </tbody>
                     </table>
@@ -2837,6 +2848,19 @@
             document.getElementById('tv-dashboard').classList.add('flex');
             document.title = "KRONO PERSONAL DASHBOARD";
 
+            // --- CARGAR TEMA (COLOR Y GRÁFICA) GUARDADO ---
+            try {
+                const savedTheme = JSON.parse(localStorage.getItem('krono_tv_theme_v1'));
+                if (savedTheme) {
+                    if (savedTheme.hue !== undefined) {
+                        document.getElementById('tv-dashboard').style.filter = `hue-rotate(${savedTheme.hue}deg)`;
+                    }
+                    if (savedTheme.graphType) {
+                        window.tvGraphType = savedTheme.graphType;
+                    }
+                }
+            } catch(e) {}
+
             // Cleanup Main App
             if(cameraStream) cameraStream.getTracks().forEach(t=>t.stop());
             if(isProcessing) isProcessing = false;
@@ -2886,42 +2910,13 @@
                 const graphTypes = ['bar', 'area', 'line', 'laser'];
                 window.tvGraphType = graphTypes[Math.floor(Math.random() * graphTypes.length)];
 
-                // 5. PLANTILLAS DE PROPORCIONES PERFECTAS (Para que el Tetris encaje bien)
-                const layouts = [
-                    // Layout Clásico
-                    {'w-pilot':[3,1], 'w-time':[3,1], 'w-laps':[3,1], 'w-last':[3,1], 'w-current':[6,2], 'w-best':[6,1], 'w-speeds':[6,1], 'w-graph':[8,2], 'w-history':[4,2]},
-                    // Layout Ultra-Ancho (Estilo F1)
-                    {'w-current':[12,2], 'w-speeds':[12,1], 'w-graph':[12,2], 'w-history':[6,2], 'w-best':[6,1], 'w-pilot':[3,1], 'w-time':[3,1], 'w-laps':[3,1], 'w-last':[3,1]},
-                    // Layout Asimétrico
-                    {'w-current':[8,2], 'w-history':[4,3], 'w-pilot':[4,1], 'w-time':[4,1], 'w-speeds':[8,1], 'w-graph':[8,2], 'w-best':[6,1], 'w-laps':[3,1], 'w-last':[3,1]},
-                    // Layout Centrado en Telemetría
-                    {'w-history':[12,2], 'w-current':[4,2], 'w-graph':[4,2], 'w-speeds':[4,2], 'w-best':[6,1], 'w-laps':[6,1], 'w-pilot':[4,1], 'w-time':[4,1], 'w-last':[4,1]},
-                    // Layout Dividido
-                    {'w-current':[6,2], 'w-graph':[6,2], 'w-history':[12,2], 'w-speeds':[6,1], 'w-best':[6,1], 'w-pilot':[3,1], 'w-time':[3,1], 'w-laps':[3,1], 'w-last':[3,1]}
-                ];
-                
-                // Elegimos unas proporciones maestras al azar
-                const selectedSpans = layouts[Math.floor(Math.random() * layouts.length)];
+                // --- GUARDAR TEMA EN CACHÉ PERMANENTE ---
+                localStorage.setItem('krono_tv_theme_v1', JSON.stringify({
+                    hue: randomHue,
+                    graphType: window.tvGraphType
+                }));
 
-                // 6. ORDEN ALEATORIO (Barajar)
-                const widgets = ['w-pilot','w-time','w-laps','w-last','w-current','w-best','w-speeds','w-graph','w-history'];
-                const shuffledOrder = widgets.sort(() => 0.5 - Math.random());
-
-                // Aplicar el nuevo orden y los tamaños al DOM
-                const container = document.getElementById('tv-grid-container');
-                shuffledOrder.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        container.appendChild(el);
-                        el.style.gridColumn = `span ${selectedSpans[id][0]}`;
-                        el.style.gridRow = `span ${selectedSpans[id][1]}`;
-                    }
-                });
-
-                // Guardar la configuración mutante para la próxima vez
-                saveTVLayout();
-
-                // 7. Redibujar Gráfico con el nuevo Estilo y Tamaño
+                // 5. Redibujar Gráfico con el nuevo Estilo (Respetando el tamaño actual)
                 setTimeout(() => {
                     if(tvData && tvData.lapHistory) {
                         window.drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
@@ -2979,6 +2974,17 @@
                             }
                         }
                     });
+                }
+                
+                // OBSERVADOR DE REDIMENSIONAMIENTO (Redibuja el canvas de forma nativa e instantánea)
+                const graphWidget = document.getElementById('w-graph');
+                if(graphWidget) {
+                    const resizeObserver = new ResizeObserver(entries => {
+                        if (tvData && tvData.lapHistory) {
+                            window.drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
+                        }
+                    });
+                    resizeObserver.observe(graphWidget);
                 }
             }
 
@@ -3073,10 +3079,15 @@
             // --- NUEVO: SISTEMA DE GRÁFICOS MULTI-ESTILO ---
             window.drawTVLapGraph = function(laps, bestLap) {
                 const canvas = document.getElementById('tv-lap-graph');
-                if(!canvas) return;
+                if(!canvas || !canvas.parentElement) return;
                 const ctx = canvas.getContext('2d');
-                const w = canvas.parentElement.offsetWidth - 32;
-                const h = canvas.parentElement.offsetHeight - 40;
+                
+                // Ahora obtiene el ancho directamente del bounding rect de su flex parent
+                const w = canvas.parentElement.offsetWidth;
+                const h = canvas.parentElement.offsetHeight;
+                
+                if(w <= 0 || h <= 0) return; // Evita redibujos corruptos si está colapsado
+
                 canvas.width = w; canvas.height = h;
                 ctx.clearRect(0,0,w,h);
                 
@@ -3247,10 +3258,10 @@
                         tvLapDeltaContainer.classList.remove('hidden');
                         if (lastLapData.delta < 0) {
                             tvLapDelta.textContent = `-${formatDeltaTime(Math.abs(lastLapData.delta))}`;
-                            tvLapDelta.className = "tv-font cq-text-3xl font-bold rounded-lg px-4 py-1.5 shadow-lg bg-emerald-900/50 text-emerald-400 border border-emerald-500/50";
+                            tvLapDelta.className = "tv-font cq-text-value-sm font-bold rounded-lg px-[2cqi] py-[1cqh] shadow-lg bg-emerald-900/50 text-emerald-400 border border-emerald-500/50 whitespace-nowrap";
                         } else {
                             tvLapDelta.textContent = `+${formatDeltaTime(lastLapData.delta)}`;
-                            tvLapDelta.className = "tv-font cq-text-3xl font-bold rounded-lg px-4 py-1.5 shadow-lg bg-red-900/50 text-red-400 border border-red-500/50";
+                            tvLapDelta.className = "tv-font cq-text-value-sm font-bold rounded-lg px-[2cqi] py-[1cqh] shadow-lg bg-red-900/50 text-red-400 border border-red-500/50 whitespace-nowrap";
                         }
                     }
 
