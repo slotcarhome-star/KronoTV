@@ -2181,7 +2181,6 @@
                     document.getElementById('modal-pilot-car').textContent = `${pilotNameInput.value} / ${carModelInput.value}`;
                     document.getElementById('modal-total-time').textContent = formatTime(finalRaceTimeMs, true);
                     document.getElementById('modal-best-lap').textContent = formatTime(bestLapTime, false);
-                    document.getElementById('modal-average-time').textContent = formatTime(currentAverageTime, false);
                     document.getElementById('modal-avg-speed').textContent = `${avgSpeed.toFixed(1)} Km/h`;
                     document.getElementById('modal-consistency').textContent = consistency > 0 ? `${consistency.toFixed(1)}%` : "--%";
                     
@@ -3124,3 +3123,72 @@
                 
                 kronoChannel.onmessage = (event) => {
                     if(event.data.type === 'STATE_UPDATE') { tvData = event.data.payload; updateTVUI(); }
+                };
+            }
+
+            // Loop de actualización UI en tiempo real para modo TV
+            if (tvIntervalId) clearInterval(tvIntervalId);
+            tvIntervalId = setInterval(() => {
+                if (tvData && tvData.isRaceActive && !tvData.isPaused) {
+                    const now = Date.now();
+                    const elapRace = tvData.raceStartTime ? (now - tvData.raceStartTime) : 0;
+                    const elapLap = tvData.lapStartTimestamp ? (now - tvData.lapStartTimestamp) : 0;
+                    
+                    document.getElementById('tv-race-time').textContent = formatTime(elapRace, true);
+                    document.getElementById('tv-current-lap-time').textContent = formatTime(elapLap, false);
+                }
+            }, 30);
+            
+            // Botón Metamorfosis IA (Flash Glitch)
+            if (aiThemeBtn && flashOverlay) {
+                aiThemeBtn.addEventListener('click', () => {
+                    flashOverlay.classList.remove('hidden');
+                    flashOverlay.classList.add('ai-glitching');
+                    setTimeout(() => {
+                        flashOverlay.classList.remove('ai-glitching');
+                        flashOverlay.classList.add('hidden');
+                    }, 600);
+                });
+            }
+            
+            const tvFsBtn = document.getElementById('tv-fullscreen-btn');
+            if(tvFsBtn) tvFsBtn.addEventListener('click', toggleFullScreen);
+        };
+
+        // Auto-arranque modo TV local si se abre desde el popup
+        if (urlParams.get('tv') === 'true') {
+            window.startTVMode(null);
+        }
+        
+        // Listeners iniciales para cargar preferencias previas
+        window.addEventListener('DOMContentLoaded', () => {
+            const sLang = localStorage.getItem('krono_lang');
+            if (sLang) { 
+                const langSel = document.getElementById('lang-select');
+                if(langSel) langSel.value = sLang; 
+                currentLang = sLang; 
+                updateTexts(); 
+            }
+            const sPilot = localStorage.getItem('krono_pilot_name');
+            if (sPilot) {
+                const pInput = document.getElementById('pilot-name-input');
+                if(pInput) pInput.value = sPilot;
+            }
+            const sCar = localStorage.getItem('krono_car_model');
+            if (sCar) {
+                const cInput = document.getElementById('car-model-input');
+                if(cInput) cInput.value = sCar;
+            }
+        });
+        
+        // Responder a peticiones de sincronización del modo TV en multipantalla local
+        if(!isTVMode) {
+            kronoChannel.onmessage = (event) => {
+                if (event.data.type === 'REQUEST_STATE') {
+                    broadcastState();
+                }
+            };
+        }
+    </script>
+</body>
+</html>
