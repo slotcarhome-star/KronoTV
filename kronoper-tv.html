@@ -2762,6 +2762,41 @@
             document.getElementById('tv-dashboard').classList.add('flex');
             document.title = "KRONO PERSONAL DASHBOARD";
 
+            // --- FUNCIONES PARA GUARDAR Y RESTAURAR LAYOUT ---
+            function saveTVLayout() {
+                const container = document.getElementById('tv-grid-container');
+                if(!container) return;
+                const widgets = Array.from(container.children);
+                const layout = widgets.map(w => ({
+                    id: w.id,
+                    col: w.style.gridColumn || '',
+                    row: w.style.gridRow || ''
+                }));
+                localStorage.setItem('krono_tv_layout', JSON.stringify(layout));
+            }
+
+            function restoreTVLayout() {
+                const saved = localStorage.getItem('krono_tv_layout');
+                if (saved) {
+                    try {
+                        const layout = JSON.parse(saved);
+                        const container = document.getElementById('tv-grid-container');
+                        if(!container) return;
+                        layout.forEach(item => {
+                             const w = document.getElementById(item.id);
+                             if(w) {
+                                 if(item.col) w.style.gridColumn = item.col;
+                                 if(item.row) w.style.gridRow = item.row;
+                                 container.appendChild(w); // Reordena en el DOM
+                             }
+                        });
+                    } catch(e) { console.error('Error restaurando layout:', e); }
+                }
+            }
+
+            // Restaurar layout antes de inicializar Sortable
+            restoreTVLayout();
+
             // --- INICIALIZAR SMART DASHBOARD (ARRASTRE Y ESCALADO SNAP-TO-GRID) ---
             setTimeout(() => {
                 const tvGrid = document.getElementById('tv-grid-container');
@@ -2771,7 +2806,8 @@
                         handle: '.drag-handle',
                         ghostClass: 'sortable-ghost',
                         dragClass: 'sortable-drag',
-                        easing: "cubic-bezier(0.25, 1, 0.5, 1)"
+                        easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+                        onEnd: saveTVLayout // Guardar al soltar widget
                     });
                 }
 
@@ -2852,6 +2888,9 @@
                         widget.style.boxShadow = "";
                         widget.style.zIndex = "";
                         
+                        // Guardar nuevo tamaño
+                        saveTVLayout();
+                        
                         if(tvData && tvData.lapHistory) {
                             window.drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
                             window.drawTVSpeedGraph(tvData.lapHistory);
@@ -2866,10 +2905,10 @@
             }, 300);
 
             // =========================================================================
-            // FUNCIONES DE RENDERIZADO DE GRÁFICOS TV (MEJORADOS)
+            // FUNCIONES DE RENDERIZADO DE GRÁFICOS TV (MEJORADOS Y ESPECTACULARES)
             // =========================================================================
             
-            // NUEVO: Función Gráfico de Barras Resistente a Errores (Incluso 1 dato)
+            // NUEVO: Función Gráfico de Barras Resistente a Errores (Incluso 1 dato) y Estilo Neón
             window.drawTVBarGraph = function(canvasId, dataPoints, bestIndex, colorHex, bestColorHex) {
                 const canvas = document.getElementById(canvasId);
                 if (!canvas) return;
@@ -2895,42 +2934,70 @@
                 if (range === 0) range = 1;
 
                 const padX = 10;
-                const padY = 20;
+                const padY = 25;
                 const gw = w - padX * 2;
                 const gh = h - padY * 2;
                 
+                // Dibujar cuadrícula sutil de fondo
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.lineWidth = 1;
+                for(let j = 0; j <= 4; j++) {
+                    let gridY = h - padY - (gh / 4) * j;
+                    ctx.beginPath(); ctx.moveTo(padX, gridY); ctx.lineTo(w - padX, gridY); ctx.stroke();
+                }
+                
                 // Calcula el ancho evitando anchos enormes
-                const barW = Math.max(6, Math.min(40, (gw / dataPoints.length) - 4));
-                const totalContentW = dataPoints.length * (barW + 4);
+                const barW = Math.max(8, Math.min(45, (gw / dataPoints.length) - 6));
+                const totalContentW = dataPoints.length * (barW + 6);
                 // Si hay pocos datos, centrarlo dentro del canvas
                 const startX = padX + (gw - totalContentW) / 2; 
                 
                 dataPoints.forEach((val, i) => {
                     const normalizedH = (range === 1 && dataPoints.length === 1) 
                         ? (gh * 0.5) 
-                        : (gh * (1 - (val - minVal) / range) * 0.7 + gh * 0.3); 
+                        : (gh * (1 - (val - minVal) / range) * 0.75 + gh * 0.25); 
                     
-                    const x = startX + i * (barW + 4);
+                    const x = startX + i * (barW + 6);
                     const y = h - padY - normalizedH;
                     
-                    ctx.fillStyle = (i === bestIndex) ? bestColorHex : colorHex;
+                    const isBest = (i === bestIndex);
+                    const mainColor = isBest ? '#34d399' : '#38bdf8'; // Verde Neón o Azul Neón
+                    const darkColor = isBest ? '#064e3b' : '#0f172a';
+                    
+                    // Gradiente de la barra
+                    const grad = ctx.createLinearGradient(0, y, 0, y + normalizedH);
+                    grad.addColorStop(0, mainColor);
+                    grad.addColorStop(1, darkColor);
+                    
+                    // Efecto Neón (Glow)
+                    ctx.shadowColor = mainColor;
+                    ctx.shadowBlur = isBest ? 20 : 10;
+                    ctx.fillStyle = grad;
                     
                     ctx.beginPath();
                     if(ctx.roundRect) {
-                        ctx.roundRect(x, y, barW, normalizedH, [4, 4, 0, 0]);
+                        ctx.roundRect(x, y, barW, normalizedH, [6, 6, 2, 2]);
                     } else {
                         ctx.fillRect(x, y, barW, normalizedH);
                     }
                     ctx.fill();
                     
-                    ctx.fillStyle = '#94a3b8';
-                    ctx.font = 'bold 12px Rajdhani';
+                    // Resetear sombras para el texto y bases
+                    ctx.shadowBlur = 0;
+                    
+                    // Pequeña base brillante
+                    ctx.fillStyle = isBest ? '#10b981' : '#60a5fa';
+                    ctx.fillRect(x, h - padY, barW, 2);
+                    
+                    // Texto
+                    ctx.fillStyle = isBest ? '#a7f3d0' : '#cbd5e1';
+                    ctx.font = isBest ? 'bold 13px Rajdhani' : 'bold 12px Rajdhani';
                     ctx.textAlign = 'center';
                     ctx.fillText(i + 1, x + barW / 2, h - 5);
                 });
             };
 
-            // MEJORADO: Gráfico de Curva (Velocidad) adaptado a 1 solo punto y Resize Responsivo
+            // MEJORADO: Gráfico de Curva (Velocidad) Espectacular con Cuadrícula y Neón
             window.drawSmoothCurve = function(canvasId, dataPoints, colorHex) {
                 const canvas = document.getElementById(canvasId);
                 if (!canvas) return;
@@ -2955,18 +3022,29 @@
                 if (range === 0) range = 1;
 
                 const padX = 15;
-                const padY = 20;
+                const padY = 25;
                 const gw = w - padX * 2;
                 const gh = h - padY * 2;
+                
+                // Dibujar cuadrícula sutil de fondo
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.lineWidth = 1;
+                for(let i = 0; i <= 4; i++) {
+                    let gridY = padY + (gh / 4) * i;
+                    ctx.beginPath(); ctx.moveTo(padX, gridY); ctx.lineTo(w - padX, gridY); ctx.stroke();
+                }
                 
                 // Fallback de seguridad si solo hay 1 dato (Punto central solitario)
                 if (dataPoints.length === 1) {
                     const x = padX + gw / 2;
                     const y = h - padY - (gh * 0.5);
+                    ctx.shadowColor = colorHex;
+                    ctx.shadowBlur = 20;
                     ctx.beginPath();
-                    ctx.arc(x, y, 6, 0, Math.PI * 2);
+                    ctx.arc(x, y, 8, 0, Math.PI * 2);
                     ctx.fillStyle = colorHex;
                     ctx.fill();
+                    ctx.shadowBlur = 0;
                     return;
                 }
 
@@ -2978,7 +3056,7 @@
                     return { x, y, val };
                 });
 
-                // Área Gradient
+                // Área Gradient Reforzado
                 ctx.beginPath();
                 ctx.moveTo(points[0].x, h - padY);
                 ctx.lineTo(points[0].x, points[0].y);
@@ -2993,13 +3071,14 @@
                 ctx.lineTo(points[points.length - 1].x, h - padY);
                 ctx.closePath();
                 
-                const gradient = ctx.createLinearGradient(0, 0, 0, h);
-                gradient.addColorStop(0, colorHex + '80'); 
+                const gradient = ctx.createLinearGradient(0, padY, 0, h - padY);
+                gradient.addColorStop(0, colorHex + '99'); // Más intensidad arriba
+                gradient.addColorStop(0.5, colorHex + '40');
                 gradient.addColorStop(1, colorHex + '00'); 
                 ctx.fillStyle = gradient;
                 ctx.fill();
 
-                // Línea Curvada
+                // Línea Curvada Neón
                 ctx.beginPath();
                 ctx.moveTo(points[0].x, points[0].y);
                 for (let i = 0; i < points.length - 1; i++) {
@@ -3009,19 +3088,26 @@
                     const cp2x = p1.x - (p1.x - p0.x) / 2;
                     ctx.bezierCurveTo(cp1x, p0.y, cp2x, p1.y, p1.x, p1.y);
                 }
+                
+                // Aplicar resplandor brutal a la curva principal
+                ctx.shadowColor = colorHex;
+                ctx.shadowBlur = 15;
                 ctx.strokeStyle = colorHex;
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 4;
                 ctx.lineCap = 'round';
                 ctx.stroke();
                 
-                // Nodos
+                // Reiniciar sombra
+                ctx.shadowBlur = 0;
+                
+                // Nodos remarcados
                 points.forEach(p => {
                     ctx.beginPath();
-                    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-                    ctx.fillStyle = '#0f172a';
+                    ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = '#0f172a'; // Centro oscuro
                     ctx.fill();
-                    ctx.lineWidth = 2;
-                    ctx.strokeStyle = colorHex;
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = '#ffffff'; // Borde blanco
                     ctx.stroke();
                 });
             };
@@ -3038,7 +3124,7 @@
 
             window.drawTVSpeedGraph = function(history) {
                 const speeds = history.map(l => l.speed);
-                // Dibuja Curva segura
+                // Dibuja Curva segura (Amarillo Eléctrico)
                 window.drawSmoothCurve('tv-speed-graph', speeds, '#facc15'); 
             };
 
@@ -3062,8 +3148,16 @@
                 const speeds = history.map(l => l.speed);
                 const deltas = history.map(l => l.delta / 1000);
 
-                const padX = 15; const padY = 20;
+                const padX = 15; const padY = 25;
                 const gw = w - padX * 2; const gh = h - padY * 2;
+
+                // Cuadrícula de fondo
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.lineWidth = 1;
+                for(let i = 0; i <= 4; i++) {
+                    let gridY = padY + (gh / 4) * i;
+                    ctx.beginPath(); ctx.moveTo(padX, gridY); ctx.lineTo(w - padX, gridY); ctx.stroke();
+                }
 
                 const drawLine = (data, colorHex, isDeltaArea) => {
                     if(data.length === 0) return;
@@ -3091,24 +3185,24 @@
                         // Rellenar área hasta abajo
                         ctx.lineTo(data.length > 1 ? padX + (data.length - 1) * stepX : padX + gw / 2, h - padY);
                         ctx.lineTo(padX, h - padY);
-                        ctx.fillStyle = colorHex + '40'; // Opacidad
+                        ctx.fillStyle = colorHex + '60'; // Mayor Opacidad
                         ctx.fill();
                         ctx.strokeStyle = colorHex;
                         ctx.lineWidth = 2;
                         ctx.stroke();
                     } else {
-                        // Línea normal con glow
+                        // Línea normal con brillo espectacular
                         ctx.strokeStyle = colorHex;
-                        ctx.lineWidth = 3;
+                        ctx.lineWidth = 4;
                         ctx.lineCap = 'round';
                         ctx.lineJoin = 'round';
                         ctx.shadowColor = colorHex;
-                        ctx.shadowBlur = 8;
+                        ctx.shadowBlur = 15;
                         ctx.stroke();
                         ctx.shadowBlur = 0; // reset
                     }
 
-                    // Nodos
+                    // Nodos brillantes
                     data.forEach((val, i) => {
                         const x = data.length > 1 ? padX + i * stepX : padX + gw / 2;
                         const mappedH = isDeltaArea ? (gh * 0.4) : gh;
@@ -3116,8 +3210,8 @@
                         const y = h - padY - ((val - min) / range) * mappedH - yOffset;
                         
                         ctx.beginPath();
-                        ctx.arc(x, y, isDeltaArea ? 2 : 4, 0, Math.PI * 2);
-                        ctx.fillStyle = '#0f172a';
+                        ctx.arc(x, y, isDeltaArea ? 3 : 5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#ffffff';
                         ctx.fill();
                         ctx.lineWidth = 2;
                         ctx.strokeStyle = colorHex;
