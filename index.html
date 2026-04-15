@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KronoPersonal - Acceso Oficial</title>
+    <title>Krono Personal TV - Acceso Oficial</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -101,7 +101,7 @@
         <div class="chrome-panel p-8 rounded-2xl max-w-sm text-center border-red-500/50">
             <i class="fas fa-user-shield text-4xl text-red-400 mb-4"></i>
             <h3 class="text-xl font-bold text-white mb-2">Sesión Finalizada</h3>
-            <p class="text-sm text-slate-300 mb-6">Se ha detectado un inicio de sesión en otro dispositivo.</p>
+            <p class="text-sm text-slate-300 mb-6">Se ha detectado un inicio de sesión en este modo desde otro dispositivo.</p>
             <button onclick="location.reload()" class="btn-silver w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest">
                 Entendido
             </button>
@@ -111,7 +111,7 @@
     <div id="auth-container" class="min-h-screen flex flex-col items-center justify-center p-4 md:p-6">
         
         <div class="text-center mb-8 md:mb-10 mt-4">
-            <h1 class="text-3xl md:text-4xl font-black tracking-tighter silver-text uppercase">KRONO PERSONAL</h1>
+            <h1 class="text-3xl md:text-4xl font-black tracking-tighter silver-text uppercase">KRONO PERSONAL TV</h1>
             <div class="h-1 w-20 md:w-24 bg-gradient-to-r from-transparent via-slate-300 to-transparent mx-auto mt-1"></div>
             <p class="text-slate-400 text-[9px] md:text-[10px] uppercase tracking-[0.3em] mt-2 font-bold">Silver Edition / Gestión de Slot</p>
         </div>
@@ -141,20 +141,20 @@
                     </h2>
                     
                     <p class="text-slate-800 text-sm mb-6 leading-relaxed font-medium">
-                        Tecnología de precisión para Slot. Un solo pago de 5€, control total de por vida.
+                        Tecnología de precisión para Slot. Un solo pago de 10€, control total de por vida.
                     </p>
 
                     <div class="bg-white/30 rounded-2xl p-5 border border-white/40 mb-6">
                         <ul class="text-xs space-y-3 text-slate-900 font-bold">
                             <li class="flex items-center"><i class="fas fa-check-circle mr-2 text-slate-700"></i> Solicita acceso vía Email</li>
-                            <li class="flex items-center"><i class="fas fa-check-circle mr-2 text-slate-700"></i> Pago único de 5,00€</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle mr-2 text-slate-700"></i> Pago único de 10,00€</li>
                             <li class="flex items-center"><i class="fas fa-check-circle mr-2 text-slate-700"></i> Activación inmediata</li>
                         </ul>
                     </div>
                 </div>
 
                 <a id="mail-link" href="#" class="block w-full bg-slate-900 hover:bg-black text-white font-black py-4 rounded-xl text-center shadow-2xl transition duration-300 transform hover:scale-[1.02] text-sm tracking-widest uppercase">
-                    SOLICITAR AHORA (5€)
+                    SOLICITAR AHORA (10€)
                 </a>
             </div>
 
@@ -177,6 +177,15 @@
                             class="w-full input-metallic rounded-xl p-4 text-center tracking-[0.5em] uppercase font-mono text-sm"
                             placeholder="XXX-XXX">
                     </div>
+
+                    <!-- NUEVO: SELECTOR DE DISPOSITIVO -->
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-300 uppercase mb-2 tracking-widest">Uso de este dispositivo</label>
+                        <select id="device-role" class="w-full input-metallic rounded-xl p-4 text-sm font-bold uppercase cursor-pointer">
+                            <option value="sensor">📱 Mando (Usar Cámara)</option>
+                            <option value="tv">📺 Pantalla (Recibir TV)</option>
+                        </select>
+                    </div>
                     
                     <div id="msg-box" class="hidden p-3 rounded-xl text-xs text-center font-bold break-words"></div>
 
@@ -188,7 +197,7 @@
         </div>
         
         <p class="mt-12 text-[9px] text-slate-500 text-center max-w-lg uppercase tracking-[0.2em] font-medium">
-            KronoPersonal Silver v2.0 <span class="mx-2">|</span> slotcarhome@gmail.com
+            Krono Personal TV v2.0 <span class="mx-2">|</span> slotcarhome@gmail.com
         </p>
     </div>
 
@@ -214,23 +223,21 @@
         };
         
         const ADMIN_EMAIL = "slotcarhome@gmail.com"; 
-        const APP_FILENAME = "kronopersonal.html";
-        const APP_ID = "app_krono";
+        const APP_FILENAME = "kronoper-tv.html";
+        const APP_ID = "app_krono_tv";
 
         // Inicialización segura
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        // Autenticación silenciosa (importante para evitar errores en local)
+        // Autenticación silenciosa
         signInAnonymously(auth).catch(err => console.warn("Aviso: Autenticación limitada en local.", err));
 
         const mailLink = document.getElementById('mail-link');
         const emailInput = document.getElementById('email');
         let unsubscribeSession = null;
 
-        // --- SOLUCIÓN PARA EJECUCIÓN LOCAL ---
-        // Esta función manual reemplaza a crypto.randomUUID() para que funcione sin HTTPS/Servidor
         function generateUUID() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -240,14 +247,14 @@
         
         function updateMailLink() {
             const userEmail = emailInput.value || "[tu correo]";
-            const subject = "Interés Licencia KronoPersonal Plata";
-            const body = `Hola, equipo de SLOTCARHOME,%0D%0A%0D%0AEstoy interesado en adquirir la licencia de KronoPersonal por el Precio de 5 Euros%0D%0A%0D%0AQuedo a la espera de sus instrucciones para proceder con el pago.%0D%0A%0D%0AGracias y un saludo.`;
+            const subject = "Interés Licencia Krono Personal TV";
+            const body = `Hola, equipo de SLOTCARHOME,%0D%0A%0D%0AEstoy interesado en adquirir la licencia de Krono Personal TV por el Precio de 10 Euros.%0D%0A%0D%0AQuedo a la espera de sus instrucciones para proceder con el pago.%0D%0A%0D%0AGracias y un saludo.`;
             mailLink.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
         }
         emailInput.addEventListener('input', updateMailLink);
         updateMailLink();
 
-        // --- TRACKING DE CLICS ---
+        // Tracking clics
         mailLink.addEventListener('click', async () => {
             try {
                 const statsRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'stats');
@@ -256,15 +263,16 @@
                     last_click: new Date().toISOString()
                 }, { merge: true });
             } catch (e) {
-                console.warn("Click no registrado (Posible bloqueo local)", e);
+                console.warn("Click no registrado", e);
             }
         });
 
-        // --- SISTEMA DE LOGIN Y PROTECCIÓN ---
+        // --- SISTEMA DE LOGIN DUAL (SENSOR / TV) ---
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = emailInput.value.toLowerCase().trim();
             const code = document.getElementById('code').value.trim();
+            const deviceRole = document.getElementById('device-role').value;
             const btn = document.getElementById('btn-login');
             
             btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>'; btn.disabled = true;
@@ -282,13 +290,15 @@
                     if(userData.active === false) {
                         showMessage("⛔ LICENCIA NO ACTIVA", "error");
                     } else { 
-                        // 2. Protección de Sesión (Escritura segura con fallback)
+                        // 2. Protección de Sesión Separada
                         try {
-                            const sessionId = generateUUID(); // Usamos la función manual segura
+                            const sessionId = generateUUID();
+                            const sessionField = deviceRole === 'tv' ? 'current_session_tv' : 'current_session_sensor';
+                            
                             const docRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'access_codes', docSnap.id);
 
                             await updateDoc(docRef, { 
-                                current_session: sessionId,
+                                [sessionField]: sessionId,
                                 last_login: new Date().toISOString()
                             });
 
@@ -296,14 +306,14 @@
                             localStorage.setItem('user_' + APP_ID, email);
                             localStorage.setItem('doc_id_' + APP_ID, docSnap.id);
                             localStorage.setItem('session_' + APP_ID, sessionId);
+                            localStorage.setItem('role_' + APP_ID, deviceRole);
 
                             monitorSession(docSnap.id);
                             showApp(); 
                         } catch (writeError) {
                             console.error("Error escritura (Local):", writeError);
-                            // Si falla la protección por ser local, permitimos entrar pero avisamos en consola
-                            console.warn("Entrando en modo sin protección de sesión (Fallo de escritura DB)");
                             localStorage.setItem('user_' + APP_ID, email);
+                            localStorage.setItem('role_' + APP_ID, deviceRole);
                             showApp(); 
                         }
                     }
@@ -324,7 +334,10 @@
                 unsubscribeSession = onSnapshot(docRef, (docSnap) => {
                     const data = docSnap.data();
                     const localSession = localStorage.getItem('session_' + APP_ID);
-                    if (data && data.current_session && data.current_session !== localSession) {
+                    const role = localStorage.getItem('role_' + APP_ID) || 'sensor';
+                    const sessionField = role === 'tv' ? 'current_session_tv' : 'current_session_sensor';
+
+                    if (data && data[sessionField] && data[sessionField] !== localSession) {
                         forceLogout();
                     }
                 }, (error) => { console.warn("Monitor desconectado:", error); });
@@ -340,7 +353,12 @@
 
         function showApp() {
             document.getElementById('auth-container').style.display = 'none';
-            document.getElementById('app-frame').src = APP_FILENAME;
+            const role = localStorage.getItem('role_' + APP_ID);
+            
+            // Si elige TV, se le manda directamente al Dashboard del programa
+            const targetUrl = role === 'tv' ? `${APP_FILENAME}?tv=true` : APP_FILENAME;
+            
+            document.getElementById('app-frame').src = targetUrl;
             document.getElementById('app-frame').style.display = 'block';
             document.getElementById('logout-btn').classList.remove('hidden');
         }
@@ -350,6 +368,7 @@
             localStorage.removeItem('user_' + APP_ID); 
             localStorage.removeItem('session_' + APP_ID);
             localStorage.removeItem('doc_id_' + APP_ID);
+            localStorage.removeItem('role_' + APP_ID);
             document.getElementById('app-frame').src = 'about:blank';
         }
 
@@ -358,6 +377,7 @@
             localStorage.removeItem('user_' + APP_ID); 
             localStorage.removeItem('session_' + APP_ID);
             localStorage.removeItem('doc_id_' + APP_ID);
+            localStorage.removeItem('role_' + APP_ID);
             location.reload(); 
         }
 
@@ -371,6 +391,3 @@
     </script>
 </body>
 </html>
-
-
-
