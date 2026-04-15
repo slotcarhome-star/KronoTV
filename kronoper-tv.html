@@ -359,7 +359,7 @@
         .tv-bg {
             background-color: #0b0f19;
             background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 50%, #020617 100%);
-            transition: filter 0.5s ease-in-out; /* Para la metamorfosis IA */
+            transition: filter 0.5s ease-in-out; 
         }
         
         .tv-panel {
@@ -504,6 +504,11 @@
                         <span class="text-[11px] font-bold uppercase tracking-wider" data-i18n="history">Historial</span>
                     </button>
                     
+                    <button id="fullscreen-btn" class="flex items-center text-gray-500 hover:text-black transition-colors px-3 py-1.5 rounded-full hover:bg-gray-200 border border-transparent hover:border-gray-300 group shadow-sm" title="Pantalla Completa">
+                         <svg id="fs-icon-enter" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                         <svg id="fs-icon-exit" class="hidden lucide lucide-minimize" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+                    </button>
+
                     <button id="ranking-btn" class="flex items-center text-green-600 hover:text-green-800 transition-colors px-3 py-1.5 rounded-full hover:bg-green-100 border border-transparent hover:border-green-300 group shadow-sm" title="Ranking Global">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5">
                             <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
@@ -534,11 +539,6 @@
                             <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
                         </svg>
                         <span class="text-[11px] font-bold uppercase tracking-wider">Telemetría TV</span>
-                    </button>
-
-                    <button id="fullscreen-btn" class="flex items-center text-gray-500 hover:text-black transition-colors px-3 py-1.5 rounded-full hover:bg-gray-200 border border-transparent hover:border-gray-300 group shadow-sm" title="Pantalla Completa">
-                         <svg id="fs-icon-enter" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
-                         <svg id="fs-icon-exit" class="hidden lucide lucide-minimize" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
                     </button>
                 </div>
             </div>
@@ -1105,7 +1105,7 @@
                 </div>
             </div>
 
-            <!-- WIDGET 8: GRÁFICO DE TIEMPOS -->
+            <!-- WIDGET 8: GRÁFICO DE TIEMPOS (AHORA DE BARRAS) -->
             <div id="w-graph" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
@@ -1114,12 +1114,12 @@
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
                 <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
-                    <span class="cq-text-xs text-cyan-400 font-rajdhani font-bold uppercase tracking-widest mb-1 z-10">Curva de Tiempos (S)</span>
+                    <span class="cq-text-xs text-cyan-400 font-rajdhani font-bold uppercase tracking-widest mb-1 z-10">Gráfico de Tiempos (S)</span>
                     <canvas id="tv-lap-graph" class="w-full flex-1 mt-2"></canvas>
                 </div>
             </div>
 
-            <!-- NUEVO WIDGET: GRÁFICO DE VELOCIDAD -->
+            <!-- NUEVO WIDGET: GRÁFICO DE VELOCIDAD (CURVA SUAVE) -->
             <div id="w-speed-graph" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
@@ -1331,17 +1331,12 @@
         let isTVMode = false;
         let cloudRoomCode = null;
         
-        // --- NUEVAS GLOBALES PARA IA THEME ---
-        window.tvGraphType = 'bar'; // 'bar', 'area', 'line', 'laser'
-        
         const kronoChannel = new BroadcastChannel('krono_telemetry_channel');
 
-        // Generar el código de sala único para este dispositivo móvil (una vez por recarga)
-        // NUEVO: Si venimos del portal (index.html), usamos el ID de la licencia como sala automática.
+        // Generar el código de sala único para este dispositivo móvil
         const portalDocId = localStorage.getItem('doc_id_app_krono_tv');
         window.myRoomCode = portalDocId ? portalDocId : Math.random().toString(36).substring(2, 6).toUpperCase();
 
-        // Ocultar App y mostrar TV si estamos en modo TV
         if (isTVMode) {
             document.getElementById('main-app-container').style.display = 'none';
             document.getElementById('tv-dashboard').classList.remove('hidden');
@@ -1352,304 +1347,67 @@
         // --- TRADUCCIONES ---
         const translations = {
             es: {
-                langLabel: "Idioma / Language",
-                history: "Historial",
-                tvMode: "TV",
-                tvSetupTitle: "Conectar Pantalla TV",
-                tvLocalTitle: "Monitor Físico (Cable)",
-                tvLocalDesc: "Abrir ventana sin internet para arrastrar a segundo monitor.",
-                tvCloudTitle: "1. Smart TV Inalámbrica (Nube)",
-                tvCloudStep1: "Abre esta web en el navegador de tu Smart TV e introduce este código:",
-                tvReceivePrompt: "¿Estás en la Smart TV ahora mismo?",
-                pilotDataTitle: "Datos Piloto y Pista",
-                pilotName: "Nombre del Piloto",
-                carModel: "Modelo del Coche",
-                trackLength: "Longitud Pista (m)",
-                raceMode: "Modo de Carrera",
-                modeLaps: "Por Vueltas",
-                modeTime: "Por Tiempo",
-                lapLimit: "Límite Vueltas",
-                timeLimit: "Tiempo Límite",
-                limitLabel: "Límite",
-                safetyTime: "Tiempo de Seguridad (Anti-Rebote)",
-                shadowFilter: "Filtro Anti-Sombras (TrueColor):",
-                audioSettings: "Ajustes de Audio",
-                engineerVoice: "Voz Ingeniero:",
-                lapTone: "Tono de Vuelta",
-                aiSens: "Sensibilidad IA",
-                sensAdjust: "Ajuste de Sensibilidad Fija",
-                dynamicAILabel: "IA Adaptativa Continua:",
-                marginAdjust: "Margen de Seguridad IA",
-                verySens: "Muy Sensible (5)",
-                lessSens: "Poco Sensible (100)",
-                autoCalibHelp: "Usa \"Auto Calibrar\" para que la IA decida el mejor valor por ti.",
-                raceTime: "TIEMPO CARRERA",
-                laps: "VUELTAS",
-                start: "INICIAR",
-                reset: "REINICIAR",
-                videoTitle: "Sensor de Pista (Fotodetector)",
-                autoCalib: "Auto Calibrar",
-                newRecord: "¡NUEVO RÉCORD!",
-                calibrating: "Calibrando...",
-                clearTrack: "Despeja la pista",
-                falseStart: "¡SALIDA NULA!",
-                penalty: "Penalización aplicada",
-                camLoading: "Cargando cámara...",
-                telemetry: "Telemetría",
-                pilotCar: "PILOTO / COCHE",
-                lastLap: "ÚLTIMA VUELTA",
-                bestLap: "MEJOR VUELTA",
-                avgTime: "TIEMPO MEDIO",
-                avgSpeed: "VELOCIDAD MEDIA (Km/h)",
-                maxSpeed: "VELOCIDAD MÁXIMA (Km/h)",
-                consistency: "CONSISTENCIA",
-                lastDelta: "DELTA (ÚLT. VUELTA)",
-                delta: "DELTA",
-                timeGraph: "Gráfica de Tiempos",
-                noData: "Sin datos",
-                raceFinished: "¡Carrera Finalizada!",
-                totalTime: "Tiempo Total",
-                avg: "Media",
-                avgSpeedSimple: "Vel. Media",
-                lapDetail: "Detalle de Vueltas",
-                time: "Tiempo",
-                restartFull: "VOLVER A EMPEZAR",
-                exportExcel: "Exportar a Excel (.csv)",
-                historyTitle: "Historial de Carreras",
-                date: "FECHA",
-                noHistory: "No hay carreras registradas aún.",
-                clearHistory: "Borrar Historial",
-                clearHistoryQ: "¿Borrar Historial?",
-                cannotUndo: "Esta acción no se puede deshacer.",
-                cancel: "Cancelar",
-                yesClear: "Sí, Borrar",
-                pause: "PAUSA",
-                resume: "REANUDAR",
-                yellowFlag: "BANDERA AMARILLA",
-                racePaused: "CARRERA PAUSADA",
-                leaderboard: "Ranking",
-                globalRanking: "Ranking Global",
-                noRecords: "Aún no hay récords mundiales.",
-                pos: "POS",
-                track: "PISTA",
-                "5laps": "5 Vueltas", "10laps": "10 Vueltas", "25laps": "25 Vueltas", "50laps": "50 Vueltas", "infinite": "Infinito",
-                "1sec": "1 Segundo (Pistas muy cortas)", "3sec": "3 Segundos (Estándar)", "5sec": "5 Segundos (Pistas largas)", "10sec": "10 Segundos (Circuitos enormes)",
-                "beepClassic": "Beep Clásico (600 Hz)", "toneLow": "Tono Grave (400 Hz)", "beepHigh": "Beep Agudo (900 Hz)", "toneShort": "Pito Corto (1200 Hz)",
-                voiceCalibrated: "Sensores calibrados.",
-                voiceFalseStart: "¡Salida Nula!",
-                voiceFinished: "Carrera finalizada.",
-                voiceLap: "Vuelta",
-                voicePoint: "punto",
-                voiceFastest: "¡Vuelta rápida!",
-                voiceRemaining: "Quedan",
-                voiceLaps: "vueltas",
-                voiceLastLap: "¡Última vuelta!",
-                camActive: "Cámara Activa",
-                camError: "Error Cámara",
-                testWait: "WAIT...",
-                testGo: "GO!",
-                testOk: "TEST OK",
-                obs: "OBSTRUCCIÓN"
+                langLabel: "Idioma / Language", history: "Historial", tvMode: "TV", tvSetupTitle: "Conectar Pantalla TV",
+                pilotDataTitle: "Datos Piloto y Pista", pilotName: "Nombre del Piloto", carModel: "Modelo del Coche", trackLength: "Longitud Pista (m)",
+                raceMode: "Modo de Carrera", modeLaps: "Por Vueltas", modeTime: "Por Tiempo", lapLimit: "Límite Vueltas", timeLimit: "Tiempo Límite", limitLabel: "Límite",
+                safetyTime: "Tiempo de Seguridad (Anti-Rebote)", audioSettings: "Ajustes de Audio", engineerVoice: "Voz Ingeniero:", lapTone: "Tono de Vuelta",
+                raceTime: "TIEMPO CARRERA", laps: "VUELTAS", start: "INICIAR", reset: "REINICIAR", videoTitle: "Sensor de Pista (Fotodetector)",
+                newRecord: "¡NUEVO RÉCORD!", calibrating: "Calibrando...", clearTrack: "Despeja la pista", falseStart: "¡SALIDA NULA!", penalty: "Penalización aplicada",
+                camLoading: "Cargando cámara...", telemetry: "Telemetría", pilotCar: "PILOTO / COCHE", lastLap: "ÚLTIMA VUELTA", bestLap: "MEJOR VUELTA",
+                avgTime: "TIEMPO MEDIO", avgSpeed: "VELOCIDAD MEDIA (Km/h)", maxSpeed: "VELOCIDAD MÁXIMA (Km/h)", consistency: "CONSISTENCIA",
+                lastDelta: "DELTA (ÚLT. VUELTA)", timeGraph: "Gráfica de Tiempos", noData: "Sin datos", raceFinished: "¡Carrera Finalizada!", totalTime: "Tiempo Total",
+                avgSpeedSimple: "Vel. Media", lapDetail: "Detalle de Vueltas", time: "Tiempo", delta: "Delta", restartFull: "VOLVER A EMPEZAR", exportExcel: "Exportar a Excel (.csv)",
+                historyTitle: "Historial de Carreras", date: "FECHA", noHistory: "No hay carreras registradas aún.", clearHistory: "Borrar Historial",
+                clearHistoryQ: "¿Borrar Historial?", cannotUndo: "Esta acción no se puede deshacer.", cancel: "Cancelar", yesClear: "Sí, Borrar", pause: "PAUSA",
+                resume: "REANUDAR", yellowFlag: "BANDERA AMARILLA", racePaused: "CARRERA PAUSADA", leaderboard: "Ranking", globalRanking: "Ranking Global",
+                noRecords: "Aún no hay récords mundiales.", pos: "POS", track: "PISTA", "5laps": "5 Vueltas", "10laps": "10 Vueltas", "25laps": "25 Vueltas",
+                "50laps": "50 Vueltas", "infinite": "Infinito", "1sec": "1 Segundo (Pistas muy cortas)", "3sec": "3 Segundos (Estándar)", "5sec": "5 Segundos (Pistas largas)",
+                "10sec": "10 Segundos (Circuitos enormes)", "beepClassic": "Beep Clásico (600 Hz)", "toneLow": "Tono Grave (400 Hz)", "beepHigh": "Beep Agudo (900 Hz)",
+                "toneShort": "Pito Corto (1200 Hz)", voiceCalibrated: "Sensores calibrados.", voiceFalseStart: "¡Salida Nula!", voiceFinished: "Carrera finalizada.",
+                voiceLap: "Vuelta", voicePoint: "punto", voiceFastest: "¡Vuelta rápida!", voiceRemaining: "Quedan", voiceLaps: "vueltas", voiceLastLap: "¡Última vuelta!",
+                camActive: "Cámara Activa", camError: "Error Cámara", testWait: "WAIT...", testGo: "GO!", testOk: "TEST OK", obs: "OBSTRUCCIÓN"
             },
             en: {
-                langLabel: "Language / Idioma",
-                history: "History",
-                tvMode: "TV",
-                tvSetupTitle: "Connect TV Screen",
-                tvLocalTitle: "Wired Monitor (HDMI)",
-                tvLocalDesc: "Opens a new window to drag to a physically connected monitor.",
-                tvCloudTitle: "1. Wireless Smart TV (Cloud)",
-                tvCloudStep1: "Open this website on your Smart TV browser and enter this code:",
-                tvReceivePrompt: "Are you on the Smart TV right now?",
-                pilotDataTitle: "Pilot & Track Data",
-                pilotName: "Driver Name",
-                carModel: "Car Model",
-                trackLength: "Track Length (m)",
-                raceMode: "Race Mode",
-                modeLaps: "By Laps",
-                modeTime: "By Time",
-                lapLimit: "Lap Limit",
-                timeLimit: "Time Limit",
-                limitLabel: "Limit",
-                safetyTime: "Safety Time (Debounce)",
-                shadowFilter: "Shadow Filter (TrueColor):",
-                audioSettings: "Audio Settings",
-                engineerVoice: "Engineer Voice:",
-                lapTone: "Lap Tone",
-                aiSens: "AI Sensitivity",
-                sensAdjust: "Fixed Sensitivity Adjustment",
-                dynamicAILabel: "Continuous Adaptive AI:",
-                marginAdjust: "AI Safety Margin",
-                verySens: "Very Sensitive (5)",
-                lessSens: "Less Sensitive (100)",
-                autoCalibHelp: "Use \"Auto Calibrate\" to let AI decide the best value.",
-                raceTime: "RACE TIME",
-                laps: "LAPS",
-                start: "START",
-                reset: "RESET",
-                videoTitle: "Track Sensor (Photodetector)",
-                autoCalib: "Auto Calibrate",
-                newRecord: "NEW RECORD!",
-                calibrating: "Calibrating...",
-                clearTrack: "Clear the track",
-                falseStart: "FALSE START!",
-                penalty: "Penalty applied",
-                camLoading: "Loading camera...",
-                telemetry: "Telemetry",
-                pilotCar: "DRIVER / CAR",
-                lastLap: "LAST LAP",
-                bestLap: "BEST LAP",
-                avgTime: "AVERAGE TIME",
-                avgSpeed: "AVG SPEED (Km/h)",
-                maxSpeed: "MAX SPEED (Km/h)",
-                consistency: "CONSISTENCY",
-                lastDelta: "DELTA (LAST LAP)",
-                delta: "DELTA",
-                timeGraph: "Lap Graph",
-                noData: "No data",
-                raceFinished: "Race Finished!",
-                totalTime: "Total Time",
-                avg: "Average",
-                avgSpeedSimple: "Avg Speed",
-                lapDetail: "Lap Details",
-                time: "Time",
-                restartFull: "RESTART RACE",
-                exportExcel: "Export to Excel (.csv)",
-                historyTitle: "Race History",
-                date: "DATE",
-                noHistory: "No races recorded yet.",
-                clearHistory: "Clear History",
-                clearHistoryQ: "Clear History?",
-                cannotUndo: "This action cannot be undone.",
-                cancel: "Cancel",
-                yesClear: "Yes, Clear",
-                pause: "PAUSE",
-                resume: "RESUME",
-                yellowFlag: "YELLOW FLAG",
-                racePaused: "RACE PAUSED",
-                leaderboard: "Ranking",
-                globalRanking: "Global Ranking",
-                noRecords: "No global records yet.",
-                pos: "POS",
-                track: "TRACK",
-                "5laps": "5 Laps", "10laps": "10 Laps", "25laps": "25 Laps", "50laps": "50 Laps", "infinite": "Infinite",
-                "1sec": "1 Second (Short tracks)", "3sec": "3 Seconds (Standard)", "5sec": "5 Seconds (Long tracks)", "10sec": "10 Seconds (Huge tracks)",
-                "beepClassic": "Classic Beep (600 Hz)", "toneLow": "Low Tone (400 Hz)", "beepHigh": "High Beep (900 Hz)", "toneShort": "Short Whistle (1200 Hz)",
-                voiceCalibrated: "Sensors calibrated.",
-                voiceFalseStart: "False Start!",
-                voiceFinished: "Race finished.",
-                voiceLap: "Lap",
-                voicePoint: "point",
-                voiceFastest: "Fastest lap!",
-                voiceRemaining: "Remaining",
-                voiceLaps: "laps",
-                voiceLastLap: "Final lap!",
-                camActive: "Camera Active",
-                camError: "Camera Error",
-                testWait: "WAIT...",
-                testGo: "GO!",
-                testOk: "TEST OK",
-                obs: "OBSTRUCTION"
+                langLabel: "Language / Idioma", history: "History", tvMode: "TV", tvSetupTitle: "Connect TV Screen",
+                pilotDataTitle: "Pilot & Track Data", pilotName: "Driver Name", carModel: "Car Model", trackLength: "Track Length (m)",
+                raceMode: "Race Mode", modeLaps: "By Laps", modeTime: "By Time", lapLimit: "Lap Limit", timeLimit: "Time Limit", limitLabel: "Limit",
+                safetyTime: "Safety Time (Debounce)", audioSettings: "Audio Settings", engineerVoice: "Engineer Voice:", lapTone: "Lap Tone",
+                raceTime: "RACE TIME", laps: "LAPS", start: "START", reset: "RESET", videoTitle: "Track Sensor (Photodetector)",
+                newRecord: "NEW RECORD!", calibrating: "Calibrating...", clearTrack: "Clear the track", falseStart: "FALSE START!", penalty: "Penalty applied",
+                camLoading: "Loading camera...", telemetry: "Telemetry", pilotCar: "DRIVER / CAR", lastLap: "LAST LAP", bestLap: "BEST LAP",
+                avgTime: "AVERAGE TIME", avgSpeed: "AVG SPEED (Km/h)", maxSpeed: "MAX SPEED (Km/h)", consistency: "CONSISTENCY",
+                lastDelta: "DELTA (LAST LAP)", timeGraph: "Lap Graph", noData: "No data", raceFinished: "Race Finished!", totalTime: "Total Time",
+                avgSpeedSimple: "Avg Speed", lapDetail: "Lap Details", time: "Time", delta: "Delta", restartFull: "RESTART RACE", exportExcel: "Export to Excel (.csv)",
+                historyTitle: "Race History", date: "DATE", noHistory: "No races recorded yet.", clearHistory: "Clear History",
+                clearHistoryQ: "Clear History?", cannotUndo: "This action cannot be undone.", cancel: "Cancel", yesClear: "Yes, Clear", pause: "PAUSE",
+                resume: "RESUME", yellowFlag: "YELLOW FLAG", racePaused: "RACE PAUSED", leaderboard: "Ranking", globalRanking: "Global Ranking",
+                noRecords: "No global records yet.", pos: "POS", track: "TRACK", "5laps": "5 Laps", "10laps": "10 Laps", "25laps": "25 Laps",
+                "50laps": "50 Laps", "infinite": "Infinite", "1sec": "1 Second (Short tracks)", "3sec": "3 Seconds (Standard)", "5sec": "5 Seconds (Long tracks)",
+                "10sec": "10 Seconds (Huge tracks)", "beepClassic": "Classic Beep (600 Hz)", "toneLow": "Low Tone (400 Hz)", "beepHigh": "High Beep (900 Hz)",
+                "toneShort": "Short Whistle (1200 Hz)", voiceCalibrated: "Sensors calibrated.", voiceFalseStart: "False Start!", voiceFinished: "Race finished.",
+                voiceLap: "Lap", voicePoint: "point", voiceFastest: "Fastest lap!", voiceRemaining: "Remaining", voiceLaps: "laps", voiceLastLap: "Final lap!",
+                camActive: "Camera Active", camError: "Camera Error", testWait: "WAIT...", testGo: "GO!", testOk: "TEST OK", obs: "OBSTRUCTION"
             },
             fr: {
-                langLabel: "Langue / Language",
-                history: "Historique",
-                tvMode: "TV",
-                tvSetupTitle: "Connecter Écran TV",
-                tvLocalTitle: "Moniteur Filaire (HDMI)",
-                tvLocalDesc: "Ouvre une nouvelle fenêtre à glisser vers un moniteur connecté physiquement.",
-                tvCloudTitle: "1. Smart TV Sans Fil (Cloud)",
-                tvCloudStep1: "Ouvrez ce site Web sur le navigateur de votre Smart TV et entrez ce code:",
-                tvReceivePrompt: "Êtes-vous sur la Smart TV en ce moment?",
-                pilotDataTitle: "Données Pilote & Piste",
-                pilotName: "Nom du Pilote",
-                carModel: "Modèle de Voiture",
-                trackLength: "Longueur Piste (m)",
-                raceMode: "Mode de Course",
-                modeLaps: "Par Tours",
-                modeTime: "Par Temps",
-                lapLimit: "Limite de Tours",
-                timeLimit: "Temps Limite",
-                limitLabel: "Limite",
-                safetyTime: "Temps de Sécurité (Anti-Rebond)",
-                shadowFilter: "Filtre Anti-Ombres (TrueColor):",
-                audioSettings: "Paramètres Audio",
-                engineerVoice: "Voix Ingénieur:",
-                lapTone: "Bip de Tour",
-                aiSens: "Sensibilité IA",
-                sensAdjust: "Réglage Sensibilité Fixe",
-                dynamicAILabel: "IA Adaptative Continue:",
-                marginAdjust: "Marge de Sécurité IA",
-                verySens: "Très Sensible (5)",
-                lessSens: "Peu Sensible (100)",
-                autoCalibHelp: "Utilisez \"Calibrage Auto\" pour laisser l'IA décider.",
-                raceTime: "TEMPS COURSE",
-                laps: "TOURS",
-                start: "DÉMARRER",
-                reset: "RÉINITIALISER",
-                videoTitle: "Capteur de Piste (Photodétecteur)",
-                autoCalib: "Calibrage Auto",
-                newRecord: "NOUVEAU RECORD !",
-                calibrating: "Calibrage...",
-                clearTrack: "Dégagez la piste",
-                falseStart: "FAUX DÉPART !",
-                penalty: "Pénalité appliquée",
-                camLoading: "Chargement caméra...",
-                telemetry: "Télémétrie",
-                pilotCar: "PILOTE / VOITURE",
-                lastLap: "DERNIER TOUR",
-                bestLap: "MEILLEUR TOUR",
-                avgTime: "TEMPS MOYEN",
-                avgSpeed: "VITESSE MOYENNE (Km/h)",
-                maxSpeed: "VITESSE MAX (Km/h)",
-                consistency: "RÉGULARITÉ",
-                lastDelta: "DELTA (DERNIER TOUR)",
-                delta: "DELTA",
-                timeGraph: "Graphique des Temps",
-                noData: "Pas de données",
-                raceFinished: "Course Terminée !",
-                totalTime: "Temps Total",
-                avg: "Moyenne",
-                avgSpeedSimple: "Vit. Moyenne",
-                lapDetail: "Détail des Tours",
-                time: "Temps",
-                restartFull: "RECOMMENCER",
-                exportExcel: "Exporter vers Excel (.csv)",
-                historyTitle: "Historique des Courses",
-                date: "DATE",
-                noHistory: "Aucune course enregistrée.",
-                clearHistory: "Effacer l'historique",
-                clearHistoryQ: "Effacer l'historique ?",
-                cannotUndo: "Cette action est irréversible.",
-                cancel: "Annuler",
-                yesClear: "Oui, Effacer",
-                pause: "PAUSE",
-                resume: "REPRENDRE",
-                yellowFlag: "DRAPEAU JAUNE",
-                racePaused: "COURSE PAUSÉE",
-                leaderboard: "Classement",
-                globalRanking: "Classement Mondial",
-                noRecords: "Aucun record mondial pour le moment.",
-                pos: "POS",
-                track: "PISTE",
-                "5laps": "5 Tours", "10laps": "10 Tours", "25laps": "25 Tours", "50laps": "50 Tours", "infinite": "Infini",
-                "1sec": "1 Seconde (Pistes courtes)", "3sec": "3 Secondes (Standard)", "5sec": "5 Secondes (Pistes longues)", "10sec": "10 Secondes (Pistes énormes)",
-                "beepClassic": "Bip Classique (600 Hz)", "toneLow": "Ton Grave (400 Hz)", "beepHigh": "Bip Aigu (900 Hz)", "toneShort": "Sifflet Court (1200 Hz)",
-                voiceCalibrated: "Capteurs calibrés.",
-                voiceFalseStart: "Faux départ !",
-                voiceFinished: "Course terminée.",
-                voiceLap: "Tour",
-                voicePoint: "virgule",
-                voiceFastest: "Meilleur tour !",
-                voiceRemaining: "Restant",
-                voiceLaps: "tours",
-                voiceLastLap: "Dernier tour !",
-                camActive: "Caméra Active",
-                camError: "Erreur Caméra",
-                testWait: "WAIT...",
-                testGo: "GO!",
-                testOk: "TEST OK",
-                obs: "OBSTRUCCIÓN"
+                langLabel: "Langue / Language", history: "Historique", tvMode: "TV", tvSetupTitle: "Connecter Écran TV",
+                pilotDataTitle: "Données Pilote & Piste", pilotName: "Nom du Pilote", carModel: "Modèle de Voiture", trackLength: "Longueur Piste (m)",
+                raceMode: "Mode de Course", modeLaps: "Par Tours", modeTime: "Par Temps", lapLimit: "Limite de Tours", timeLimit: "Temps Limite", limitLabel: "Limite",
+                safetyTime: "Temps de Sécurité (Anti-Rebond)", audioSettings: "Paramètres Audio", engineerVoice: "Voix Ingénieur:", lapTone: "Bip de Tour",
+                raceTime: "TEMPS COURSE", laps: "TOURS", start: "DÉMARRER", reset: "RÉINITIALISER", videoTitle: "Capteur de Piste (Photodétecteur)",
+                newRecord: "NOUVEAU RECORD !", calibrating: "Calibrage...", clearTrack: "Dégagez la piste", falseStart: "FAUX DÉPART !", penalty: "Pénalité appliquée",
+                camLoading: "Chargement caméra...", telemetry: "Télémétrie", pilotCar: "PILOTE / VOITURE", lastLap: "DERNIER TOUR", bestLap: "MEILLEUR TOUR",
+                avgTime: "TEMPS MOYEN", avgSpeed: "VITESSE MOYENNE (Km/h)", maxSpeed: "VITESSE MAX (Km/h)", consistency: "RÉGULARITÉ",
+                lastDelta: "DELTA (DERNIER TOUR)", timeGraph: "Graphique des Temps", noData: "Pas de données", raceFinished: "Course Terminée !", totalTime: "Temps Total",
+                avgSpeedSimple: "Vit. Moyenne", lapDetail: "Détail des Tours", time: "Temps", delta: "Delta", restartFull: "RECOMMENCER", exportExcel: "Exporter vers Excel (.csv)",
+                historyTitle: "Historique des Courses", date: "DATE", noHistory: "Aucune course enregistrée.", clearHistory: "Effacer l'historique",
+                clearHistoryQ: "Effacer l'historique ?", cannotUndo: "Cette action est irréversible.", cancel: "Annuler", yesClear: "Oui, Effacer", pause: "PAUSE",
+                resume: "REPRENDRE", yellowFlag: "DRAPEAU JAUNE", racePaused: "COURSE PAUSÉE", leaderboard: "Classement", globalRanking: "Classement Mondial",
+                noRecords: "Aucun record mondial pour le moment.", pos: "POS", track: "PISTE", "5laps": "5 Tours", "10laps": "10 Tours", "25laps": "25 Tours",
+                "50laps": "50 Tours", "infinite": "Infini", "1sec": "1 Seconde (Pistes courtes)", "3sec": "3 Secondes (Standard)", "5sec": "5 Secondes (Pistes longues)",
+                "10sec": "10 Secondes (Pistes énormes)", "beepClassic": "Bip Classique (600 Hz)", "toneLow": "Ton Grave (400 Hz)", "beepHigh": "Bip Aigu (900 Hz)",
+                "toneShort": "Sifflet Court (1200 Hz)", voiceCalibrated: "Capteurs calibrés.", voiceFalseStart: "Faux départ !", voiceFinished: "Course terminée.",
+                voiceLap: "Tour", voicePoint: "virgule", voiceFastest: "Meilleur tour !", voiceRemaining: "Restant", voiceLaps: "tours", voiceLastLap: "Dernier tour !",
+                camActive: "Caméra Active", camError: "Erreur Caméra", testWait: "WAIT...", testGo: "GO!", testOk: "TEST OK", obs: "OBSTRUCCIÓN"
             }
         };
 
@@ -2526,24 +2284,38 @@
             speak(txt);
         }
 
+        // --- PROTECCIÓN DEL GRÁFICO MAIN ---
         function drawLapGraph() {
             if(isTVMode) return;
             const w = graphCanvas.parentElement.offsetWidth - 32; graphCanvas.width = w; graphCanvas.height = 200;
             if (!lapHistory.length) { graphCtx.clearRect(0,0,w,200); graphStatus.textContent=translations[currentLang].noData; return; }
             graphStatus.textContent="";
+            
             const times = lapHistory.map(l=>l.time);
-            const max = Math.max(...times); const min = Math.min(...times);
-            const range = max-min || 1; 
+            const max = Math.max(...times); 
+            const min = Math.min(...times);
+            let range = max - min; 
+            if (range === 0) range = 1; // FIX: evitar NaN
+            
             const pad = 20; const gw = w-pad*2; const gh = 200-pad*2;
-            const barW = (gw / times.length) - 5;
+            const barW = Math.max(5, (gw / times.length) - 5); // FIX: Ancho mínimo
             
             graphCtx.clearRect(0,0,w,200);
             times.forEach((t, i) => {
                 const h = gh * 0.7; 
-                const normalizedH = range===0 ? h : (gh * (1 - (t-min)/range)*0.8 + gh*0.2);
+                const normalizedH = (range === 1 && times.length === 1) ? h : (gh * (1 - (t-min)/range)*0.8 + gh*0.2);
+                
                 const x = pad + i * (barW + 5); const y = 200 - pad - normalizedH;
                 graphCtx.fillStyle = (t===bestLapTime) ? '#059669' : '#6b7280';
-                graphCtx.fillRect(x, y, barW, normalizedH);
+                
+                if (graphCtx.roundRect) {
+                    graphCtx.beginPath();
+                    graphCtx.roundRect(x, y, barW, Math.max(5, normalizedH), [4,4,0,0]);
+                    graphCtx.fill();
+                } else {
+                    graphCtx.fillRect(x, y, barW, Math.max(5, normalizedH));
+                }
+                
                 graphCtx.fillStyle = '#374151'; graphCtx.font='10px Arial'; graphCtx.textAlign='center';
                 graphCtx.fillText(i+1, x+barW/2, 195);
             });
@@ -2988,30 +2760,111 @@
                 });
             }, 300);
 
-            // Funciones Globales para dibujar Curvas de IA suaves
+            // =========================================================================
+            // FUNCIONES DE RENDERIZADO DE GRÁFICOS TV (MEJORADOS)
+            // =========================================================================
+            
+            // NUEVO: Función Gráfico de Barras Resistente a Errores (Incluso 1 dato)
+            window.drawTVBarGraph = function(canvasId, dataPoints, bestIndex, colorHex, bestColorHex) {
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                
+                const parent = canvas.parentElement;
+                if (!parent) return;
+                
+                const w = parent.clientWidth - 32;
+                const h = parent.clientHeight - 40; 
+                
+                if (w <= 0 || h <= 0) return;
+
+                canvas.width = w;
+                canvas.height = h;
+                
+                ctx.clearRect(0, 0, w, h);
+                if (!dataPoints || dataPoints.length === 0) return;
+
+                const maxVal = Math.max(...dataPoints);
+                const minVal = Math.min(...dataPoints);
+                let range = maxVal - minVal;
+                if (range === 0) range = 1;
+
+                const padX = 10;
+                const padY = 20;
+                const gw = w - padX * 2;
+                const gh = h - padY * 2;
+                
+                // Calcula el ancho evitando anchos enormes
+                const barW = Math.max(6, Math.min(40, (gw / dataPoints.length) - 4));
+                const totalContentW = dataPoints.length * (barW + 4);
+                // Si hay pocos datos, centrarlo dentro del canvas
+                const startX = padX + (gw - totalContentW) / 2; 
+                
+                dataPoints.forEach((val, i) => {
+                    const normalizedH = (range === 1 && dataPoints.length === 1) 
+                        ? (gh * 0.5) 
+                        : (gh * (1 - (val - minVal) / range) * 0.7 + gh * 0.3); 
+                    
+                    const x = startX + i * (barW + 4);
+                    const y = h - padY - normalizedH;
+                    
+                    ctx.fillStyle = (i === bestIndex) ? bestColorHex : colorHex;
+                    
+                    ctx.beginPath();
+                    if(ctx.roundRect) {
+                        ctx.roundRect(x, y, barW, normalizedH, [4, 4, 0, 0]);
+                    } else {
+                        ctx.fillRect(x, y, barW, normalizedH);
+                    }
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = 'bold 12px Rajdhani';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(i + 1, x + barW / 2, h - 5);
+                });
+            };
+
+            // MEJORADO: Gráfico de Curva (Velocidad) adaptado a 1 solo punto y Resize Responsivo
             window.drawSmoothCurve = function(canvasId, dataPoints, colorHex) {
                 const canvas = document.getElementById(canvasId);
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
                 
-                // Igualar la escala interna al tamaño CSS del Widget redimensionado
-                const w = canvas.parentElement.clientWidth;
-                const h = canvas.parentElement.clientHeight - 30; // Dejar espacio al título
+                const parent = canvas.parentElement;
+                if(!parent) return;
+                const w = parent.clientWidth - 32;
+                const h = parent.clientHeight - 40;
+                
+                if (w <= 0 || h <= 0) return;
+
                 canvas.width = w;
                 canvas.height = h;
                 
                 ctx.clearRect(0, 0, w, h);
-                if (!dataPoints || dataPoints.length < 2) return;
+                if (!dataPoints || dataPoints.length === 0) return;
 
                 const maxVal = Math.max(...dataPoints) || 1;
                 const minVal = Math.min(...dataPoints) || 0;
                 let range = maxVal - minVal;
                 if (range === 0) range = 1;
 
-                const padX = 20;
+                const padX = 15;
                 const padY = 20;
                 const gw = w - padX * 2;
                 const gh = h - padY * 2;
+                
+                // Fallback de seguridad si solo hay 1 dato (Punto central solitario)
+                if (dataPoints.length === 1) {
+                    const x = padX + gw / 2;
+                    const y = h - padY - (gh * 0.5);
+                    ctx.beginPath();
+                    ctx.arc(x, y, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = colorHex;
+                    ctx.fill();
+                    return;
+                }
+
                 const stepX = gw / (dataPoints.length - 1);
 
                 const points = dataPoints.map((val, i) => {
@@ -3020,7 +2873,7 @@
                     return { x, y, val };
                 });
 
-                // Dibujar Área Sombreada (Gradient de fondo)
+                // Área Gradient
                 ctx.beginPath();
                 ctx.moveTo(points[0].x, h - padY);
                 ctx.lineTo(points[0].x, points[0].y);
@@ -3036,12 +2889,12 @@
                 ctx.closePath();
                 
                 const gradient = ctx.createLinearGradient(0, 0, 0, h);
-                gradient.addColorStop(0, colorHex + '80'); // 50% opacity
-                gradient.addColorStop(1, colorHex + '00'); // 0% opacity
+                gradient.addColorStop(0, colorHex + '80'); 
+                gradient.addColorStop(1, colorHex + '00'); 
                 ctx.fillStyle = gradient;
                 ctx.fill();
 
-                // Dibujar Línea Curvada de los datos
+                // Línea Curvada
                 ctx.beginPath();
                 ctx.moveTo(points[0].x, points[0].y);
                 for (let i = 0; i < points.length - 1; i++) {
@@ -3056,11 +2909,11 @@
                 ctx.lineCap = 'round';
                 ctx.stroke();
                 
-                // Dibujar Nodos (Puntos)
+                // Nodos
                 points.forEach(p => {
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-                    ctx.fillStyle = '#0f172a'; // Fondo de nodo oscuro
+                    ctx.fillStyle = '#0f172a';
                     ctx.fill();
                     ctx.lineWidth = 2;
                     ctx.strokeStyle = colorHex;
@@ -3070,12 +2923,18 @@
 
             window.drawTVLapGraph = function(history, bestTime) {
                 const times = history.map(l => l.time / 1000);
-                window.drawSmoothCurve('tv-lap-graph', times, '#22d3ee'); // Cyan para tiempos
+                let bestIndex = -1;
+                if (bestTime !== Infinity) {
+                    bestIndex = history.findIndex(l => l.time === bestTime);
+                }
+                // Dibuja Barras seguras y dinámicas
+                window.drawTVBarGraph('tv-lap-graph', times, bestIndex, '#475569', '#10b981'); 
             };
 
             window.drawTVSpeedGraph = function(history) {
                 const speeds = history.map(l => l.speed);
-                window.drawSmoothCurve('tv-speed-graph', speeds, '#facc15'); // Amarillo para velocidad
+                // Dibuja Curva segura
+                window.drawSmoothCurve('tv-speed-graph', speeds, '#facc15'); 
             };
 
             // Cleanup Main App
@@ -3109,7 +2968,6 @@
             // --- LÓGICA PARA SALIR DEL MODO TV ---
             if (tvExitBtn) {
                 tvExitBtn.addEventListener('click', () => {
-                    // Recarga la página eliminando los parámetros (como ?tv=true) para volver al panel de control limpio
                     window.location.href = window.location.pathname;
                 });
             }
@@ -3208,6 +3066,7 @@
                         tvLapTbody.appendChild(row);
                     });
                     
+                    // Renderizamos ambos al actualizar UI
                     window.drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
                     window.drawTVSpeedGraph(tvData.lapHistory);
                 } else {
@@ -3265,104 +3124,3 @@
                 
                 kronoChannel.onmessage = (event) => {
                     if(event.data.type === 'STATE_UPDATE') { tvData = event.data.payload; updateTVUI(); }
-                };
-
-                window.addEventListener('storage', (event) => {
-                    if (event.key === 'krono_tv_state' && event.newValue) {
-                        try { tvData = JSON.parse(event.newValue); updateTVUI(); } catch(e) {}
-                    }
-                });
-
-                let lastSavedStateString = "";
-                setInterval(() => {
-                    try {
-                        const savedState = localStorage.getItem('krono_tv_state');
-                        if (savedState && savedState !== lastSavedStateString) {
-                            lastSavedStateString = savedState; tvData = JSON.parse(savedState); updateTVUI();
-                        }
-                    } catch(e) {}
-                }, 250);
-            }
-
-            if(tvIntervalId) clearInterval(tvIntervalId);
-            tvIntervalId = setInterval(() => {
-                if (!tvData) return;
-                if (tvData.isRaceActive && !tvData.isPaused) {
-                    const now = Date.now();
-                    const elapRace = now - tvData.raceStartTime;
-                    const elapLap = now - tvData.lapStartTimestamp;
-                    tvRaceTime.textContent = formatTime(elapRace, true);
-                    tvCurrentLapTime.textContent = formatTime(elapLap, false);
-                } else if (!tvData.isRaceActive && tvData.lapHistory && tvData.lapHistory.length === 0) {
-                    tvRaceTime.textContent = "00:00.0";
-                    tvCurrentLapTime.textContent = "00.000";
-                }
-            }, 30);
-            
-            window.addEventListener('resize', () => {
-                if(tvData && tvData.lapHistory) {
-                    window.drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
-                    window.drawTVSpeedGraph(tvData.lapHistory);
-                }
-            });
-        };
-
-        // =========================================================================
-        // INICIO GENERAL
-        // =========================================================================
-        window.onload = () => {
-            // Asignar eventos de pantalla completa (Globales)
-            if(fullscreenBtn) fullscreenBtn.addEventListener('click', toggleFullScreen);
-            const tvFullscreenBtn = document.getElementById('tv-fullscreen-btn');
-            if(tvFullscreenBtn) tvFullscreenBtn.addEventListener('click', toggleFullScreen);
-
-            if (urlParams.get('tv') === 'true') {
-                const autoRoom = urlParams.get('room') || portalDocId;
-                window.startTVMode(autoRoom);
-            } else {
-                // Init App Main
-                if(window.speechSynthesis) window.speechSynthesis.getVoices();
-                if (!movableRectangle.style.left) movableRectangle.style.left = '10%';
-                if (!movableRectangle.style.top) movableRectangle.style.top = '40%';
-                if (!movableRectangle.style.width) movableRectangle.style.width = '80%';
-                if (!movableRectangle.style.height) movableRectangle.style.height = '10%';
-                
-                const savedLang = localStorage.getItem('krono_lang');
-                if (savedLang) { currentLang = savedLang; langSelect.value = savedLang; updateTexts(); }
-
-                const savedPilot = localStorage.getItem('krono_pilot_name');
-                if (savedPilot) pilotNameInput.value = savedPilot;
-                const savedCar = localStorage.getItem('krono_car_model');
-                if (savedCar) carModelInput.value = savedCar;
-
-                totalLaps = lapLimitSelect.value === 'Infinity' ? Infinity : parseInt(lapLimitSelect.value);
-
-                isDynamicAI = true; isShadowFilterEnabled = true; aiMargin = 15; sensitivity = 20; 
-                
-                if (typeof updateSliderUI === 'function') updateSliderUI(); 
-                updateLapDisplay(); 
-                stopRace(false);
-                
-                const snd = document.getElementById('soundSelect');
-                if(snd) {
-                    snd.addEventListener('change', e => { 
-                        selectedSoundIndex = parseInt(e.target.value); 
-                        playSound(soundOptions[selectedSoundIndex].freq, 0.1); 
-                    });
-                }
-                
-                // Emit state to potential local listeners
-                setTimeout(() => { broadcastState(); triggerDebouncedCloudSync(); }, 1500); 
-
-                setInterval(() => {
-                    if(isRaceActive && !isPaused) broadcastState(); 
-                }, 500); 
-                
-                kronoChannel.onmessage = (event) => {
-                    if(event.data.type === 'REQUEST_STATE') broadcastState();
-                };
-            }
-        };
-    </script>
-</body>
-</html>
