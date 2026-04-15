@@ -28,7 +28,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, setLogLevel, collection, addDoc, getDocs, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const appId = "app_krono_tv"; // ACTUALIZADO PARA KRONO PERSONAL TV
+        const appId = "app_krono";
         const firebaseConfig = {
           apiKey: "AIzaSyDW-2Yc4kvZJYbNOVeesPZWdRThYe0noUI",
           authDomain: "correo-95e58.firebaseapp.com",
@@ -2553,7 +2553,7 @@
         async function saveToLeaderboard() {
             if (isTVMode || !window.db || !window.auth || !window.auth.currentUser || bestLapTime === Infinity) return;
             try {
-                const appId = "app_krono_tv"; // ACTUALIZADO PARA KRONO PERSONAL TV
+                const appId = "app_krono";
                 const colRef = window.fs.collection(window.db, 'artifacts', appId, 'public', 'data', 'leaderboard');
                 await window.fs.addDoc(colRef, {
                     pilot: pilotNameInput.value || 'Piloto Anónimo',
@@ -2575,7 +2575,7 @@
             }
             rankingBody.innerHTML = `<tr><td colspan="4" class="text-center p-4">Cargando datos globales...</td></tr>`;
             try {
-                const appId = "app_krono_tv"; // ACTUALIZADO PARA KRONO PERSONAL TV
+                const appId = "app_krono";
                 const colRef = window.fs.collection(window.db, 'artifacts', appId, 'public', 'data', 'leaderboard');
                 const snapshot = await window.fs.getDocs(colRef);
                 let records = [];
@@ -2825,7 +2825,7 @@
             if (isTVMode || !window.db || !window.auth || !window.auth.currentUser) return;
             const payload = getPayload();
             try {
-                const appId = "app_krono_tv"; // ACTUALIZADO PARA KRONO PERSONAL TV
+                const appId = "app_krono";
                 const docRef = window.fs.doc(window.db, 'artifacts', appId, 'public', 'data', 'tv_sessions', window.myRoomCode);
                 await window.fs.setDoc(docRef, payload);
             } catch (e) {
@@ -3170,4 +3170,269 @@
                         else { ctx.fillStyle = '#3b82f6'; ctx.shadowBlur = 0; }
                         ctx.fill();
                         
-                        ctx.fillStyle = '#94a3b8'; ctx.font = `${canvas
+                        ctx.fillStyle = '#94a3b8'; ctx.font = `${canvasFontSize}px JetBrains Mono`; ctx.textAlign = 'center'; ctx.fillText(p.lap, p.x, h - 2);
+                    });
+                }
+                else if (gType === 'laser') {
+                    // MODO 4: LÁSER ANALÍTICO (AMBER)
+                    points.forEach((p, i) => {
+                        if (p.t === bestLap) { ctx.fillStyle = '#34d399'; ctx.shadowColor = '#34d399'; ctx.shadowBlur = 8; } 
+                        else { ctx.fillStyle = '#3b82f6'; ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; }
+
+                        ctx.fillRect(p.x - 1, p.y, 2, p.normalizedH);
+                        
+                        // Punto flotante en la cima
+                        ctx.beginPath(); ctx.arc(p.x, p.y - 4, p.t === bestLap ? 4 : 2, 0, Math.PI*2); ctx.fill();
+
+                        ctx.fillStyle = '#94a3b8'; ctx.font = `${canvasFontSize}px JetBrains Mono`; ctx.textAlign = 'center'; ctx.fillText(p.lap, p.x, h - 2);
+                    });
+                }
+            };
+
+            function updateTVUI() {
+                if(!tvData) return;
+                tvPilotCar.textContent = `${tvData.pilot || 'Piloto'} / ${tvData.car || 'Coche'}`;
+                
+                const maxLapsText = tvData.totalLaps === Infinity ? '∞' : tvData.totalLaps;
+                if (tvData.raceMode === 'time') {
+                    tvLapCount.textContent = tvData.currentLap || 0;
+                    tvModeTarget.textContent = `TARGET: ${(tvData.raceTimeLimit || 0) / 60000} MIN`;
+                } else {
+                    tvLapCount.textContent = tvData.currentLap || 0;
+                    tvModeTarget.textContent = `OBJETIVO: ${maxLapsText} VUELTAS`;
+                }
+
+                tvStatus.className = "text-xl lg:text-2xl font-rajdhani font-bold uppercase tracking-widest px-6 py-2 rounded-xl border shadow-lg transition-colors duration-300 ";
+                
+                if (tvData.isPaused) {
+                    tvStatus.textContent = "BANDERA AMARILLA (PAUSA)";
+                    tvStatus.className += "bg-yellow-900/40 border-yellow-500/50 text-yellow-400 tv-pulse";
+                } else if (tvData.raceAborted) {
+                    tvStatus.textContent = "SALIDA NULA";
+                    tvStatus.className += "bg-red-900/40 border-red-500/50 text-red-500 tv-pulse";
+                } else if (tvData.isCountdown) {
+                    tvStatus.textContent = "PREPARADOS...";
+                    tvStatus.className += "bg-orange-900/40 border-orange-500/50 text-orange-400";
+                } else if (tvData.isRaceActive) {
+                    tvStatus.textContent = "CARRERA EN CURSO";
+                    tvStatus.className += "bg-emerald-900/30 border-emerald-500/30 text-emerald-400";
+                } else if (tvData.lapHistory && tvData.lapHistory.length > 0) {
+                    tvStatus.textContent = "CARRERA FINALIZADA";
+                    tvStatus.className += "bg-blue-900/30 border-blue-500/30 text-blue-400";
+                } else {
+                    if (cloudRoomCode) {
+                        tvStatus.innerHTML = `
+                            <div class="flex items-center space-x-2">
+                                <span class="relative flex h-3 w-3 mr-2">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+                                </span>
+                                <span>ENLACE ACTIVO. ESPERANDO COCHE...</span>
+                            </div>`;
+                        tvStatus.className += "bg-slate-800/90 border-cyan-500/30 text-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.15)]";
+                    } else {
+                        tvStatus.textContent = "ESPERANDO...";
+                        tvStatus.className += "bg-slate-800/80 border-slate-600 text-slate-400";
+                    }
+                }
+
+                tvBestLap.textContent = tvData.bestLapTime !== Infinity && tvData.bestLapTime != null ? formatTime(tvData.bestLapTime, false) : "--.---";
+                tvLastLap.textContent = tvData.lastCompletedLapTime ? formatTime(tvData.lastCompletedLapTime, false) : "--.---";
+                
+                if (tvConsistency) tvConsistency.textContent = tvData.consistency > 0 ? `${tvData.consistency.toFixed(1)}%` : "--%";
+
+                tvAvgSpeed.textContent = tvData.avgSpeed > 0 ? tvData.avgSpeed.toFixed(1) : "--.-";
+                if(tvAvgSpeedScale) tvAvgSpeedScale.textContent = tvData.avgSpeed > 0 ? (tvData.avgSpeed * 32).toFixed(1) : "--.-";
+                
+                tvMaxSpeed.textContent = tvData.maxSpeed > 0 ? tvData.maxSpeed.toFixed(1) : "--.-";
+                if(tvMaxSpeedScale) tvMaxSpeedScale.textContent = tvData.maxSpeed > 0 ? (tvData.maxSpeed * 32).toFixed(1) : "--.-";
+
+                if(tvData.lapHistory && tvData.lapHistory.length > 0) {
+                    tvLapTbody.innerHTML = '';
+                    const reversedLaps = [...tvData.lapHistory].reverse();
+                    
+                    const lastLapData = tvData.lapHistory[tvData.lapHistory.length - 1];
+                    if (lastLapData.delta === 0 || tvData.lapHistory.length === 1) {
+                        tvLapDeltaContainer.classList.add('hidden');
+                    } else {
+                        tvLapDeltaContainer.classList.remove('hidden');
+                        if (lastLapData.delta < 0) {
+                            tvLapDelta.textContent = `-${formatDeltaTime(Math.abs(lastLapData.delta))}`;
+                            tvLapDelta.className = "tv-font cq-text-value-sm font-bold rounded-lg px-[2cqi] py-[1cqh] shadow-lg bg-emerald-900/50 text-emerald-400 border border-emerald-500/50 whitespace-nowrap";
+                        } else {
+                            tvLapDelta.textContent = `+${formatDeltaTime(lastLapData.delta)}`;
+                            tvLapDelta.className = "tv-font cq-text-value-sm font-bold rounded-lg px-[2cqi] py-[1cqh] shadow-lg bg-red-900/50 text-red-400 border border-red-500/50 whitespace-nowrap";
+                        }
+                    }
+
+                    reversedLaps.forEach((l) => {
+                        const row = document.createElement('tr');
+                        const isBest = l.time === tvData.bestLapTime;
+                        
+                        row.className = isBest ? "text-emerald-400 font-bold bg-emerald-900/20" : "text-slate-200 border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors";
+                        
+                        const dText = l.delta === 0 ? '-' : (l.delta < 0 ? `-${formatDeltaTime(Math.abs(l.delta))}` : `+${formatDeltaTime(l.delta)}`);
+                        const dColor = l.delta === 0 ? 'text-slate-500' : (l.delta < 0 ? 'text-emerald-400' : 'text-red-400');
+
+                        row.innerHTML = `
+                            <td class="py-2 px-2 rounded-l-lg ${isBest ? '' : 'text-slate-400'}">${l.lap}</td>
+                            <td class="py-2 px-2 ${isBest ? '' : 'text-white font-medium'}">${formatTime(l.time, false)}</td>
+                            <td class="py-2 px-2 text-center ${dColor} font-medium">${dText}</td>
+                            <td class="py-2 px-2 text-right rounded-r-lg ${isBest ? 'text-emerald-400' : 'text-blue-300'}">${l.speed.toFixed(1)}</td>
+                        `;
+                        tvLapTbody.appendChild(row);
+                    });
+                    
+                    window.drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
+                } else {
+                    tvLapDeltaContainer.classList.add('hidden');
+                }
+            }
+
+            if (cloudRoomCode) {
+                tvCloudCodeDisplay.querySelector('span').textContent = cloudRoomCode;
+                tvCloudCodeDisplay.classList.remove('hidden');
+                
+                tvStatus.className = "text-xl lg:text-2xl font-rajdhani font-bold uppercase tracking-widest px-6 py-2 rounded-xl border transition-colors duration-300 bg-slate-800/90 border-cyan-500/50 shadow-[0_0_15px_rgba(34,211,238,0.2)]";
+                tvStatus.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <svg class="animate-spin h-6 w-6 text-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <div class="flex flex-col items-start leading-none mt-0.5">
+                            <span class="text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)] leading-tight">ESTABLECIENDO UPLINK...</span>
+                            <span class="text-[10px] text-cyan-500/70 tracking-[0.3em] font-mono mt-1">BUSCANDO SEÑAL DE TELEMETRÍA</span>
+                        </div>
+                    </div>
+                `;
+                
+                const checkDb = setInterval(() => {
+                    if (window.db && window.auth && window.auth.currentUser) {
+                        clearInterval(checkDb);
+                        const appId = "app_krono";
+                        const docRef = window.fs.doc(window.db, 'artifacts', appId, 'public', 'data', 'tv_sessions', cloudRoomCode);
+                        
+                        window.fs.onSnapshot(docRef, (docSnap) => {
+                            if (docSnap.exists()) {
+                                tvData = docSnap.data();
+                                updateTVUI();
+                            } else {
+                                tvStatus.innerHTML = `<span class="flex items-center"><svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> SALA INACTIVA O CERRADA</span>`;
+                                tvStatus.className = "text-xl lg:text-2xl font-rajdhani font-bold uppercase tracking-widest px-6 py-2 rounded-xl bg-red-900/40 border border-red-500/50 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)] tv-pulse";
+                            }
+                        }, (err) => {
+                            console.error("Error al escuchar TV", err);
+                            tvStatus.innerHTML = `<span class="flex items-center"><svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg> ERROR DE CONEXIÓN</span>`;
+                            tvStatus.className = "text-xl lg:text-2xl font-rajdhani font-bold uppercase tracking-widest px-6 py-2 rounded-xl bg-red-900/40 border border-red-500/50 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)] tv-pulse";
+                        });
+                    }
+                }, 500);
+            } else {
+                // Modo Local
+                kronoChannel.postMessage({ type: 'REQUEST_STATE' });
+
+                try {
+                    const savedState = localStorage.getItem('krono_tv_state');
+                    if (savedState) { tvData = JSON.parse(savedState); updateTVUI(); }
+                } catch(e) {}
+                
+                kronoChannel.onmessage = (event) => {
+                    if(event.data.type === 'STATE_UPDATE') { tvData = event.data.payload; updateTVUI(); }
+                };
+
+                window.addEventListener('storage', (event) => {
+                    if (event.key === 'krono_tv_state' && event.newValue) {
+                        try { tvData = JSON.parse(event.newValue); updateTVUI(); } catch(e) {}
+                    }
+                });
+
+                let lastSavedStateString = "";
+                setInterval(() => {
+                    try {
+                        const savedState = localStorage.getItem('krono_tv_state');
+                        if (savedState && savedState !== lastSavedStateString) {
+                            lastSavedStateString = savedState; tvData = JSON.parse(savedState); updateTVUI();
+                        }
+                    } catch(e) {}
+                }, 250);
+            }
+
+            if(tvIntervalId) clearInterval(tvIntervalId);
+            tvIntervalId = setInterval(() => {
+                if (!tvData) return;
+                if (tvData.isRaceActive && !tvData.isPaused) {
+                    const now = Date.now();
+                    const elapRace = now - tvData.raceStartTime;
+                    const elapLap = now - tvData.lapStartTimestamp;
+                    tvRaceTime.textContent = formatTime(elapRace, true);
+                    tvCurrentLapTime.textContent = formatTime(elapLap, false);
+                } else if (!tvData.isRaceActive && tvData.lapHistory && tvData.lapHistory.length === 0) {
+                    tvRaceTime.textContent = "00:00.0";
+                    tvCurrentLapTime.textContent = "00.000";
+                }
+            }, 30);
+            
+            window.addEventListener('resize', () => {
+                if(tvData && tvData.lapHistory) window.drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
+            });
+        };
+
+        // =========================================================================
+        // INICIO GENERAL
+        // =========================================================================
+        window.onload = () => {
+            // Asignar eventos de pantalla completa (Globales)
+            if(fullscreenBtn) fullscreenBtn.addEventListener('click', toggleFullScreen);
+            const tvFullscreenBtn = document.getElementById('tv-fullscreen-btn');
+            if(tvFullscreenBtn) tvFullscreenBtn.addEventListener('click', toggleFullScreen);
+
+            if (urlParams.get('tv') === 'true') {
+                window.startTVMode(urlParams.get('room'));
+            } else {
+                // Init App Main
+                if(window.speechSynthesis) window.speechSynthesis.getVoices();
+                if (!movableRectangle.style.left) movableRectangle.style.left = '10%';
+                if (!movableRectangle.style.top) movableRectangle.style.top = '40%';
+                if (!movableRectangle.style.width) movableRectangle.style.width = '80%';
+                if (!movableRectangle.style.height) movableRectangle.style.height = '10%';
+                
+                const savedLang = localStorage.getItem('krono_lang');
+                if (savedLang) { currentLang = savedLang; langSelect.value = savedLang; updateTexts(); }
+
+                const savedPilot = localStorage.getItem('krono_pilot_name');
+                if (savedPilot) pilotNameInput.value = savedPilot;
+                const savedCar = localStorage.getItem('krono_car_model');
+                if (savedCar) carModelInput.value = savedCar;
+
+                totalLaps = lapLimitSelect.value === 'Infinity' ? Infinity : parseInt(lapLimitSelect.value);
+
+                isDynamicAI = true; isShadowFilterEnabled = true; aiMargin = 15; sensitivity = 20; 
+                
+                if (typeof updateSliderUI === 'function') updateSliderUI(); 
+                updateLapDisplay(); 
+                stopRace(false);
+                
+                const snd = document.getElementById('soundSelect');
+                if(snd) {
+                    snd.addEventListener('change', e => { 
+                        selectedSoundIndex = parseInt(e.target.value); 
+                        playSound(soundOptions[selectedSoundIndex].freq, 0.1); 
+                    });
+                }
+                
+                // Emit state to potential local listeners
+                setTimeout(() => { broadcastState(); triggerDebouncedCloudSync(); }, 1500); 
+
+                setInterval(() => {
+                    if(isRaceActive && !isPaused) broadcastState(); 
+                }, 500); 
+                
+                kronoChannel.onmessage = (event) => {
+                    if(event.data.type === 'REQUEST_STATE') broadcastState();
+                };
+            }
+        };
+    </script>
+</body>
+</html>
