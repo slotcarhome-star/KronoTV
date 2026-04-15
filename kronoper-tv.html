@@ -140,7 +140,7 @@
 
         /* --- ROI MINIMALISTA (HITBOX MEJORADO) --- */
         #movable-rectangle {
-            position: absolute; top: 40%; left: 10%; width: 80%; height: 10%;
+            position: absolute; top: 35%; left: 35%; width: 30%; height: 30%;
             cursor: move; 
             border: 2px solid rgba(239, 68, 68, 0.8); 
             background: linear-gradient(to bottom, rgba(239,68,68,0.05) 0%, rgba(239,68,68,0.2) 50%, rgba(239,68,68,0.05) 100%);
@@ -792,7 +792,7 @@
                     <p class="text-white font-bold text-lg" data-i18n="racePaused">CARRERA PAUSADA</p>
                 </div>
 
-                <div id="movable-rectangle">
+                <div id="movable-rectangle" style="top: 35%; left: 35%; width: 30%; height: 30%;">
                     <div id="detection-val-indicator">Val: 0</div>
                     <div id="test-msg"></div>
                     <div id="handle-tl" class="resize-handle"></div>
@@ -1671,7 +1671,18 @@
         let startLeftPct, startTopPct, startWidthPct, startHeightPct;
 
         function getClientCoords(e) { return { x: e.touches ? e.touches[0].clientX : e.clientX, y: e.touches ? e.touches[0].clientY : e.clientY }; }
-        function getRoiPercentage(prop) { const style = movableRectangle?.style[prop]; return style ? parseFloat(style.replace('%', '')) : 0; }
+        function getRoiPercentage(prop) { 
+            const val = movableRectangle?.style[prop]; 
+            if (val && val.includes('%')) return parseFloat(val);
+            // Si el estilo en línea no existe (primer click), calculamos dinámicamente desde el bounding client rect
+            const rect = movableRectangle.getBoundingClientRect();
+            const parent = videoContainer.getBoundingClientRect();
+            if (prop === 'left') return ((rect.left - parent.left) / parent.width) * 100;
+            if (prop === 'top') return ((rect.top - parent.top) / parent.height) * 100;
+            if (prop === 'width') return (rect.width / parent.width) * 100;
+            if (prop === 'height') return (rect.height / parent.height) * 100;
+            return 0;
+        }
 
         function startAction(e, type, dir = '') {
             if (!movableRectangle || movableRectangle.style.display === 'none' || isRaceActive || isCalibrating) return;
