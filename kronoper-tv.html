@@ -1197,11 +1197,11 @@
                 </div>
                 <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
                     <div class="flex justify-between items-center mb-1 z-10">
-                        <span class="cq-text-xs text-purple-400 font-rajdhani font-bold uppercase tracking-widest">Análisis Avanzado</span>
-                        <div class="flex space-x-3 cq-text-xxs font-rajdhani font-bold">
-                            <span class="text-cyan-400 flex items-center"><div class="w-3 h-1 bg-cyan-400 mr-1.5 shadow-[0_0_5px_#22d3ee]"></div> Tiempo</span>
-                            <span class="text-yellow-400 flex items-center"><div class="w-3 h-0 border-t-2 border-dashed border-yellow-400 mr-1.5"></div> Vel.</span>
-                            <span class="text-slate-300 flex items-center"><div class="w-2 h-2 rounded-full bg-emerald-400 mr-0.5 shadow-[0_0_5px_#34d399]"></div><div class="w-2 h-2 rounded-full bg-red-500 mr-1 shadow-[0_0_5px_#ef4444]"></div> Delta</span>
+                        <span class="cq-text-xs text-purple-400 font-rajdhani font-bold uppercase tracking-widest">Análisis Combinado Vivo</span>
+                        <div class="flex space-x-4 cq-text-xxs font-rajdhani font-bold">
+                            <span class="text-cyan-400 flex items-center"><div class="w-2.5 h-2.5 rounded-full bg-cyan-400 mr-1.5 shadow-[0_0_5px_#22d3ee]"></div> Tiempo</span>
+                            <span class="text-yellow-400 flex items-center"><div class="w-2.5 h-2.5 rounded-full bg-yellow-400 mr-1.5 shadow-[0_0_5px_#facc15]"></div> Vel.</span>
+                            <span class="text-pink-400 flex items-center"><div class="w-2.5 h-2.5 rounded-full bg-pink-400 mr-1.5 shadow-[0_0_5px_#ec4899]"></div> Delta</span>
                         </div>
                     </div>
                     <canvas id="tv-combined-graph" class="w-full flex-1 mt-2"></canvas>
@@ -2642,22 +2642,23 @@
                 setTimeout(() => tvSetupModal.classList.add('hidden'), 300);
             });
 
-            // Nube: Forzamos una recarga estricta (Destruye el Krono en memoria y carga SOLO la TV)
+            // Nube fallback SPA (Transforma la pantalla actual sin recargar)
             btnTvConnect.addEventListener('click', () => {
                 const code = tvCodeInput.value.trim().toUpperCase();
                 if (code.length > 0) {
                     tvSetupModal.classList.remove('open');
-                    // Usamos REPLACE: Destruye el historial anterior, imposible volver a 2 kronos
-                    window.location.replace(window.location.pathname + "?tv=true&code=" + code);
+                    setTimeout(() => {
+                        tvSetupModal.classList.add('hidden');
+                        if (window.startTVMode) window.startTVMode(code);
+                    }, 300);
                 }
             });
 
-            // NUEVO: Botón directo para pasar a Modo Oscuro (Dashboard TV) - RECARGA ESTRICTA
+            // NUEVO: Botón directo para pasar a Modo Oscuro (Dashboard TV)
             if (directTvBtn) {
                 directTvBtn.addEventListener('click', () => {
                     const autoRoom = portalDocId || window.myRoomCode;
-                    // Usamos REPLACE: Destruye todo y levanta solo la TV borrando el rastro
-                    window.location.replace(window.location.pathname + "?tv=true&code=" + autoRoom);
+                    if (window.startTVMode) window.startTVMode(autoRoom);
                 });
             }
         }
@@ -2750,7 +2751,6 @@
         // LÓGICA RECEPTORA MODO TV (AHORA ENCAPSULADA EN SPA)
         // =========================================================================
         let tvData = {};
-        let unsubscribeTV = null; // Control para matar la escucha de Firebase
         
         window.startTVMode = function(roomCode) {
             isTVMode = true;
@@ -2762,41 +2762,6 @@
             document.getElementById('tv-dashboard').classList.add('flex');
             document.title = "KRONO PERSONAL DASHBOARD";
 
-            // --- FUNCIONES PARA GUARDAR Y RESTAURAR LAYOUT ---
-            function saveTVLayout() {
-                const container = document.getElementById('tv-grid-container');
-                if(!container) return;
-                const widgets = Array.from(container.children);
-                const layout = widgets.map(w => ({
-                    id: w.id,
-                    col: w.style.gridColumn || '',
-                    row: w.style.gridRow || ''
-                }));
-                localStorage.setItem('krono_tv_layout', JSON.stringify(layout));
-            }
-
-            function restoreTVLayout() {
-                const saved = localStorage.getItem('krono_tv_layout');
-                if (saved) {
-                    try {
-                        const layout = JSON.parse(saved);
-                        const container = document.getElementById('tv-grid-container');
-                        if(!container) return;
-                        layout.forEach(item => {
-                             const w = document.getElementById(item.id);
-                             if(w) {
-                                 if(item.col) w.style.gridColumn = item.col;
-                                 if(item.row) w.style.gridRow = item.row;
-                                 container.appendChild(w); // Reordena en el DOM
-                             }
-                        });
-                    } catch(e) { console.error('Error restaurando layout:', e); }
-                }
-            }
-
-            // Restaurar layout antes de inicializar Sortable
-            restoreTVLayout();
-
             // --- INICIALIZAR SMART DASHBOARD (ARRASTRE Y ESCALADO SNAP-TO-GRID) ---
             setTimeout(() => {
                 const tvGrid = document.getElementById('tv-grid-container');
@@ -2806,8 +2771,7 @@
                         handle: '.drag-handle',
                         ghostClass: 'sortable-ghost',
                         dragClass: 'sortable-drag',
-                        easing: "cubic-bezier(0.25, 1, 0.5, 1)",
-                        onEnd: saveTVLayout // Guardar al soltar widget
+                        easing: "cubic-bezier(0.25, 1, 0.5, 1)"
                     });
                 }
 
@@ -2888,9 +2852,6 @@
                         widget.style.boxShadow = "";
                         widget.style.zIndex = "";
                         
-                        // Guardar nuevo tamaño
-                        saveTVLayout();
-                        
                         if(tvData && tvData.lapHistory) {
                             window.drawTVLapGraph(tvData.lapHistory, tvData.bestLapTime);
                             window.drawTVSpeedGraph(tvData.lapHistory);
@@ -2905,10 +2866,10 @@
             }, 300);
 
             // =========================================================================
-            // FUNCIONES DE RENDERIZADO DE GRÁFICOS TV (MEJORADOS Y ESPECTACULARES)
+            // FUNCIONES DE RENDERIZADO DE GRÁFICOS TV (MEJORADOS)
             // =========================================================================
             
-            // NUEVO: Función Gráfico de Barras Resistente a Errores (Incluso 1 dato) y Estilo Neón
+            // NUEVO: Función Gráfico de Barras Resistente a Errores (Incluso 1 dato)
             window.drawTVBarGraph = function(canvasId, dataPoints, bestIndex, colorHex, bestColorHex) {
                 const canvas = document.getElementById(canvasId);
                 if (!canvas) return;
@@ -2934,70 +2895,42 @@
                 if (range === 0) range = 1;
 
                 const padX = 10;
-                const padY = 25;
+                const padY = 20;
                 const gw = w - padX * 2;
                 const gh = h - padY * 2;
                 
-                // Dibujar cuadrícula sutil de fondo
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-                ctx.lineWidth = 1;
-                for(let j = 0; j <= 4; j++) {
-                    let gridY = h - padY - (gh / 4) * j;
-                    ctx.beginPath(); ctx.moveTo(padX, gridY); ctx.lineTo(w - padX, gridY); ctx.stroke();
-                }
-                
                 // Calcula el ancho evitando anchos enormes
-                const barW = Math.max(8, Math.min(45, (gw / dataPoints.length) - 6));
-                const totalContentW = dataPoints.length * (barW + 6);
+                const barW = Math.max(6, Math.min(40, (gw / dataPoints.length) - 4));
+                const totalContentW = dataPoints.length * (barW + 4);
                 // Si hay pocos datos, centrarlo dentro del canvas
                 const startX = padX + (gw - totalContentW) / 2; 
                 
                 dataPoints.forEach((val, i) => {
                     const normalizedH = (range === 1 && dataPoints.length === 1) 
                         ? (gh * 0.5) 
-                        : (gh * (1 - (val - minVal) / range) * 0.75 + gh * 0.25); 
+                        : (gh * (1 - (val - minVal) / range) * 0.7 + gh * 0.3); 
                     
-                    const x = startX + i * (barW + 6);
+                    const x = startX + i * (barW + 4);
                     const y = h - padY - normalizedH;
                     
-                    const isBest = (i === bestIndex);
-                    const mainColor = isBest ? '#34d399' : '#38bdf8'; // Verde Neón o Azul Neón
-                    const darkColor = isBest ? '#064e3b' : '#0f172a';
-                    
-                    // Gradiente de la barra
-                    const grad = ctx.createLinearGradient(0, y, 0, y + normalizedH);
-                    grad.addColorStop(0, mainColor);
-                    grad.addColorStop(1, darkColor);
-                    
-                    // Efecto Neón (Glow)
-                    ctx.shadowColor = mainColor;
-                    ctx.shadowBlur = isBest ? 20 : 10;
-                    ctx.fillStyle = grad;
+                    ctx.fillStyle = (i === bestIndex) ? bestColorHex : colorHex;
                     
                     ctx.beginPath();
                     if(ctx.roundRect) {
-                        ctx.roundRect(x, y, barW, normalizedH, [6, 6, 2, 2]);
+                        ctx.roundRect(x, y, barW, normalizedH, [4, 4, 0, 0]);
                     } else {
                         ctx.fillRect(x, y, barW, normalizedH);
                     }
                     ctx.fill();
                     
-                    // Resetear sombras para el texto y bases
-                    ctx.shadowBlur = 0;
-                    
-                    // Pequeña base brillante
-                    ctx.fillStyle = isBest ? '#10b981' : '#60a5fa';
-                    ctx.fillRect(x, h - padY, barW, 2);
-                    
-                    // Texto
-                    ctx.fillStyle = isBest ? '#a7f3d0' : '#cbd5e1';
-                    ctx.font = isBest ? 'bold 13px Rajdhani' : 'bold 12px Rajdhani';
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = 'bold 12px Rajdhani';
                     ctx.textAlign = 'center';
                     ctx.fillText(i + 1, x + barW / 2, h - 5);
                 });
             };
 
-            // MEJORADO: Gráfico de Curva (Velocidad) Espectacular con Cuadrícula y Neón
+            // MEJORADO: Gráfico de Curva (Velocidad) adaptado a 1 solo punto y Resize Responsivo
             window.drawSmoothCurve = function(canvasId, dataPoints, colorHex) {
                 const canvas = document.getElementById(canvasId);
                 if (!canvas) return;
@@ -3022,29 +2955,18 @@
                 if (range === 0) range = 1;
 
                 const padX = 15;
-                const padY = 25;
+                const padY = 20;
                 const gw = w - padX * 2;
                 const gh = h - padY * 2;
-                
-                // Dibujar cuadrícula sutil de fondo
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-                ctx.lineWidth = 1;
-                for(let i = 0; i <= 4; i++) {
-                    let gridY = padY + (gh / 4) * i;
-                    ctx.beginPath(); ctx.moveTo(padX, gridY); ctx.lineTo(w - padX, gridY); ctx.stroke();
-                }
                 
                 // Fallback de seguridad si solo hay 1 dato (Punto central solitario)
                 if (dataPoints.length === 1) {
                     const x = padX + gw / 2;
                     const y = h - padY - (gh * 0.5);
-                    ctx.shadowColor = colorHex;
-                    ctx.shadowBlur = 20;
                     ctx.beginPath();
-                    ctx.arc(x, y, 8, 0, Math.PI * 2);
+                    ctx.arc(x, y, 6, 0, Math.PI * 2);
                     ctx.fillStyle = colorHex;
                     ctx.fill();
-                    ctx.shadowBlur = 0;
                     return;
                 }
 
@@ -3056,7 +2978,7 @@
                     return { x, y, val };
                 });
 
-                // Área Gradient Reforzado
+                // Área Gradient
                 ctx.beginPath();
                 ctx.moveTo(points[0].x, h - padY);
                 ctx.lineTo(points[0].x, points[0].y);
@@ -3071,14 +2993,13 @@
                 ctx.lineTo(points[points.length - 1].x, h - padY);
                 ctx.closePath();
                 
-                const gradient = ctx.createLinearGradient(0, padY, 0, h - padY);
-                gradient.addColorStop(0, colorHex + '99'); // Más intensidad arriba
-                gradient.addColorStop(0.5, colorHex + '40');
+                const gradient = ctx.createLinearGradient(0, 0, 0, h);
+                gradient.addColorStop(0, colorHex + '80'); 
                 gradient.addColorStop(1, colorHex + '00'); 
                 ctx.fillStyle = gradient;
                 ctx.fill();
 
-                // Línea Curvada Neón
+                // Línea Curvada
                 ctx.beginPath();
                 ctx.moveTo(points[0].x, points[0].y);
                 for (let i = 0; i < points.length - 1; i++) {
@@ -3088,26 +3009,19 @@
                     const cp2x = p1.x - (p1.x - p0.x) / 2;
                     ctx.bezierCurveTo(cp1x, p0.y, cp2x, p1.y, p1.x, p1.y);
                 }
-                
-                // Aplicar resplandor brutal a la curva principal
-                ctx.shadowColor = colorHex;
-                ctx.shadowBlur = 15;
                 ctx.strokeStyle = colorHex;
-                ctx.lineWidth = 4;
+                ctx.lineWidth = 3;
                 ctx.lineCap = 'round';
                 ctx.stroke();
                 
-                // Reiniciar sombra
-                ctx.shadowBlur = 0;
-                
-                // Nodos remarcados
+                // Nodos
                 points.forEach(p => {
                     ctx.beginPath();
-                    ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-                    ctx.fillStyle = '#0f172a'; // Centro oscuro
+                    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = '#0f172a';
                     ctx.fill();
-                    ctx.lineWidth = 3;
-                    ctx.strokeStyle = '#ffffff'; // Borde blanco
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = colorHex;
                     ctx.stroke();
                 });
             };
@@ -3124,11 +3038,11 @@
 
             window.drawTVSpeedGraph = function(history) {
                 const speeds = history.map(l => l.speed);
-                // Dibuja Curva segura (Amarillo Eléctrico)
+                // Dibuja Curva segura
                 window.drawSmoothCurve('tv-speed-graph', speeds, '#facc15'); 
             };
 
-            // NUEVO: Gráfico Combinado Multilínea (Tiempo, Velocidad, Delta) - REDISEÑADO
+            // NUEVO: Gráfico Combinado Multilínea (Tiempo, Velocidad, Delta)
             window.drawCombinedLineGraph = function(canvasId, history) {
                 const canvas = document.getElementById(canvasId);
                 if (!canvas) return;
@@ -3146,126 +3060,75 @@
 
                 const times = history.map(l => l.time / 1000);
                 const speeds = history.map(l => l.speed);
-                const deltas = history.map(l => l.delta); // Mantenemos en ms para <0 o >0
+                const deltas = history.map(l => l.delta / 1000);
 
-                const padX = 15; const padY = 25;
+                const padX = 15; const padY = 20;
                 const gw = w - padX * 2; const gh = h - padY * 2;
 
-                // Cuadrícula de fondo
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-                ctx.lineWidth = 1;
-                ctx.setLineDash([]); // Asegurar que sea sólida
-                for(let i = 0; i <= 4; i++) {
-                    let gridY = padY + (gh / 4) * i;
-                    ctx.beginPath(); ctx.moveTo(padX, gridY); ctx.lineTo(w - padX, gridY); ctx.stroke();
-                }
-
-                if (history.length === 1) {
-                    const x = padX + gw / 2;
-                    const yt = h - padY - (gh * 0.5);
-                    ctx.shadowColor = '#22d3ee'; ctx.shadowBlur = 15;
-                    ctx.beginPath(); ctx.arc(x, yt, 6, 0, Math.PI * 2);
-                    ctx.fillStyle = '#22d3ee'; ctx.fill(); ctx.shadowBlur = 0;
-                    return;
-                }
-
-                const stepX = gw / (times.length - 1);
-
-                // Función auxiliar para mapear puntos (auto-escalado independiente)
-                const getPoints = (data) => {
-                    const min = Math.min(...data);
+                const drawLine = (data, colorHex, isDeltaArea) => {
+                    if(data.length === 0) return;
+                    const min = isDeltaArea ? 0 : Math.min(...data); // Delta desde 0
                     const max = Math.max(...data);
                     let range = max - min;
                     if (range === 0) range = 1;
-                    return data.map((val, i) => ({
-                        x: padX + i * stepX,
-                        y: h - padY - ((val - min) / range) * gh
-                    }));
-                };
 
-                const timePoints = getPoints(times);
-                const speedPoints = getPoints(speeds);
+                    const stepX = data.length > 1 ? gw / (data.length - 1) : gw / 2;
 
-                // 1. DIBUJAR CURVA DE VELOCIDAD (Línea Amarilla Punteada, de fondo)
-                ctx.beginPath();
-                ctx.moveTo(speedPoints[0].x, speedPoints[0].y);
-                for (let i = 0; i < speedPoints.length - 1; i++) {
-                    const p0 = speedPoints[i], p1 = speedPoints[i+1];
-                    const cp1x = p0.x + (p1.x - p0.x) / 2;
-                    const cp2x = p1.x - (p1.x - p0.x) / 2;
-                    ctx.bezierCurveTo(cp1x, p0.y, cp2x, p1.y, p1.x, p1.y);
-                }
-                ctx.strokeStyle = 'rgba(250, 204, 21, 0.8)'; // Amarillo eléctrico
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]); // Efecto punteado tecnológico
-                ctx.stroke();
-                ctx.setLineDash([]); // Reset importante
+                    ctx.beginPath();
+                    data.forEach((val, i) => {
+                        const x = data.length > 1 ? padX + i * stepX : padX + gw / 2;
+                        // Para Delta, que ocupe máximo el 40% inferior de la gráfica
+                        const mappedH = isDeltaArea ? (gh * 0.4) : gh;
+                        const yOffset = isDeltaArea ? (gh * 0.6) : 0; 
+                        
+                        const y = h - padY - ((val - min) / range) * mappedH - yOffset;
+                        
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    });
 
-                // 2. DIBUJAR ÁREA DE TIEMPO (Gradiente difuminado)
-                ctx.beginPath();
-                ctx.moveTo(timePoints[0].x, h - padY);
-                ctx.lineTo(timePoints[0].x, timePoints[0].y);
-                for (let i = 0; i < timePoints.length - 1; i++) {
-                    const p0 = timePoints[i], p1 = timePoints[i+1];
-                    const cp1x = p0.x + (p1.x - p0.x) / 2;
-                    const cp2x = p1.x - (p1.x - p0.x) / 2;
-                    ctx.bezierCurveTo(cp1x, p0.y, cp2x, p1.y, p1.x, p1.y);
-                }
-                ctx.lineTo(timePoints[timePoints.length - 1].x, h - padY);
-                ctx.closePath();
-                
-                const grad = ctx.createLinearGradient(0, padY, 0, h - padY);
-                grad.addColorStop(0, 'rgba(34, 211, 238, 0.35)');
-                grad.addColorStop(1, 'rgba(34, 211, 238, 0.0)');
-                ctx.fillStyle = grad;
-                ctx.fill();
-
-                // 3. DIBUJAR LÍNEA DE TIEMPO PRINCIPAL (Cyan Brillante)
-                ctx.beginPath();
-                ctx.moveTo(timePoints[0].x, timePoints[0].y);
-                for (let i = 0; i < timePoints.length - 1; i++) {
-                    const p0 = timePoints[i], p1 = timePoints[i+1];
-                    const cp1x = p0.x + (p1.x - p0.x) / 2;
-                    const cp2x = p1.x - (p1.x - p0.x) / 2;
-                    ctx.bezierCurveTo(cp1x, p0.y, cp2x, p1.y, p1.x, p1.y);
-                }
-                ctx.strokeStyle = '#22d3ee';
-                ctx.lineWidth = 3;
-                ctx.shadowColor = '#22d3ee';
-                ctx.shadowBlur = 12;
-                ctx.stroke();
-                ctx.shadowBlur = 0;
-
-                // 4. DIBUJAR NODOS INTELIGENTES (Color = Delta)
-                timePoints.forEach((p, i) => {
-                    const delta = deltas[i];
-                    let nodeColor = '#cbd5e1'; // Neutro (Vuelta 1 o 0 exacto)
-                    let glowColor = '#94a3b8';
-
-                    if (i > 0 && delta !== 0) {
-                        if (delta < 0) {
-                            nodeColor = '#10b981'; // Verde (Más rápido)
-                            glowColor = '#34d399';
-                        } else {
-                            nodeColor = '#ef4444'; // Rojo (Más lento)
-                            glowColor = '#f87171';
-                        }
+                    if (isDeltaArea) {
+                        // Rellenar área hasta abajo
+                        ctx.lineTo(data.length > 1 ? padX + (data.length - 1) * stepX : padX + gw / 2, h - padY);
+                        ctx.lineTo(padX, h - padY);
+                        ctx.fillStyle = colorHex + '40'; // Opacidad
+                        ctx.fill();
+                        ctx.strokeStyle = colorHex;
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    } else {
+                        // Línea normal con glow
+                        ctx.strokeStyle = colorHex;
+                        ctx.lineWidth = 3;
+                        ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
+                        ctx.shadowColor = colorHex;
+                        ctx.shadowBlur = 8;
+                        ctx.stroke();
+                        ctx.shadowBlur = 0; // reset
                     }
 
-                    // Fondo oscuro del nodo
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-                    ctx.fillStyle = '#0f172a'; 
-                    ctx.fill();
-                    
-                    // Anillo exterior brillante con el color del Delta
-                    ctx.lineWidth = 3;
-                    ctx.strokeStyle = nodeColor;
-                    ctx.shadowColor = glowColor;
-                    ctx.shadowBlur = 12;
-                    ctx.stroke();
-                    ctx.shadowBlur = 0; // reset
-                });
+                    // Nodos
+                    data.forEach((val, i) => {
+                        const x = data.length > 1 ? padX + i * stepX : padX + gw / 2;
+                        const mappedH = isDeltaArea ? (gh * 0.4) : gh;
+                        const yOffset = isDeltaArea ? (gh * 0.6) : 0; 
+                        const y = h - padY - ((val - min) / range) * mappedH - yOffset;
+                        
+                        ctx.beginPath();
+                        ctx.arc(x, y, isDeltaArea ? 2 : 4, 0, Math.PI * 2);
+                        ctx.fillStyle = '#0f172a';
+                        ctx.fill();
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = colorHex;
+                        ctx.stroke();
+                    });
+                };
+
+                // Orden de dibujo: Delta (fondo rosa), Velocidad (Amarillo), Tiempo (Cian)
+                drawLine(deltas, '#ec4899', true);   // Delta
+                drawLine(speeds, '#facc15', false);  // Velocidad
+                drawLine(times, '#22d3ee', false);   // Tiempo
             };
 
             // NUEVO: Gráfico de Evolución de Consistencia
@@ -3321,9 +3184,7 @@
             // --- LÓGICA PARA SALIR DEL MODO TV ---
             if (tvExitBtn) {
                 tvExitBtn.addEventListener('click', () => {
-                    if (unsubscribeTV) unsubscribeTV(); // Limpieza absoluta
-                    // Al salir, reemplazamos la URL para no dejar rastro del modo TV en el botón Atrás
-                    window.location.replace(window.location.pathname);
+                    window.location.href = window.location.pathname;
                 });
             }
 
@@ -3455,8 +3316,7 @@
                         const appId = "app_krono";
                         const docRef = window.fs.doc(window.db, 'artifacts', appId, 'public', 'data', 'tv_sessions', cloudRoomCode);
                         
-                        if (unsubscribeTV) unsubscribeTV(); // Evitar duplicados si se reconecta
-                        unsubscribeTV = window.fs.onSnapshot(docRef, (docSnap) => {
+                        window.fs.onSnapshot(docRef, (docSnap) => {
                             if (docSnap.exists()) {
                                 tvData = docSnap.data();
                                 updateTVUI();
@@ -3534,20 +3394,13 @@
             if(tvFsBtn) tvFsBtn.addEventListener('click', toggleFullScreen);
         };
 
-        // Auto-arranque modo TV estricto si se detecta en la URL
+        // Auto-arranque modo TV local si se abre desde el popup
         if (urlParams.get('tv') === 'true') {
-            const passedCode = urlParams.get('code') || null;
-            window.startTVMode(passedCode);
+            window.startTVMode(null);
         }
         
         // Listeners iniciales para cargar preferencias previas
         window.addEventListener('DOMContentLoaded', () => {
-            // Protección extra: Si venimos de un BFCache (Botón atrás del móvil), 
-            // aseguramos que el estado visual corresponda a la URL actual
-            if (urlParams.get('tv') !== 'true' && isTVMode) {
-                window.location.reload();
-            }
-
             const sLang = localStorage.getItem('krono_lang');
             if (sLang) { 
                 const langSel = document.getElementById('lang-select');
