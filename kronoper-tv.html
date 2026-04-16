@@ -2697,6 +2697,25 @@
         }
 
         function broadcastState() {
+            if(isTVMode) return; 
+            const payload = getPayload();
+            kronoChannel.postMessage({ type: 'STATE_UPDATE', payload: payload });
+            localStorage.setItem('krono_tv_state', JSON.stringify(payload));
+        }
+
+        async function syncToCloud() {
+            if (isTVMode || !window.db || !window.auth || !window.auth.currentUser) return;
+            const payload = getPayload();
+            try {
+                const appId = "app_krono";
+                const docRef = window.fs.doc(window.db, 'artifacts', appId, 'public', 'data', 'tv_sessions', window.myRoomCode);
+                await window.fs.setDoc(docRef, payload);
+            } catch (e) {
+                console.error("Error sincronizando a la nube:", e);
+            }
+        }
+
+        // Se restaura el evento que había quedado atrapado dentro de la función rota
         document.addEventListener('MSFullscreenChange', updateFsIcons);
 
         // =========================================================================
