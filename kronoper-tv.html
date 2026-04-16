@@ -1422,9 +1422,12 @@
         
         const kronoChannel = new BroadcastChannel('krono_telemetry_channel');
 
-        // Generar el código de sala único para este dispositivo móvil
-        const portalDocId = localStorage.getItem('doc_id_app_krono_tv');
-        window.myRoomCode = portalDocId ? portalDocId : Math.random().toString(36).substring(2, 6).toUpperCase();
+        // Generar el código de sala único (Dinámico para Auto-Link)
+        function getPortalRoomCode() {
+            return localStorage.getItem('doc_id_app_krono_tv') || new URLSearchParams(window.location.search).get('room');
+        }
+        
+        window.myRoomCode = getPortalRoomCode() || Math.random().toString(36).substring(2, 6).toUpperCase();
 
         if (isTVMode) {
             document.getElementById('main-app-container').style.display = 'none';
@@ -2617,10 +2620,30 @@
             rankingBtn.addEventListener('click', () => { loadLeaderboard(); rankingModal.classList.remove('hidden'); setTimeout(()=>rankingModal.classList.add('open'),10); });
             closeRankingBtn.addEventListener('click', () => { rankingModal.classList.remove('open'); setTimeout(()=>rankingModal.classList.add('hidden'),300); });
             
-            // --- NUEVA LÓGICA ABRIR TV (MODIFICADA PARA SPA) ---
-            document.getElementById('room-code-display').textContent = portalDocId ? "AUTO-LINK" : window.myRoomCode;
+            // --- NUEVA LÓGICA ABRIR TV (MODIFICADA PARA SPA Y AUTO-LINK DINÁMICO) ---
+            function updateRoomCodeDisplay() {
+                const display = document.getElementById('room-code-display');
+                if (display) {
+                    display.textContent = getPortalRoomCode() ? "AUTO-LINK" : window.myRoomCode;
+                }
+            }
+            updateRoomCodeDisplay();
+
+            // Observador inteligente: Si Krono inyecta el código con retraso, lo detectamos en vivo sin necesidad de salir.
+            setInterval(() => {
+                const pCode = getPortalRoomCode();
+                if (pCode && pCode !== window.myRoomCode) {
+                    window.myRoomCode = pCode;
+                    updateRoomCodeDisplay();
+                    if (!isTVMode) {
+                        broadcastState();
+                        syncToCloud();
+                    }
+                }
+            }, 1000);
 
             openTvBtn.addEventListener('click', () => {
+                updateRoomCodeDisplay();
                 tvSetupModal.classList.remove('hidden');
                 setTimeout(() => tvSetupModal.classList.add('open'), 10);
                 syncToCloud(); 
@@ -2657,8 +2680,7 @@
             // NUEVO: Botón directo para pasar a Modo Oscuro (Dashboard TV)
             if (directTvBtn) {
                 directTvBtn.addEventListener('click', () => {
-                    const autoRoom = portalDocId || window.myRoomCode;
-                    if (window.startTVMode) window.startTVMode(autoRoom);
+                    if (window.startTVMode) window.startTVMode(window.myRoomCode);
                 });
             }
         }
@@ -3191,6 +3213,23 @@
 
             function updateTVUI() {
                 if(!tvData) return;
+
+                // ANTI-GHOST RACES: Si los datos de Firebase son de hace más de 2 horas, caducamos la sesión
+                const STALE_TIME_MS = 2 * 60 * 60 * 1000; 
+                if (tvData.timestamp && (Date.now() - tvData.timestamp > STALE_TIME_MS)) {
+                    tvData.isRaceActive = false;
+                    tvData.isCountdown = false;
+                    tvData.isPaused = false;
+                    tvData.raceAborted = false;
+                    tvData.lapHistory = [];
+                    tvData.currentLap = 0;
+                    tvData.bestLapTime = Infinity;
+                    tvData.lastCompletedLapTime = 0;
+                    tvData.avgSpeed = 0;
+                    tvData.maxSpeed = 0;
+                    tvData.consistency = 0;
+                }
+
                 tvPilotCar.textContent = `${tvData.pilot || 'Piloto'} / ${tvData.car || 'Coche'}`;
                 
                 const maxLapsText = tvData.totalLaps === Infinity ? '∞' : tvData.totalLaps;
@@ -3294,7 +3333,7 @@
             }
 
             if (cloudRoomCode) {
-                tvCloudCodeDisplay.querySelector('span').textContent = (cloudRoomCode === portalDocId) ? "AUTO-LINK" : cloudRoomCode;
+                tvCloudCodeDisplay.querySelector('span').textContent = (cloudRoomCode === getPortalRoomCode()) ? "AUTO-LINK" : cloudRoomCode;
                 tvCloudCodeDisplay.classList.remove('hidden');
                 
                 tvStatus.className = "text-xl lg:text-2xl font-rajdhani font-bold uppercase tracking-widest px-6 py-2 rounded-xl border transition-colors duration-300 bg-slate-800/90 border-cyan-500/50 shadow-[0_0_15px_rgba(34,211,238,0.2)]";
