@@ -2751,6 +2751,7 @@
         // LÓGICA RECEPTORA MODO TV (AHORA ENCAPSULADA EN SPA)
         // =========================================================================
         let tvData = {};
+        let lastReceivedLocalTime = Date.now(); // NUEVO: Para sincronizar relojes relativos
         
         window.startTVMode = function(roomCode) {
             isTVMode = true;
@@ -3319,6 +3320,7 @@
                         window.fs.onSnapshot(docRef, (docSnap) => {
                             if (docSnap.exists()) {
                                 tvData = docSnap.data();
+                                lastReceivedLocalTime = Date.now(); // Sincronizar tiempo local
                                 updateTVUI();
                             } else {
                                 tvStatus.innerHTML = `<span class="flex items-center"><svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> SALA INACTIVA O CERRADA</span>`;
@@ -3337,11 +3339,19 @@
 
                 try {
                     const savedState = localStorage.getItem('krono_tv_state');
-                    if (savedState) { tvData = JSON.parse(savedState); updateTVUI(); }
+                    if (savedState) { 
+                        tvData = JSON.parse(savedState); 
+                        lastReceivedLocalTime = Date.now();
+                        updateTVUI(); 
+                    }
                 } catch(e) {}
                 
                 kronoChannel.onmessage = (event) => {
-                    if(event.data.type === 'STATE_UPDATE') { tvData = event.data.payload; updateTVUI(); }
+                    if(event.data.type === 'STATE_UPDATE') { 
+                        tvData = event.data.payload; 
+                        lastReceivedLocalTime = Date.now();
+                        updateTVUI(); 
+                    }
                 };
             }
 
@@ -3349,12 +3359,17 @@
             if (tvIntervalId) clearInterval(tvIntervalId);
             tvIntervalId = setInterval(() => {
                 if (tvData && tvData.isRaceActive && !tvData.isPaused) {
-                    const now = Date.now();
-                    const elapRace = tvData.raceStartTime ? (now - tvData.raceStartTime) : 0;
-                    const elapLap = tvData.lapStartTimestamp ? (now - tvData.lapStartTimestamp) : 0;
+                    // Cálculo de tiempo relativo: Previene el bug de las "630 horas" 
+                    // calculando el tiempo exacto transcurrido desde el último payload
+                    const estimatedSenderTime = tvData.timestamp 
+                        ? (tvData.timestamp + (Date.now() - lastReceivedLocalTime))
+                        : Date.now();
+
+                    const elapRace = tvData.raceStartTime ? (estimatedSenderTime - tvData.raceStartTime) : 0;
+                    const elapLap = tvData.lapStartTimestamp ? (estimatedSenderTime - tvData.lapStartTimestamp) : 0;
                     
-                    document.getElementById('tv-race-time').textContent = formatTime(elapRace, true);
-                    document.getElementById('tv-current-lap-time').textContent = formatTime(elapLap, false);
+                    document.getElementById('tv-race-time').textContent = formatTime(Math.max(0, elapRace), true);
+                    document.getElementById('tv-current-lap-time').textContent = formatTime(Math.max(0, elapLap), false);
                 }
             }, 30);
             
@@ -3417,6 +3432,17 @@
             if (sCar) {
                 const cInput = document.getElementById('car-model-input');
                 if(cInput) cInput.value = sCar;
+            }
+
+            // NUEVO: Forzar actualización inicial asegurada (Espera pacientemente a que Firebase cargue)
+            if (!isTVMode) {
+                const initSyncInterval = setInterval(() => {
+                    if (window.db && window.auth && window.auth.currentUser) {
+                        clearInterval(initSyncInterval);
+                        broadcastState();
+                        syncToCloud();
+                    }
+                }, 500); // Comprueba la conexión cada 0.5 segundos hasta que lo logra
             }
         });
         
