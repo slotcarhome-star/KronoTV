@@ -991,10 +991,7 @@
             
             <div class="flex flex-col items-end">
                 <div class="flex items-center space-x-3">
-                    <!-- NUEVO: BOTÓN SALIR MODO TV -->
-                    <button id="tv-exit-btn" class="p-3 rounded-xl bg-slate-800/80 border border-slate-600 text-red-400 hover:text-white hover:bg-red-900/60 hover:border-red-500 transition shadow-lg hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] group" title="Salir del Modo TV">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:translate-x-0.5 transition-transform"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                    </button>
+                    <!-- ELIMINADO: Botón de salir. Un receptor es solo un receptor. -->
 
                     <!-- NUEVO: BOTÓN IA LAYOUT (SORPRESA) -->
                     <button id="tv-ai-theme-btn" class="p-3 rounded-xl bg-slate-800/80 border border-slate-600 text-cyan-400 hover:text-white hover:bg-cyan-900/50 hover:border-cyan-400 transition shadow-[0_0_10px_rgba(34,211,238,0.2)] group" title="IA Auto-Configuración Visual">
@@ -1425,13 +1422,6 @@
         // Generar el código de sala único para este dispositivo móvil
         const portalDocId = localStorage.getItem('doc_id_app_krono_tv');
         window.myRoomCode = portalDocId ? portalDocId : Math.random().toString(36).substring(2, 6).toUpperCase();
-
-        if (isTVMode) {
-            document.getElementById('main-app-container').style.display = 'none';
-            document.getElementById('tv-dashboard').classList.remove('hidden');
-            document.getElementById('tv-dashboard').classList.add('flex');
-            document.title = "KRONO PERSONAL DASHBOARD";
-        }
 
         // --- TRADUCCIONES ---
         const translations = {
@@ -2699,55 +2689,7 @@
         document.addEventListener('MSFullscreenChange', updateFsIcons);
 
         // =========================================================================
-        // MÓDULO COMUNICACIÓN TV <-> APP
-        // =========================================================================
-
-        function getPayload() {
-            return {
-                pilot: pilotNameInput.value || 'Piloto',
-                car: carModelInput.value || 'Coche',
-                raceMode: raceMode,
-                totalLaps: totalLaps,
-                currentLap: currentLap,
-                raceTimeLimit: raceTimeLimit,
-                lapHistory: lapHistory,
-                bestLapTime: bestLapTime,
-                lastCompletedLapTime: lastCompletedLapTime,
-                avgSpeed: avgSpeed,
-                maxSpeed: maxSpeed,
-                consistency: consistency,
-                isRaceActive: isRaceActive,
-                isCountdown: isCountdown,
-                isPaused: isPaused,
-                raceAborted: raceAborted,
-                raceStartTime: raceStartTime,     
-                lapStartTimestamp: lapStartTimestamp,
-                currentLang: currentLang,
-                timestamp: Date.now()
-            };
-        }
-
-        function broadcastState() {
-            if(isTVMode) return; 
-            const payload = getPayload();
-            kronoChannel.postMessage({ type: 'STATE_UPDATE', payload: payload });
-            localStorage.setItem('krono_tv_state', JSON.stringify(payload));
-        }
-
-        async function syncToCloud() {
-            if (isTVMode || !window.db || !window.auth || !window.auth.currentUser) return;
-            const payload = getPayload();
-            try {
-                const appId = "app_krono";
-                const docRef = window.fs.doc(window.db, 'artifacts', appId, 'public', 'data', 'tv_sessions', window.myRoomCode);
-                await window.fs.setDoc(docRef, payload);
-            } catch (e) {
-                console.error("Error sincronizando a la nube:", e);
-            }
-        }
-
-        // =========================================================================
-        // LÓGICA RECEPTORA MODO TV (AHORA ENCAPSULADA EN SPA)
+        // LÓGICA RECEPTORA MODO TV (AISLAMIENTO TOTAL)
         // =========================================================================
         let tvData = {};
         let unsubscribeTV = null; // Control para matar la escucha de Firebase
@@ -2756,11 +2698,14 @@
             isTVMode = true;
             cloudRoomCode = roomCode;
 
-            // UI Switch
-            document.getElementById('main-app-container').style.display = 'none';
+            // UI Switch: ¡DESTRUCCIÓN DEL KRONO PRINCIPAL!
+            // Si somos TV, eliminamos físicamente el HTML de la cámara para liberar memoria y evitar cruces
+            const mainContainer = document.getElementById('main-app-container');
+            if (mainContainer) mainContainer.remove();
+
             document.getElementById('tv-dashboard').classList.remove('hidden');
             document.getElementById('tv-dashboard').classList.add('flex');
-            document.title = "KRONO PERSONAL DASHBOARD";
+            document.title = "KRONO RECEPTOR TV";
 
             // --- FUNCIONES PARA GUARDAR Y RESTAURAR LAYOUT ---
             function saveTVLayout() {
@@ -3316,16 +3261,6 @@
             const aiThemeBtn = document.getElementById('tv-ai-theme-btn');
             const tvBg = document.getElementById('tv-dashboard');
             const flashOverlay = document.getElementById('ai-flash-overlay');
-            const tvExitBtn = document.getElementById('tv-exit-btn');
-
-            // --- LÓGICA PARA SALIR DEL MODO TV ---
-            if (tvExitBtn) {
-                tvExitBtn.addEventListener('click', () => {
-                    if (unsubscribeTV) unsubscribeTV(); // Limpieza absoluta
-                    // Al salir, reemplazamos la URL para no dejar rastro del modo TV en el botón Atrás
-                    window.location.replace(window.location.pathname);
-                });
-            }
 
             function updateTVUI() {
                 if(!tvData) return;
