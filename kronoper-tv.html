@@ -2643,23 +2643,45 @@
                 setTimeout(() => tvSetupModal.classList.add('hidden'), 300);
             });
 
-            // Nube: Forzamos una recarga estricta (Destruye el Krono en memoria y carga SOLO la TV)
+            // Nube: Transformación SPA Estricta (Destruye el Krono en memoria y carga SOLO la TV)
             btnTvConnect.addEventListener('click', () => {
                 const code = tvCodeInput.value.trim().toUpperCase();
                 if (code.length > 0) {
                     tvSetupModal.classList.remove('open');
-                    // Usamos REPLACE: Destruye el historial anterior, imposible volver a 2 kronos
-                    window.location.replace(window.location.pathname + "?tv=true&code=" + code);
+                    setTimeout(() => {
+                        tvSetupModal.classList.add('hidden');
+                        switchToTVMode(code);
+                    }, 300);
                 }
             });
 
-            // NUEVO: Botón directo para pasar a Modo Oscuro (Dashboard TV) - RECARGA ESTRICTA
+            // NUEVO: Botón directo para pasar a Modo Oscuro (Dashboard TV) - SPA ESTRICTA
             if (directTvBtn) {
                 directTvBtn.addEventListener('click', () => {
                     const autoRoom = portalDocId || window.myRoomCode;
-                    // Usamos REPLACE: Destruye todo y levanta solo la TV borrando el rastro
-                    window.location.replace(window.location.pathname + "?tv=true&code=" + autoRoom);
+                    switchToTVMode(autoRoom);
                 });
+            }
+
+            // FUNCIÓN DE DESTRUCCIÓN Y AISLAMIENTO
+            function switchToTVMode(code) {
+                // 1. Apagar cámara y sensores completamente
+                if(cameraStream) cameraStream.getTracks().forEach(t=>t.stop());
+                cameraStream = null;
+                isProcessing = false;
+                
+                // 2. Parar todos los cálculos de tiempo
+                if(raceIntervalId) clearInterval(raceIntervalId);
+                if(lapIntervalId) clearInterval(lapIntervalId);
+                
+                // 3. Ocultar modales si quedaba alguno
+                document.querySelectorAll('.modal-overlay').forEach(m => {
+                    m.classList.remove('open');
+                    m.classList.add('hidden');
+                });
+
+                // 4. Iniciar TV (Esto borrará físicamente el Krono del HTML)
+                window.startTVMode(code);
             }
         }
 
@@ -3291,6 +3313,16 @@
             const aiThemeBtn = document.getElementById('tv-ai-theme-btn');
             const tvBg = document.getElementById('tv-dashboard');
             const flashOverlay = document.getElementById('ai-flash-overlay');
+            const tvExitBtn = document.getElementById('tv-exit-btn');
+
+            // --- LÓGICA PARA SALIR DEL MODO TV ---
+            if (tvExitBtn) {
+                tvExitBtn.addEventListener('click', () => {
+                    if (unsubscribeTV) unsubscribeTV(); // Limpieza absoluta
+                    // En lugar de cambiar la URL, forzamos un reload que es 100% seguro en cualquier entorno
+                    window.location.reload(); 
+                });
+            }
 
             function updateTVUI() {
                 if(!tvData) return;
