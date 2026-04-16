@@ -991,7 +991,10 @@
             
             <div class="flex flex-col items-end">
                 <div class="flex items-center space-x-3">
-                    <!-- ELIMINADO: Botón de salir. Un receptor es solo un receptor. -->
+                    <!-- NUEVO: BOTÓN SALIR MODO TV -->
+                    <button id="tv-exit-btn" class="p-3 rounded-xl bg-slate-800/80 border border-slate-600 text-red-400 hover:text-white hover:bg-red-900/60 hover:border-red-500 transition shadow-lg hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] group" title="Salir del Modo TV">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:translate-x-0.5 transition-transform"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    </button>
 
                     <!-- NUEVO: BOTÓN IA LAYOUT (SORPRESA) -->
                     <button id="tv-ai-theme-btn" class="p-3 rounded-xl bg-slate-800/80 border border-slate-600 text-cyan-400 hover:text-white hover:bg-cyan-900/50 hover:border-cyan-400 transition shadow-[0_0_10px_rgba(34,211,238,0.2)] group" title="IA Auto-Configuración Visual">
@@ -1419,14 +1422,16 @@
         
         const kronoChannel = new BroadcastChannel('krono_telemetry_channel');
 
-        // Generar el código de sala único para este dispositivo móvil (AHORA PERSISTENTE)
+        // Generar el código de sala único para este dispositivo móvil
         const portalDocId = localStorage.getItem('doc_id_app_krono_tv');
-        let savedRoomCode = localStorage.getItem('krono_room_code');
-        if (!savedRoomCode) {
-            savedRoomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-            localStorage.setItem('krono_room_code', savedRoomCode);
+        window.myRoomCode = portalDocId ? portalDocId : Math.random().toString(36).substring(2, 6).toUpperCase();
+
+        if (isTVMode) {
+            document.getElementById('main-app-container').style.display = 'none';
+            document.getElementById('tv-dashboard').classList.remove('hidden');
+            document.getElementById('tv-dashboard').classList.add('flex');
+            document.title = "KRONO PERSONAL DASHBOARD";
         }
-        window.myRoomCode = portalDocId ? portalDocId : savedRoomCode;
 
         // --- TRADUCCIONES ---
         const translations = {
@@ -2016,11 +2021,7 @@
             
             setTimeout(() => {
                 falseStartAlert.classList.remove('show');
-                // Auto-resetear la carrera para apagar el semáforo rojo y limpiar la TV
-                if (raceAborted) {
-                    stopRace(false);
-                }
-            }, 2500);
+            }, 2000);
         }
 
         function recordLap() {
@@ -2253,10 +2254,8 @@
 
         function stopRace(finished = false) {
             isRaceActive = false; isCountdown = false; hasCrossedStart = false; isPaused = false;
-            raceAborted = false; // CRÍTICO: Limpiar estado de salida nula para la TV
             pauseBtn.disabled = true;
             yellowFlagOverlay.classList.remove('active');
-            falseStartAlert.classList.remove('show'); // CRÍTICO: Asegurar que el cartel desaparece
             isLineBlocked = false;
             stuckFrameCount = 0;
             updatePauseUI();
@@ -2643,54 +2642,67 @@
                 setTimeout(() => tvSetupModal.classList.add('hidden'), 300);
             });
 
-            // Nube: Transformación SPA Estricta (Destruye el Krono en memoria y carga SOLO la TV)
+            // Nube: Forzamos una recarga estricta (Destruye el Krono en memoria y carga SOLO la TV)
             btnTvConnect.addEventListener('click', () => {
                 const code = tvCodeInput.value.trim().toUpperCase();
                 if (code.length > 0) {
                     tvSetupModal.classList.remove('open');
-                    setTimeout(() => {
-                        tvSetupModal.classList.add('hidden');
-                        switchToTVMode(code);
-                    }, 300);
+                    // Usamos REPLACE: Destruye el historial anterior, imposible volver a 2 kronos
+                    window.location.replace(window.location.pathname + "?tv=true&code=" + code);
                 }
             });
 
-            // NUEVO: Botón directo para pasar a Modo Oscuro (Dashboard TV) - SPA ESTRICTA
+            // NUEVO: Botón directo para pasar a Modo Oscuro (Dashboard TV) - RECARGA ESTRICTA
             if (directTvBtn) {
                 directTvBtn.addEventListener('click', () => {
                     const autoRoom = portalDocId || window.myRoomCode;
-                    switchToTVMode(autoRoom);
+                    // Usamos REPLACE: Destruye todo y levanta solo la TV borrando el rastro
+                    window.location.replace(window.location.pathname + "?tv=true&code=" + autoRoom);
                 });
-            }
-
-            // FUNCIÓN DE DESTRUCCIÓN Y AISLAMIENTO
-            function switchToTVMode(code) {
-                // 1. Apagar cámara y sensores completamente
-                if(cameraStream) cameraStream.getTracks().forEach(t=>t.stop());
-                cameraStream = null;
-                isProcessing = false;
-                
-                // 2. Parar todos los cálculos de tiempo
-                if(raceIntervalId) clearInterval(raceIntervalId);
-                if(lapIntervalId) clearInterval(lapIntervalId);
-                
-                // 3. Ocultar modales si quedaba alguno
-                document.querySelectorAll('.modal-overlay').forEach(m => {
-                    m.classList.remove('open');
-                    m.classList.add('hidden');
-                });
-
-                // 4. Iniciar TV (Esto borrará físicamente el Krono del HTML)
-                window.startTVMode(code);
             }
         }
 
         // =========================================================================
-        // MÓDULO COMUNICACIÓN TV <-> APP (REDISEÑADO ANTI-DRIFT)
+        // LÓGICA PANTALLA COMPLETA GLOBAL (COMPARTIDA)
+        // =========================================================================
+        function toggleFullScreen() {
+            const doc = window.document;
+            const docEl = doc.documentElement;
+            const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+            const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+            if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+                if (requestFullScreen) requestFullScreen.call(docEl);
+            } else {
+                if (cancelFullScreen) cancelFullScreen.call(doc);
+            }
+        }
+
+        function updateFsIcons() {
+            const isFs = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+            const fsIconEnter = document.getElementById('fs-icon-enter');
+            const fsIconExit = document.getElementById('fs-icon-exit');
+            if (fsIconEnter && fsIconExit) {
+                if (isFs) { fsIconEnter.classList.add('hidden'); fsIconExit.classList.remove('hidden'); } 
+                else { fsIconEnter.classList.remove('hidden'); fsIconExit.classList.add('hidden'); }
+            }
+            const tvFsEnter = document.getElementById('tv-fs-enter');
+            const tvFsExit = document.getElementById('tv-fs-exit');
+            if (tvFsEnter && tvFsExit) {
+                if (isFs) { tvFsEnter.classList.add('hidden'); tvFsExit.classList.remove('hidden'); } 
+                else { tvFsEnter.classList.remove('hidden'); tvFsExit.classList.add('hidden'); }
+            }
+        }
+        
+        document.addEventListener('fullscreenchange', updateFsIcons);
+        document.addEventListener('webkitfullscreenchange', updateFsIcons);
+        document.addEventListener('mozfullscreenchange', updateFsIcons);
+        document.addEventListener('MSFullscreenChange', updateFsIcons);
+
+        // =========================================================================
+        // MÓDULO COMUNICACIÓN TV <-> APP
         // =========================================================================
 
         function getPayload() {
-            const now = Date.now();
             return {
                 pilot: pilotNameInput.value || 'Piloto',
                 car: carModelInput.value || 'Coche',
@@ -2710,11 +2722,8 @@
                 raceAborted: raceAborted,
                 raceStartTime: raceStartTime,     
                 lapStartTimestamp: lapStartTimestamp,
-                // NUEVO: Tiempos relativos pre-calculados para evitar problemas si los relojes están desincronizados
-                elapsedRaceTime: isRaceActive ? (now - raceStartTime) : finalRaceTimeMs,
-                elapsedLapTime: isRaceActive ? (now - lapStartTimestamp) : 0,
                 currentLang: currentLang,
-                timestamp: now
+                timestamp: Date.now()
             };
         }
 
@@ -2737,11 +2746,8 @@
             }
         }
 
-        // Se restaura el evento que había quedado atrapado dentro de la función rota
-        document.addEventListener('MSFullscreenChange', updateFsIcons);
-
         // =========================================================================
-        // LÓGICA RECEPTORA MODO TV (AISLAMIENTO TOTAL)
+        // LÓGICA RECEPTORA MODO TV (AHORA ENCAPSULADA EN SPA)
         // =========================================================================
         let tvData = {};
         let unsubscribeTV = null; // Control para matar la escucha de Firebase
@@ -2750,14 +2756,11 @@
             isTVMode = true;
             cloudRoomCode = roomCode;
 
-            // UI Switch: ¡DESTRUCCIÓN DEL KRONO PRINCIPAL!
-            // Si somos TV, eliminamos físicamente el HTML de la cámara para liberar memoria y evitar cruces
-            const mainContainer = document.getElementById('main-app-container');
-            if (mainContainer) mainContainer.remove();
-
+            // UI Switch
+            document.getElementById('main-app-container').style.display = 'none';
             document.getElementById('tv-dashboard').classList.remove('hidden');
             document.getElementById('tv-dashboard').classList.add('flex');
-            document.title = "KRONO RECEPTOR TV";
+            document.title = "KRONO PERSONAL DASHBOARD";
 
             // --- FUNCIONES PARA GUARDAR Y RESTAURAR LAYOUT ---
             function saveTVLayout() {
@@ -3319,8 +3322,8 @@
             if (tvExitBtn) {
                 tvExitBtn.addEventListener('click', () => {
                     if (unsubscribeTV) unsubscribeTV(); // Limpieza absoluta
-                    // En lugar de cambiar la URL, forzamos un reload que es 100% seguro en cualquier entorno
-                    window.location.reload(); 
+                    // Al salir, reemplazamos la URL para no dejar rastro del modo TV en el botón Atrás
+                    window.location.replace(window.location.pathname);
                 });
             }
 
@@ -3456,7 +3459,6 @@
                         unsubscribeTV = window.fs.onSnapshot(docRef, (docSnap) => {
                             if (docSnap.exists()) {
                                 tvData = docSnap.data();
-                                tvData.localReceiveTimestamp = Date.now(); // NUEVO: Marca de tiempo exacta de llegada
                                 updateTVUI();
                             } else {
                                 tvStatus.innerHTML = `<span class="flex items-center"><svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> SALA INACTIVA O CERRADA</span>`;
@@ -3480,19 +3482,16 @@
                 
                 kronoChannel.onmessage = (event) => {
                     if(event.data.type === 'STATE_UPDATE') { tvData = event.data.payload; updateTVUI(); }
-                }; // <--- ESTO FALTABA
-            } // <--- Y ESTO FALTABA
+                };
+            }
 
-            // Loop de actualización UI en tiempo real para modo TV (AHORA RELATIVO Y A PRUEBA DE DESINCRONIZACIÓN)
+            // Loop de actualización UI en tiempo real para modo TV
             if (tvIntervalId) clearInterval(tvIntervalId);
             tvIntervalId = setInterval(() => {
                 if (tvData && tvData.isRaceActive && !tvData.isPaused) {
-                    // Calculamos el tiempo desde que recibimos el último paquete de la nube
-                    const timeSinceSync = Date.now() - (tvData.localReceiveTimestamp || Date.now());
-                    
-                    // Sumamos el desfase local a la marca de tiempo que nos envió el móvil
-                    const elapRace = (tvData.elapsedRaceTime || 0) + timeSinceSync;
-                    const elapLap = (tvData.elapsedLapTime || 0) + timeSinceSync;
+                    const now = Date.now();
+                    const elapRace = tvData.raceStartTime ? (now - tvData.raceStartTime) : 0;
+                    const elapLap = tvData.lapStartTimestamp ? (now - tvData.lapStartTimestamp) : 0;
                     
                     document.getElementById('tv-race-time').textContent = formatTime(elapRace, true);
                     document.getElementById('tv-current-lap-time').textContent = formatTime(elapLap, false);
@@ -3547,14 +3546,6 @@
             // aseguramos que el estado visual corresponda a la URL actual
             if (urlParams.get('tv') !== 'true' && isTVMode) {
                 window.location.reload();
-            }
-
-            // REPARACIÓN CRÍTICA: El emisor fuerza su estado "Limpio" a la nube al arrancar
-            // Esto elimina "fantasmas" de carreras viejas que se quedaron en curso si se cerró mal la app
-            if (!urlParams.get('tv') && window.myRoomCode) {
-                setTimeout(() => {
-                    if (typeof syncToCloud === 'function') syncToCloud();
-                }, 1500); 
             }
 
             const sLang = localStorage.getItem('krono_lang');
