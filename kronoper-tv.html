@@ -1188,7 +1188,7 @@
             </div>
 
             <!-- WIDGET 10: TELEMETRÍA COMBINADA (LÍNEAS) -->
-            <div id="w-combined" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move border-t-4 border-purple-500/50">
+            <div id="w-combined" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move border-t-4 border-cyan-500/50">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
@@ -1197,11 +1197,13 @@
                 </div>
                 <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
                     <div class="flex justify-between items-center mb-1 z-10">
-                        <span class="cq-text-xs text-purple-400 font-rajdhani font-bold uppercase tracking-widest">Análisis Combinado Vivo</span>
-                        <div class="flex space-x-4 cq-text-xxs font-rajdhani font-bold">
-                            <span class="text-cyan-400 flex items-center"><div class="w-2.5 h-2.5 rounded-full bg-cyan-400 mr-1.5 shadow-[0_0_5px_#22d3ee]"></div> Tiempo</span>
-                            <span class="text-yellow-400 flex items-center"><div class="w-2.5 h-2.5 rounded-full bg-yellow-400 mr-1.5 shadow-[0_0_5px_#facc15]"></div> Vel.</span>
-                            <span class="text-pink-400 flex items-center"><div class="w-2.5 h-2.5 rounded-full bg-pink-400 mr-1.5 shadow-[0_0_5px_#ec4899]"></div> Delta</span>
+                        <span class="cq-text-xs text-cyan-400 font-rajdhani font-bold uppercase tracking-widest">Análisis Telemetría Vivo</span>
+                        <div class="flex space-x-3 cq-text-xxs font-rajdhani font-bold">
+                            <span class="text-cyan-400 flex items-center"><div class="w-2 h-2 rounded-full bg-cyan-400 mr-1"></div> Tiempo</span>
+                            <span class="text-yellow-400 flex items-center"><div class="w-2 h-2 rounded-full bg-yellow-400 mr-1 opacity-70"></div> Vel.</span>
+                            <span class="text-slate-300 flex items-center ml-1">
+                                <div class="w-1.5 h-3 bg-pink-500 mr-px"></div><div class="w-1.5 h-3 bg-emerald-500 mr-1.5"></div> Delta
+                            </span>
                         </div>
                     </div>
                     <canvas id="tv-combined-graph" class="w-full flex-1 mt-2"></canvas>
@@ -3065,7 +3067,7 @@
                 window.drawSmoothCurve('tv-speed-graph', speeds, '#facc15'); 
             };
 
-            // NUEVO: Gráfico Combinado Multilínea (Tiempo, Velocidad, Delta)
+            // NUEVO: Gráfico Combinado Multilínea (Estilo Profesional MoTeC)
             window.drawCombinedLineGraph = function(canvasId, history) {
                 const canvas = document.getElementById(canvasId);
                 if (!canvas) return;
@@ -3077,7 +3079,14 @@
                 const h = parent.clientHeight - 40; 
                 if (w <= 0 || h <= 0) return;
 
-                canvas.width = w; canvas.height = h;
+                // Soporte HD / Retina Display para mayor nitidez
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = w * dpr; 
+                canvas.height = h * dpr;
+                ctx.scale(dpr, dpr);
+                canvas.style.width = `${w}px`;
+                canvas.style.height = `${h}px`;
+
                 ctx.clearRect(0, 0, w, h);
                 if (!history || history.length === 0) return;
 
@@ -3085,73 +3094,143 @@
                 const speeds = history.map(l => l.speed);
                 const deltas = history.map(l => l.delta / 1000);
 
-                const padX = 15; const padY = 20;
-                const gw = w - padX * 2; const gh = h - padY * 2;
+                // Zonas del gráfico (Canal superior vs Canal inferior)
+                const padX = 35; // Espacio para las escalas
+                const padY = 15;
+                const gw = w - padX * 2;
+                
+                const hTop = (h - padY * 2) * 0.65; // 65% para Tiempo/Velocidad
+                const gap = (h - padY * 2) * 0.05;  // 5% separación
+                const hBot = (h - padY * 2) * 0.30; // 30% para Delta
+                const topY = padY;
+                const botY = padY + hTop + gap;
 
-                const drawLine = (data, colorHex, isDeltaArea) => {
-                    if(data.length === 0) return;
-                    const min = isDeltaArea ? 0 : Math.min(...data); // Delta desde 0
-                    const max = Math.max(...data);
-                    let range = max - min;
-                    if (range === 0) range = 1;
+                // Escalas dinámicas
+                const maxT = Math.max(...times) || 1;
+                const minT = Math.min(...times) || 0;
+                let rangeT = maxT - minT; if(rangeT === 0) rangeT = 1;
 
-                    const stepX = data.length > 1 ? gw / (data.length - 1) : gw / 2;
+                const maxS = Math.max(...speeds) || 1;
+                const minS = Math.min(...speeds) || 0;
+                let rangeS = maxS - minS; if(rangeS === 0) rangeS = 1;
 
+                // El delta debe ser simétrico respecto al 0
+                const maxD = Math.max(...deltas.map(Math.abs)) || 0.1;
+                const stepX = times.length > 1 ? gw / (times.length - 1) : gw / 2;
+
+                // --- 1. DIBUJAR CUADRÍCULA DE FONDO ---
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for(let i=0; i<times.length; i++) {
+                    let x = times.length > 1 ? padX + i * stepX : padX + gw/2;
+                    ctx.moveTo(x, padY);
+                    ctx.lineTo(x, h - padY);
+                }
+                ctx.stroke();
+
+                // --- 2. DIBUJAR VELOCIDAD (Área Amarilla de fondo) ---
+                ctx.beginPath();
+                ctx.moveTo(padX, topY + hTop);
+                speeds.forEach((s, i) => {
+                    let x = times.length > 1 ? padX + i * stepX : padX + gw/2;
+                    let y = topY + hTop - ((s - minS) / rangeS) * hTop;
+                    ctx.lineTo(x, y);
+                });
+                ctx.lineTo(times.length > 1 ? padX + (times.length - 1) * stepX : padX + gw/2, topY + hTop);
+                ctx.fillStyle = 'rgba(250, 204, 21, 0.1)'; 
+                ctx.fill();
+
+                ctx.beginPath();
+                speeds.forEach((s, i) => {
+                    let x = times.length > 1 ? padX + i * stepX : padX + gw/2;
+                    let y = topY + hTop - ((s - minS) / rangeS) * hTop;
+                    if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                });
+                ctx.strokeStyle = 'rgba(250, 204, 21, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // --- 3. DIBUJAR TIEMPO (Línea Cian Principal) ---
+                ctx.beginPath();
+                times.forEach((t, i) => {
+                    let x = times.length > 1 ? padX + i * stepX : padX + gw/2;
+                    let y = topY + hTop - ((t - minT) / rangeT) * hTop; 
+                    if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                });
+                ctx.strokeStyle = '#22d3ee';
+                ctx.lineWidth = 3;
+                ctx.lineJoin = 'round';
+                ctx.shadowColor = 'rgba(34, 211, 238, 0.8)';
+                ctx.shadowBlur = 6;
+                ctx.stroke();
+                ctx.shadowBlur = 0; // reset
+
+                times.forEach((t, i) => {
+                    let x = times.length > 1 ? padX + i * stepX : padX + gw/2;
+                    let y = topY + hTop - ((t - minT) / rangeT) * hTop;
                     ctx.beginPath();
-                    data.forEach((val, i) => {
-                        const x = data.length > 1 ? padX + i * stepX : padX + gw / 2;
-                        // Para Delta, que ocupe máximo el 40% inferior de la gráfica
-                        const mappedH = isDeltaArea ? (gh * 0.4) : gh;
-                        const yOffset = isDeltaArea ? (gh * 0.6) : 0; 
-                        
-                        const y = h - padY - ((val - min) / range) * mappedH - yOffset;
-                        
-                        if (i === 0) ctx.moveTo(x, y);
-                        else ctx.lineTo(x, y);
-                    });
+                    ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = '#0f172a';
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#22d3ee';
+                    ctx.stroke();
+                });
 
-                    if (isDeltaArea) {
-                        // Rellenar área hasta abajo
-                        ctx.lineTo(data.length > 1 ? padX + (data.length - 1) * stepX : padX + gw / 2, h - padY);
-                        ctx.lineTo(padX, h - padY);
-                        ctx.fillStyle = colorHex + '40'; // Opacidad
-                        ctx.fill();
-                        ctx.strokeStyle = colorHex;
-                        ctx.lineWidth = 2;
-                        ctx.stroke();
-                    } else {
-                        // Línea normal con glow
-                        ctx.strokeStyle = colorHex;
-                        ctx.lineWidth = 3;
-                        ctx.lineCap = 'round';
-                        ctx.lineJoin = 'round';
-                        ctx.shadowColor = colorHex;
-                        ctx.shadowBlur = 8;
-                        ctx.stroke();
-                        ctx.shadowBlur = 0; // reset
+                // --- 4. DIBUJAR DELTA (Barras Inferiores +/-) ---
+                const zeroY = botY + hBot / 2;
+                
+                // Línea Central 0 del Delta
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([2, 3]);
+                ctx.beginPath();
+                ctx.moveTo(padX, zeroY);
+                ctx.lineTo(padX + gw, zeroY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                deltas.forEach((d, i) => {
+                    if (i === 0 && d === 0) return; // Omitir 1ra vuelta limpia
+                    let x = times.length > 1 ? padX + i * stepX : padX + gw/2;
+                    let barH = (Math.abs(d) / maxD) * (hBot / 2 - 2); 
+                    let bw = Math.max(3, Math.min(10, stepX * 0.4)); // Ancho de barra
+                    
+                    if (d > 0) { // Lento = Rosa/Arriba
+                        ctx.fillStyle = '#ec4899';
+                        ctx.fillRect(x - bw/2, zeroY - barH, bw, barH);
+                    } else if (d < 0) { // Rápido = Verde/Abajo
+                        ctx.fillStyle = '#10b981'; 
+                        ctx.fillRect(x - bw/2, zeroY, bw, barH);
                     }
+                });
 
-                    // Nodos
-                    data.forEach((val, i) => {
-                        const x = data.length > 1 ? padX + i * stepX : padX + gw / 2;
-                        const mappedH = isDeltaArea ? (gh * 0.4) : gh;
-                        const yOffset = isDeltaArea ? (gh * 0.6) : 0; 
-                        const y = h - padY - ((val - min) / range) * mappedH - yOffset;
-                        
-                        ctx.beginPath();
-                        ctx.arc(x, y, isDeltaArea ? 2 : 4, 0, Math.PI * 2);
-                        ctx.fillStyle = '#0f172a';
-                        ctx.fill();
-                        ctx.lineWidth = 2;
-                        ctx.strokeStyle = colorHex;
-                        ctx.stroke();
-                    });
-                };
+                // --- 5. ETIQUETAS Y ESCALAS ---
+                ctx.font = 'bold 10px Rajdhani';
+                ctx.textBaseline = 'middle';
+                
+                // Tiempo (Izquierda - Cian)
+                ctx.fillStyle = '#22d3ee';
+                ctx.textAlign = 'right';
+                ctx.fillText(maxT.toFixed(2) + "s", padX - 6, topY);
+                ctx.fillText(minT.toFixed(2) + "s", padX - 6, topY + hTop);
 
-                // Orden de dibujo: Delta (fondo rosa), Velocidad (Amarillo), Tiempo (Cian)
-                drawLine(deltas, '#ec4899', true);   // Delta
-                drawLine(speeds, '#facc15', false);  // Velocidad
-                drawLine(times, '#22d3ee', false);   // Tiempo
+                // Velocidad (Derecha - Amarillo)
+                ctx.fillStyle = '#facc15';
+                ctx.textAlign = 'left';
+                ctx.fillText(maxS.toFixed(1), padX + gw + 6, topY);
+                ctx.fillText(minS.toFixed(1), padX + gw + 6, topY + hTop);
+
+                // Delta (Izquierda - Rosa/Esmeralda)
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#ec4899';
+                ctx.fillText(`+${maxD.toFixed(2)}`, padX - 6, botY + 4);
+                ctx.fillStyle = '#10b981';
+                ctx.fillText(`-${maxD.toFixed(2)}`, padX - 6, botY + hBot - 4);
+                
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                ctx.fillText("0", padX - 6, zeroY);
             };
 
             // NUEVO: Gráfico de Evolución de Consistencia
@@ -3206,9 +3285,14 @@
 
             // --- LÓGICA PARA SALIR DEL MODO TV ---
             if (tvExitBtn) {
-                tvExitBtn.addEventListener('click', () => {
-                    window.location.href = window.location.pathname;
-                });
+                // Si la URL contiene ?tv=true (Entrada directa desde tu Portal), ocultamos el botón
+                if (urlParams.get('tv') === 'true') {
+                    tvExitBtn.style.display = 'none';
+                } else {
+                    tvExitBtn.addEventListener('click', () => {
+                        window.location.href = window.location.pathname;
+                    });
+                }
             }
 
             function updateTVUI() {
