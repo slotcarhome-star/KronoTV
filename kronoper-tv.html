@@ -3429,6 +3429,9 @@
                 
                 kronoChannel.onmessage = (event) => {
                     if(event.data.type === 'STATE_UPDATE') { tvData = event.data.payload; updateTVUI(); }
+                }; // <--- ESTO FALTABA
+            } // <--- Y ESTO FALTABA
+
             // Loop de actualización UI en tiempo real para modo TV (AHORA RELATIVO Y A PRUEBA DE DESINCRONIZACIÓN)
             if (tvIntervalId) clearInterval(tvIntervalId);
             tvIntervalId = setInterval(() => {
