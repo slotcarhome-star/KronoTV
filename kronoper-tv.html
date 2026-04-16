@@ -3448,9 +3448,10 @@
             if(tvFsBtn) tvFsBtn.addEventListener('click', toggleFullScreen);
         };
 
-        // Auto-arranque modo TV local si se abre desde el popup
+        // Auto-arranque modo TV inteligente (Nube o Local)
         if (urlParams.get('tv') === 'true') {
-            window.startTVMode(null);
+            const roomFromUrl = urlParams.get('room') || getPortalRoomCode();
+            window.startTVMode(roomFromUrl);
         }
         
         // Listeners iniciales para cargar preferencias previas
