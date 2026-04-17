@@ -403,7 +403,8 @@
 
         /* NUEVO: CLASE PARA CUADRÍCULA ESTRICTA (SNAP-TO-GRID) */
         .tv-grid-snapping {
-            grid-auto-rows: 120px; /* Altura base estricta para que el drag encaje perfecto */
+            /* Ahora es completamente fluido. La altura la dicta flex-1 y grid-rows-6 de Tailwind */
+            min-height: 0;
         }
 
         /* ESTILOS PARA WIDGETS ARRASTRABLES (SMART DASHBOARD) */
@@ -898,10 +899,10 @@
     </div> <!-- FIN CONTENEDOR APP -->
 
     <!-- ================= CONTENEDOR MODO TV (NUEVO DISEÑO HORIZONTAL) ================= -->
-    <div id="tv-dashboard" class="hidden h-screen tv-bg text-white w-full flex-col font-sans overflow-hidden p-4 lg:p-6" data-theme="default">
+    <div id="tv-dashboard" class="hidden h-screen tv-bg text-white w-full flex-col font-sans overflow-hidden p-2 md:p-4" data-theme="default">
         
         <!-- HEADER TV -->
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex justify-between items-center mb-3">
             <div class="flex items-center space-x-5">
                 
                 <!-- LOGO REDISEÑADO PREMIUM -->
@@ -1014,17 +1015,17 @@
         </div>
         
         <!-- GRID TV MODULAR Y ARRASTRABLE CON REDIMENSIONAMIENTO (ESCALA) -->
-        <div id="tv-grid-container" class="flex-1 grid grid-cols-1 md:grid-cols-6 xl:grid-cols-12 gap-4 lg:gap-5 min-h-0 overflow-y-auto tv-scrollbar pb-6 grid-flow-dense tv-grid-snapping">
+        <div id="tv-grid-container" class="flex-1 grid grid-cols-2 md:grid-cols-12 md:grid-rows-6 gap-2 md:gap-3 min-h-0 overflow-y-auto md:overflow-hidden pb-4 md:pb-0 grid-flow-dense tv-grid-snapping">
             
             <!-- WIDGET 1: Piloto -->
-            <div id="w-pilot" class="tv-widget col-span-1 md:col-span-3 xl:col-span-3 row-span-1 tv-panel flex flex-col relative group cursor-move">
+            <div id="w-pilot" class="tv-widget col-span-1 md:col-span-2 md:row-span-1 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400" title="Arrastra para escalar">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex flex-col items-center justify-center relative overflow-hidden h-full">
+                <div class="p-2 md:p-3 flex-1 flex flex-col items-center justify-center relative overflow-hidden h-full">
                     <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                     <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-xs mb-1 z-10 pointer-events-none">Piloto / Coche</span>
                     <span id="tv-pilot-car" class="cq-text-xl font-bold text-white text-center z-10 leading-tight pointer-events-none">Cargando...</span>
@@ -1032,28 +1033,28 @@
             </div>
 
             <!-- WIDGET 2: Tiempo Total -->
-            <div id="w-time" class="tv-widget col-span-1 md:col-span-3 xl:col-span-3 row-span-1 tv-panel flex flex-col relative group cursor-move">
+            <div id="w-time" class="tv-widget col-span-1 md:col-span-2 md:row-span-1 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex flex-col items-center justify-center h-full pointer-events-none">
+                <div class="p-2 md:p-3 flex-1 flex flex-col items-center justify-center h-full pointer-events-none">
                     <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-xs mb-1">Tiempo de Carrera</span>
                     <span id="tv-race-time" class="tv-font cq-text-4xl font-black text-slate-100 drop-shadow-md">00:00.0</span>
                 </div>
             </div>
 
             <!-- WIDGET 3: Vueltas -->
-            <div id="w-laps" class="tv-widget col-span-1 md:col-span-3 xl:col-span-3 row-span-1 tv-panel flex flex-col relative group cursor-move border-b-4 border-b-blue-500">
+            <div id="w-laps" class="tv-widget col-span-1 md:col-span-2 md:row-span-1 tv-panel flex flex-col relative group cursor-move border-b-4 border-b-blue-500">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex flex-col items-center justify-center h-full pointer-events-none">
+                <div class="p-2 md:p-3 flex-1 flex flex-col items-center justify-center h-full pointer-events-none">
                     <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-xs mb-1">Vueltas Completadas</span>
                     <span id="tv-lap-count" class="tv-font cq-text-5xl font-black neon-blue-text leading-none">0</span>
                     <span id="tv-mode-target" class="cq-text-xxs font-rajdhani font-bold text-blue-400 tracking-wider mt-1"></span>
@@ -1061,28 +1062,28 @@
             </div>
             
             <!-- WIDGET 4: Última Vuelta -->
-            <div id="w-last" class="tv-widget col-span-1 md:col-span-3 xl:col-span-3 row-span-1 tv-panel flex flex-col relative group cursor-move border-b-4 border-b-slate-600">
+            <div id="w-last" class="tv-widget col-span-1 md:col-span-2 md:row-span-1 tv-panel flex flex-col relative group cursor-move border-b-4 border-b-slate-600">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex flex-col items-center justify-center h-full pointer-events-none">
+                <div class="p-2 md:p-3 flex-1 flex flex-col items-center justify-center h-full pointer-events-none">
                     <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-xs mb-1">Última Vuelta</span>
                     <span id="tv-last-lap" class="tv-font cq-text-4xl font-bold text-slate-300">--.---</span>
                 </div>
             </div>
 
             <!-- WIDGET 5: CRONO PRINCIPAL GIGANTE -->
-            <div id="w-current" class="tv-widget col-span-1 md:col-span-6 xl:col-span-6 row-span-2 tv-panel flex flex-col relative group cursor-move overflow-hidden">
+            <div id="w-current" class="tv-widget col-span-2 md:col-span-4 row-span-2 md:row-span-2 tv-panel flex flex-col relative group cursor-move overflow-hidden">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-6 flex-1 flex flex-col items-center justify-center relative h-full pointer-events-none">
+                <div class="p-4 md:p-5 flex-1 flex flex-col items-center justify-center relative h-full pointer-events-none">
                     <div class="absolute -top-20 -right-20 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl pointer-events-none"></div>
                     <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-sm mb-4">Vuelta Actual</span>
                     
@@ -1095,7 +1096,7 @@
             </div>
 
             <!-- WIDGET 6: MEJOR VUELTA GLOBAL -->
-            <div id="w-best" class="tv-widget col-span-1 md:col-span-6 xl:col-span-6 row-span-1 tv-panel flex flex-col relative group cursor-move border-t-4 border-t-emerald-500 bg-emerald-900/10">
+            <div id="w-best" class="tv-widget col-span-2 md:col-span-4 row-span-1 md:row-span-1 tv-panel flex flex-col relative group cursor-move border-t-4 border-t-emerald-500 bg-emerald-900/10">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-emerald-500 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
@@ -1105,21 +1106,21 @@
                 <div class="absolute top-4 left-6 text-emerald-500/30 pointer-events-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                 </div>
-                <div class="p-6 flex-1 flex flex-col items-center justify-center h-full pointer-events-none">
+                <div class="p-4 md:p-5 flex-1 flex flex-col items-center justify-center h-full pointer-events-none">
                     <span class="text-emerald-400 font-rajdhani font-bold uppercase tracking-[0.2em] cq-text-sm mb-1">Mejor Vuelta Global</span>
                     <span id="tv-best-lap" class="tv-font cq-text-5xl font-black neon-green-text drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]">--.---</span>
                 </div>
             </div>
 
             <!-- WIDGET 7: VELOCIDADES Y CONSISTENCIA -->
-            <div id="w-speeds" class="tv-widget col-span-1 md:col-span-6 xl:col-span-6 row-span-1 tv-panel flex flex-col relative group cursor-move">
+            <div id="w-speeds" class="tv-widget col-span-2 md:col-span-4 row-span-1 md:row-span-1 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex justify-around items-center h-full pointer-events-none">
+                <div class="p-2 md:p-3 flex-1 flex justify-around items-center h-full pointer-events-none">
                     <div class="text-center flex-1">
                         <span class="block cq-text-xs text-slate-400 font-rajdhani font-semibold uppercase tracking-widest mb-2">Vel. Media</span>
                         <div class="flex flex-col items-center justify-center space-y-1">
@@ -1160,42 +1161,42 @@
             </div>
 
             <!-- WIDGET 8: GRÁFICO DE TIEMPOS (AHORA DE BARRAS) -->
-            <div id="w-graph" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move">
+            <div id="w-graph" class="tv-widget col-span-2 md:col-span-4 row-span-2 md:row-span-2 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
+                <div class="p-2 md:p-3 flex-1 flex flex-col h-full relative pointer-events-none">
                     <span class="cq-text-xs text-cyan-400 font-rajdhani font-bold uppercase tracking-widest mb-1 z-10">Gráfico de Tiempos (S)</span>
                     <canvas id="tv-lap-graph" class="w-full flex-1 mt-2"></canvas>
                 </div>
             </div>
 
             <!-- NUEVO WIDGET: GRÁFICO DE VELOCIDAD (CURVA SUAVE) -->
-            <div id="w-speed-graph" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move">
+            <div id="w-speed-graph" class="tv-widget col-span-2 md:col-span-4 row-span-2 md:row-span-2 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
+                <div class="p-2 md:p-3 flex-1 flex flex-col h-full relative pointer-events-none">
                     <span class="cq-text-xs text-yellow-400 font-rajdhani font-bold uppercase tracking-widest mb-1 z-10">Curva de Velocidad (Km/h)</span>
                     <canvas id="tv-speed-graph" class="w-full flex-1 mt-2"></canvas>
                 </div>
             </div>
 
             <!-- WIDGET 10: TELEMETRÍA COMBINADA (LÍNEAS) -->
-            <div id="w-combined" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move border-t-4 border-cyan-500/50">
+            <div id="w-combined" class="tv-widget col-span-2 md:col-span-4 row-span-2 md:row-span-2 tv-panel flex flex-col relative group cursor-move border-t-4 border-cyan-500/50">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
+                <div class="p-2 md:p-3 flex-1 flex flex-col h-full relative pointer-events-none">
                     <div class="flex justify-between items-center mb-1 z-10">
                         <span class="cq-text-xs text-cyan-400 font-rajdhani font-bold uppercase tracking-widest">Análisis Telemetría Vivo</span>
                         <div class="flex space-x-3 cq-text-xxs font-rajdhani font-bold">
@@ -1211,31 +1212,31 @@
             </div>
 
             <!-- NUEVO WIDGET 11: EVOLUCIÓN DE CONSISTENCIA -->
-            <div id="w-consistency" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move border-t-4 border-blue-500/50">
+            <div id="w-consistency" class="tv-widget col-span-2 md:col-span-4 row-span-2 md:row-span-2 tv-panel flex flex-col relative group cursor-move border-t-4 border-blue-500/50">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
+                <div class="p-2 md:p-3 flex-1 flex flex-col h-full relative pointer-events-none">
                     <span class="cq-text-xs text-blue-400 font-rajdhani font-bold uppercase tracking-widest mb-1 z-10">Evolución Consistencia (%)</span>
                     <canvas id="tv-consistency-graph" class="w-full flex-1 mt-2"></canvas>
                 </div>
             </div>
 
             <!-- WIDGET 9: TABLA DE HISTORIAL (ALTO) -->
-            <div id="w-history" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-4 tv-panel flex flex-col relative group cursor-move">
+            <div id="w-history" class="tv-widget col-span-2 md:col-span-4 row-span-4 md:row-span-4 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
                 <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
-                <div class="bg-slate-800/50 p-3 border-b border-slate-700/50 shrink-0 rounded-t-xl pointer-events-none">
+                <div class="bg-slate-800/50 p-2 md:p-3 border-b border-slate-700/50 rounded-t-xl pointer-events-none">
                     <h3 class="text-center text-slate-300 font-rajdhani font-bold uppercase tracking-widest cq-text-xs">Historial en Vivo</h3>
                 </div>
-                <div class="flex-1 overflow-y-auto p-2 tv-scrollbar h-full pointer-events-none">
+                <div class="flex-1 overflow-y-auto p-1 md:p-2 tv-scrollbar h-full pointer-events-none">
                     <table class="w-full text-left">
                         <thead class="sticky top-0 bg-slate-800/90 backdrop-blur z-10">
                             <tr>
@@ -2839,18 +2840,22 @@
                             
                             const grid = document.getElementById('tv-grid-container');
                             const gridStyle = window.getComputedStyle(grid);
-                            // Calcula columnas actuales basándose en el CSS (responsive)
-                            const cols = gridStyle.gridTemplateColumns.split(' ').length;
-                            const gap = parseFloat(gridStyle.gap) || 20;
-                            // Calcula el tamaño virtual de cada celda y fila
+                            
+                            // Calcula columnas y filas actuales basándose en el diseño horizontal responsable (md+)
+                            const isHorizontal = window.innerWidth >= 768; // md breakpoint
+                            const cols = isHorizontal ? 12 : 2;
+                            const gap = parseFloat(gridStyle.gap) || 12; // 12px fallback for md:gap-3
+                            
+                            // Calcula el tamaño virtual de cada celda y fila responsivamente
                             const colW = (grid.clientWidth - (gap * (cols - 1))) / cols;
-                            const rowH = 120; // Hardcoded desde el CSS .tv-grid-snapping
+                            const rowH = isHorizontal ? (grid.clientHeight - (gap * 5)) / 6 : 120; // 6 files en horizontal, o fijo en vertical
                             
                             // Calcula en qué casillas "encaja" el ratón (Snap)
                             let spanCol = Math.max(1, Math.round(targetW / (colW + gap)));
                             let spanRow = Math.max(1, Math.round(targetH / (rowH + gap)));
                             
-                            spanCol = Math.min(spanCol, cols); // Nunca salirse del grid
+                            spanCol = Math.min(spanCol, cols); // Nunca salirse del grid horizontalmente
+                            if(isHorizontal) spanRow = Math.min(spanRow, 6); // Limite estricto de 6 filas en modo horizontal
                             
                             // Aplica el grid dinámico (sobrescribiendo los spans de tailwind)
                             widget.style.gridColumn = `span ${spanCol}`;
