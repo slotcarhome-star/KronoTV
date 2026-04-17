@@ -1669,6 +1669,12 @@
         const synth = new Tone.Synth().toDestination();
         const polySynth = new Tone.PolySynth(Tone.Synth).toDestination();
 
+        function isVoiceEnabled() {
+            if (isTVMode && tvData && tvData.audioConfig) return tvData.audioConfig.voiceEnabled;
+            if (voiceToggle) return voiceToggle.checked;
+            return true;
+        }
+
         // --- MANEJO DE ROI DRAG/RESIZE ---
         let isDragging = false;
         let isResizing = false;
@@ -2366,25 +2372,28 @@
         }
         
         function speak(text) {
-            if(isTVMode) return;
-            if(voiceToggle.checked) {
-                window.speechSynthesis.cancel();
-                const u = new SpeechSynthesisUtterance(text);
-                let langCode = currentLang === 'en' ? 'en-US' : (currentLang === 'fr' ? 'fr-FR' : 'es-ES');
-                u.lang = langCode;
-                const voices = window.speechSynthesis.getVoices();
-                let voice = voices.find(v => v.lang === langCode) || voices.find(v => v.lang.startsWith(langCode.substring(0, 2)));
-                if (voice) u.voice = voice;
-                window.speechSynthesis.speak(u);
-            }
+            if(!isVoiceEnabled()) return;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            let targetLang = (isTVMode && tvData && tvData.currentLang) ? tvData.currentLang : currentLang;
+            let langCode = targetLang === 'en' ? 'en-US' : (targetLang === 'fr' ? 'fr-FR' : 'es-ES');
+            u.lang = langCode;
+            const voices = window.speechSynthesis.getVoices();
+            let voice = voices.find(v => v.lang === langCode) || voices.find(v => v.lang.startsWith(langCode.substring(0, 2)));
+            if (voice) u.voice = voice;
+            window.speechSynthesis.speak(u);
         }
         
-        function announceRaceFinish(name) { speak(`${translations[currentLang].voiceFinished} ${name}`); }
+        function announceRaceFinish(name) { 
+            const targetLang = (isTVMode && tvData && tvData.currentLang) ? tvData.currentLang : currentLang;
+            speak(`${translations[targetLang].voiceFinished} ${name}`); 
+        }
         function announceLap(n, t, best, xtra) {
-            if(!voiceToggle.checked || n<=0 || isTVMode) return;
+            if(!isVoiceEnabled() || n<=0) return;
+            const targetLang = (isTVMode && tvData && tvData.currentLang) ? tvData.currentLang : currentLang;
             const sec = Math.floor(t/1000); const dec = (t%1000).toString().padStart(3,'0');
-            let txt = `${sec} ${translations[currentLang].voicePoint} ${dec}`;
-            if(best && n>1) txt = translations[currentLang].voiceFastest + " " + txt;
+            let txt = `${sec} ${translations[targetLang].voicePoint} ${dec}`;
+            if(best && n>1) txt = translations[targetLang].voiceFastest + " " + txt;
             if(xtra) txt += ". " + xtra;
             speak(txt);
         }
@@ -2749,6 +2758,10 @@
                 raceStartTime: raceStartTime,     
                 lapStartTimestamp: lapStartTimestamp,
                 currentLang: currentLang,
+                audioConfig: {
+                    soundIndex: selectedSoundIndex,
+                    voiceEnabled: voiceToggle.checked
+                },
                 timestamp: Date.now()
             };
         }
@@ -2781,6 +2794,17 @@
         window.startTVMode = function(roomCode) {
             isTVMode = true;
             cloudRoomCode = roomCode;
+
+            // Tracking de estado para activar Audios en el TV Mode
+            let tvPrevState = {
+                lapCount: 0,
+                isRaceActive: false,
+                raceAborted: false,
+                isCountdown: false,
+                isPaused: false
+            };
+            let isFirstPayload = true;
+            let tvCountdownInterval = null;
 
             // UI Switch
             document.getElementById('main-app-container').style.display = 'none';
@@ -3319,6 +3343,80 @@
                     tvData.consistency = 0;
                 }
 
+                // === TV AUDIO STATE MACHINE ===
+                if (isFirstPayload) {
+                    tvPrevState.lapCount = tvData.currentLap || 0;
+                    tvPrevState.isRaceActive = tvData.isRaceActive || false;
+                    tvPrevState.raceAborted = tvData.raceAborted || false;
+                    tvPrevState.isCountdown = tvData.isCountdown || false;
+                    tvPrevState.isPaused = tvData.isPaused || false;
+                    isFirstPayload = false;
+                } else {
+                    if (Tone.context.state !== 'running') Tone.context.resume();
+                    
+                    const targetLang = tvData.currentLang || currentLang;
+                    
+                    // 1. Salida Nula
+                    if (tvData.raceAborted && !tvPrevState.raceAborted) {
+                        polySynth.triggerAttackRelease(["C2", "F#2"], "1");
+                        speak(translations[targetLang].voiceFalseStart);
+                        if(tvCountdownInterval) clearInterval(tvCountdownInterval);
+                    }
+                    
+                    // 2. Semáforo Verde (Inicio Carrera)
+                    if (tvData.isRaceActive && !tvPrevState.isRaceActive && !tvData.raceAborted && !tvPrevState.isPaused) {
+                        polySynth.triggerAttackRelease(["C5", "E5", "G5"], "0.5");
+                    }
+                    
+                    // 3. Nueva Vuelta
+                    if ((tvData.currentLap > tvPrevState.lapCount) && tvData.lapHistory && tvData.lapHistory.length > 0) {
+                        const newLapData = tvData.lapHistory[tvData.lapHistory.length - 1];
+                        
+                        let sIdx = tvData.audioConfig ? tvData.audioConfig.soundIndex : 0;
+                        const snd = soundOptions[sIdx] || soundOptions[0];
+                        playSound(snd.freq, snd.dur);
+                        
+                        const isBest = newLapData.time === tvData.bestLapTime;
+                        
+                        let extraMsg = "";
+                        let remaining = tvData.totalLaps !== Infinity ? tvData.totalLaps - tvData.currentLap : Infinity;
+                        if (remaining === 5) extraMsg = `${translations[targetLang].voiceRemaining} 5 ${translations[targetLang].voiceLaps}.`;
+                        if (remaining === 1) { 
+                            extraMsg = translations[targetLang].voiceLastLap; 
+                            playFinalLapSound(); 
+                        }
+                        
+                        announceLap(tvData.currentLap, newLapData.time, isBest, extraMsg);
+                    }
+                    
+                    // 4. Fin de Carrera
+                    if (!tvData.isRaceActive && tvPrevState.isRaceActive && tvData.lapHistory && tvData.lapHistory.length > 0 && !tvData.raceAborted) {
+                        announceRaceFinish(tvData.pilot);
+                    }
+                    
+                    // 5. Inicio Cuenta Atrás (Semáforos Rojos)
+                    if (tvData.isCountdown && !tvPrevState.isCountdown) {
+                        let count = 0;
+                        if(tvCountdownInterval) clearInterval(tvCountdownInterval);
+                        tvCountdownInterval = setInterval(() => {
+                            if (!tvData.isCountdown || tvData.raceAborted || count >= 5) {
+                                clearInterval(tvCountdownInterval);
+                                return;
+                            }
+                            synth.triggerAttackRelease("C4", "8n");
+                            count++;
+                        }, 1000);
+                    }
+                    
+                    // Actualizar estado previo
+                    tvPrevState.lapCount = tvData.currentLap || 0;
+                    tvPrevState.isRaceActive = tvData.isRaceActive || false;
+                    tvPrevState.raceAborted = tvData.raceAborted || false;
+                    tvPrevState.isCountdown = tvData.isCountdown || false;
+                    tvPrevState.isPaused = tvData.isPaused || false;
+                }
+                // === FIN TV AUDIO STATE MACHINE ===
+
                 tvPilotCar.textContent = `${tvData.pilot || 'Piloto'} / ${tvData.car || 'Coche'}`;
                 
                 const maxLapsText = tvData.totalLaps === Infinity ? '∞' : tvData.totalLaps;
@@ -3572,9 +3670,65 @@
                         syncToCloud();
                     }
                 }, 500); // Comprueba la conexión cada 0.5 segundos hasta que lo logra
+
+                // Listeners de Configuración de Audio para Sincronización
+                const soundSelect = document.getElementById('soundSelect');
+                if (soundSelect) {
+                    soundSelect.addEventListener('change', (e) => {
+                        selectedSoundIndex = parseInt(e.target.value);
+                        broadcastState(); triggerDebouncedCloudSync();
+                    });
+                }
+                if (voiceToggle) {
+                    voiceToggle.addEventListener('change', () => {
+                        broadcastState(); triggerDebouncedCloudSync();
+                    });
+                }
             }
         });
         
+        // Listener para los botones de TV para desbloquear Tone.js
+        if (openTvBtn) {
+            openTvBtn.addEventListener('click', async () => {
+                await Tone.start();
+                updateRoomCodeDisplay();
+                tvSetupModal.classList.remove('hidden');
+                setTimeout(() => tvSetupModal.classList.add('open'), 10);
+                syncToCloud(); 
+            });
+        }
+        if (btnTvConnect) {
+            btnTvConnect.addEventListener('click', async () => {
+                await Tone.start();
+                const code = tvCodeInput.value.trim().toUpperCase();
+                if (code.length > 0) {
+                    tvSetupModal.classList.remove('open');
+                    setTimeout(() => {
+                        tvSetupModal.classList.add('hidden');
+                        if (window.startTVMode) window.startTVMode(code);
+                    }, 300);
+                }
+            });
+        }
+        if (directTvBtn) {
+            directTvBtn.addEventListener('click', async () => {
+                await Tone.start();
+                if (window.startTVMode) window.startTVMode(window.myRoomCode);
+            });
+        }
+
+        // Auto-arranque modo TV inteligente (Nube o Local)
+        if (urlParams.get('tv') === 'true') {
+            const roomFromUrl = urlParams.get('room') || getPortalRoomCode();
+            
+            // Requerimos interacción para desbloquear el audio en el caso de iniciar por URL
+            document.body.addEventListener('click', async () => {
+                if (Tone.context.state !== 'running') await Tone.start();
+            }, { once: true });
+            
+            window.startTVMode(roomFromUrl);
+        }
+
         // Responder a peticiones de sincronización del modo TV en multipantalla local
         if(!isTVMode) {
             kronoChannel.onmessage = (event) => {
