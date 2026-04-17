@@ -401,9 +401,9 @@
         .tv-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
         .tv-scrollbar::-webkit-scrollbar-thumb { background: rgba(96, 165, 250, 0.3); border-radius: 4px; }
 
-        /* NUEVO: CLASE PARA CUADRÍCULA ESTRICTA (SNAP-TO-GRID) */
+        /* NUEVO: CLASE PARA CUADRÍCULA ESTRICTA (SNAP-TO-GRID) SIN SCROLL */
         .tv-grid-snapping {
-            grid-auto-rows: 120px; /* Altura base estricta para que el drag encaje perfecto */
+            grid-template-rows: repeat(7, minmax(0, 1fr)); /* Fuerza exactamente 7 filas proporcionales a la pantalla */
         }
 
         /* ESTILOS PARA WIDGETS ARRASTRABLES (SMART DASHBOARD) */
@@ -901,7 +901,7 @@
     <div id="tv-dashboard" class="hidden h-screen tv-bg text-white w-full flex-col font-sans overflow-hidden p-4 lg:p-6" data-theme="default">
         
         <!-- HEADER TV -->
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex justify-between items-center mb-3 lg:mb-4">
             <div class="flex items-center space-x-5">
                 
                 <!-- LOGO REDISEÑADO PREMIUM -->
@@ -1005,6 +1005,12 @@
                         ESPERANDO...
                     </div>
 
+                    <!-- NUEVO: BOTÓN DE AUDIO TV -->
+                    <button id="tv-audio-btn" class="p-3 rounded-xl bg-slate-800/80 border border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700 transition shadow-lg group" title="Activar Audio Telemetría">
+                        <svg id="tv-audio-off" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                        <svg id="tv-audio-on" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                    </button>
+
                     <button id="tv-fullscreen-btn" class="p-3 rounded-xl bg-slate-800/80 border border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700 transition shadow-lg" title="Pantalla Completa">
                         <svg id="tv-fs-enter" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
                         <svg id="tv-fs-exit" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
@@ -1014,10 +1020,10 @@
         </div>
         
         <!-- GRID TV MODULAR Y ARRASTRABLE CON REDIMENSIONAMIENTO (ESCALA) -->
-        <div id="tv-grid-container" class="flex-1 grid grid-cols-1 md:grid-cols-6 xl:grid-cols-12 gap-4 lg:gap-5 min-h-0 overflow-y-auto tv-scrollbar pb-6 grid-flow-dense tv-grid-snapping">
+        <div id="tv-grid-container" class="flex-1 grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 xl:grid-cols-12 gap-3 lg:gap-4 min-h-0 overflow-hidden grid-flow-dense tv-grid-snapping">
             
-            <!-- WIDGET 1: Piloto -->
-            <div id="w-pilot" class="tv-widget col-span-1 md:col-span-3 xl:col-span-3 row-span-1 tv-panel flex flex-col relative group cursor-move">
+            <!-- WIDGET 1: Piloto (Fila 1) -->
+            <div id="w-pilot" class="tv-widget col-span-1 md:col-span-2 lg:col-span-2 xl:col-span-2 row-span-1 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
@@ -1031,8 +1037,8 @@
                 </div>
             </div>
 
-            <!-- WIDGET 2: Tiempo Total -->
-            <div id="w-time" class="tv-widget col-span-1 md:col-span-3 xl:col-span-3 row-span-1 tv-panel flex flex-col relative group cursor-move">
+            <!-- WIDGET 2: Tiempo Total (Fila 1) -->
+            <div id="w-time" class="tv-widget col-span-1 md:col-span-2 lg:col-span-2 xl:col-span-2 row-span-1 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
@@ -1045,8 +1051,8 @@
                 </div>
             </div>
 
-            <!-- WIDGET 3: Vueltas -->
-            <div id="w-laps" class="tv-widget col-span-1 md:col-span-3 xl:col-span-3 row-span-1 tv-panel flex flex-col relative group cursor-move border-b-4 border-b-blue-500">
+            <!-- WIDGET 3: Vueltas (Fila 1) -->
+            <div id="w-laps" class="tv-widget col-span-1 md:col-span-2 lg:col-span-2 xl:col-span-2 row-span-1 tv-panel flex flex-col relative group cursor-move border-b-4 border-b-blue-500">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
@@ -1054,14 +1060,14 @@
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
                 </div>
                 <div class="p-4 flex-1 flex flex-col items-center justify-center h-full pointer-events-none">
-                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-xs mb-1">Vueltas Completadas</span>
+                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-xs mb-1">Vueltas</span>
                     <span id="tv-lap-count" class="tv-font cq-text-5xl font-black neon-blue-text leading-none">0</span>
                     <span id="tv-mode-target" class="cq-text-xxs font-rajdhani font-bold text-blue-400 tracking-wider mt-1"></span>
                 </div>
             </div>
             
-            <!-- WIDGET 4: Última Vuelta -->
-            <div id="w-last" class="tv-widget col-span-1 md:col-span-3 xl:col-span-3 row-span-1 tv-panel flex flex-col relative group cursor-move border-b-4 border-b-slate-600">
+            <!-- WIDGET 4: Última Vuelta (Fila 1) -->
+            <div id="w-last" class="tv-widget col-span-1 md:col-span-3 lg:col-span-2 xl:col-span-2 row-span-1 tv-panel flex flex-col relative group cursor-move border-b-4 border-b-slate-600">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
@@ -1074,28 +1080,8 @@
                 </div>
             </div>
 
-            <!-- WIDGET 5: CRONO PRINCIPAL GIGANTE -->
-            <div id="w-current" class="tv-widget col-span-1 md:col-span-6 xl:col-span-6 row-span-2 tv-panel flex flex-col relative group cursor-move overflow-hidden">
-                <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
-                </div>
-                <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
-                </div>
-                <div class="p-6 flex-1 flex flex-col items-center justify-center relative h-full pointer-events-none">
-                    <div class="absolute -top-20 -right-20 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-sm mb-4">Vuelta Actual</span>
-                    
-                    <span id="tv-current-lap-time" class="tv-font cq-text-giant font-black neon-yellow-text tabular-nums tracking-tighter">00.000</span>
-                    
-                    <div id="tv-lap-delta-container" class="mt-6 flex items-center justify-center hidden">
-                        <span id="tv-lap-delta" class="tv-font cq-text-3xl font-bold rounded-lg px-4 py-1.5 shadow-lg"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- WIDGET 6: MEJOR VUELTA GLOBAL -->
-            <div id="w-best" class="tv-widget col-span-1 md:col-span-6 xl:col-span-6 row-span-1 tv-panel flex flex-col relative group cursor-move border-t-4 border-t-emerald-500 bg-emerald-900/10">
+            <!-- WIDGET 5: MEJOR VUELTA GLOBAL (Fila 1) -->
+            <div id="w-best" class="tv-widget col-span-1 md:col-span-3 lg:col-span-4 xl:col-span-4 row-span-1 tv-panel flex flex-col relative group cursor-move border-t-4 border-t-emerald-500 bg-emerald-900/10">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-emerald-500 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
@@ -1111,8 +1097,26 @@
                 </div>
             </div>
 
-            <!-- WIDGET 7: VELOCIDADES Y CONSISTENCIA -->
-            <div id="w-speeds" class="tv-widget col-span-1 md:col-span-6 xl:col-span-6 row-span-1 tv-panel flex flex-col relative group cursor-move">
+            <!-- WIDGET 6: CRONO PRINCIPAL GIGANTE (Fila 2 y 3) -->
+            <div id="w-current" class="tv-widget col-span-1 md:col-span-6 lg:col-span-4 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move overflow-hidden">
+                <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+                </div>
+                <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
+                </div>
+                <div class="p-6 flex-1 flex flex-col items-center justify-center relative h-full pointer-events-none">
+                    <div class="absolute -top-20 -right-20 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                    <span class="text-slate-400 font-rajdhani font-semibold uppercase tracking-widest cq-text-sm mb-4">Vuelta Actual</span>
+                    <span id="tv-current-lap-time" class="tv-font cq-text-giant font-black neon-yellow-text tabular-nums tracking-tighter">00.000</span>
+                    <div id="tv-lap-delta-container" class="mt-6 flex items-center justify-center hidden">
+                        <span id="tv-lap-delta" class="tv-font cq-text-3xl font-bold rounded-lg px-4 py-1.5 shadow-lg"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WIDGET 7: VELOCIDADES Y CONSISTENCIA (Fila 2 y 3) -->
+            <div id="w-speeds" class="tv-widget col-span-1 md:col-span-6 lg:col-span-5 xl:col-span-5 row-span-2 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
@@ -1134,14 +1138,12 @@
                         </div>
                     </div>
                     <div class="w-px h-16 bg-slate-700/50"></div>
-                    
                     <div class="text-center flex-1">
                         <span class="block cq-text-xs text-blue-400 font-rajdhani font-semibold uppercase tracking-widest mb-2">Consistencia</span>
                         <div class="flex flex-col items-center justify-center h-full">
                             <span id="tv-consistency" class="tv-font cq-text-3xl font-bold text-blue-300">--%</span>
                         </div>
                     </div>
-                    
                     <div class="w-px h-16 bg-slate-700/50"></div>
                     <div class="text-center flex-1">
                         <span class="block cq-text-xs text-slate-400 font-rajdhani font-semibold uppercase tracking-widest mb-2">Vel. Máx</span>
@@ -1159,73 +1161,8 @@
                 </div>
             </div>
 
-            <!-- WIDGET 8: GRÁFICO DE TIEMPOS (AHORA DE BARRAS) -->
-            <div id="w-graph" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move">
-                <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
-                </div>
-                <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
-                </div>
-                <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
-                    <span class="cq-text-xs text-cyan-400 font-rajdhani font-bold uppercase tracking-widest mb-1 z-10">Gráfico de Tiempos (S)</span>
-                    <canvas id="tv-lap-graph" class="w-full flex-1 mt-2"></canvas>
-                </div>
-            </div>
-
-            <!-- NUEVO WIDGET: GRÁFICO DE VELOCIDAD (CURVA SUAVE) -->
-            <div id="w-speed-graph" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move">
-                <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
-                </div>
-                <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
-                </div>
-                <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
-                    <span class="cq-text-xs text-yellow-400 font-rajdhani font-bold uppercase tracking-widest mb-1 z-10">Curva de Velocidad (Km/h)</span>
-                    <canvas id="tv-speed-graph" class="w-full flex-1 mt-2"></canvas>
-                </div>
-            </div>
-
-            <!-- WIDGET 10: TELEMETRÍA COMBINADA (LÍNEAS) -->
-            <div id="w-combined" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move border-t-4 border-cyan-500/50">
-                <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
-                </div>
-                <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
-                </div>
-                <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
-                    <div class="flex justify-between items-center mb-1 z-10">
-                        <span class="cq-text-xs text-cyan-400 font-rajdhani font-bold uppercase tracking-widest">Análisis Telemetría Vivo</span>
-                        <div class="flex space-x-3 cq-text-xxs font-rajdhani font-bold">
-                            <span class="text-cyan-400 flex items-center"><div class="w-2 h-2 rounded-full bg-cyan-400 mr-1"></div> Tiempo</span>
-                            <span class="text-yellow-400 flex items-center"><div class="w-2 h-2 rounded-full bg-yellow-400 mr-1 opacity-70"></div> Vel.</span>
-                            <span class="text-slate-300 flex items-center ml-1">
-                                <div class="w-1.5 h-3 bg-pink-500 mr-px"></div><div class="w-1.5 h-3 bg-emerald-500 mr-1.5"></div> Delta
-                            </span>
-                        </div>
-                    </div>
-                    <canvas id="tv-combined-graph" class="w-full flex-1 mt-2"></canvas>
-                </div>
-            </div>
-
-            <!-- NUEVO WIDGET 11: EVOLUCIÓN DE CONSISTENCIA -->
-            <div id="w-consistency" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move border-t-4 border-blue-500/50">
-                <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
-                </div>
-                <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
-                </div>
-                <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
-                    <span class="cq-text-xs text-blue-400 font-rajdhani font-bold uppercase tracking-widest mb-1 z-10">Evolución Consistencia (%)</span>
-                    <canvas id="tv-consistency-graph" class="w-full flex-1 mt-2"></canvas>
-                </div>
-            </div>
-
-            <!-- WIDGET 9: TABLA DE HISTORIAL (ALTO) -->
-            <div id="w-history" class="tv-widget col-span-1 md:col-span-6 xl:col-span-4 row-span-4 tv-panel flex flex-col relative group cursor-move">
+            <!-- WIDGET 8: TABLA DE HISTORIAL (Fila 2, 3, 4 y 5) -->
+            <div id="w-history" class="tv-widget col-span-1 md:col-span-6 lg:col-span-3 xl:col-span-3 row-span-4 tv-panel flex flex-col relative group cursor-move">
                 <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                 </div>
@@ -1251,7 +1188,70 @@
                     </table>
                 </div>
             </div>
-            
+
+            <!-- WIDGET 9: GRÁFICO DE TIEMPOS (Fila 4 y 5) -->
+            <div id="w-graph" class="tv-widget col-span-1 md:col-span-6 lg:col-span-4 xl:col-span-4 row-span-2 tv-panel flex flex-col relative group cursor-move">
+                <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+                </div>
+                <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
+                </div>
+                <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
+                    <span class="cq-text-xs text-cyan-400 font-rajdhani font-bold uppercase tracking-widest mb-1 z-10">Gráfico de Tiempos (S)</span>
+                    <canvas id="tv-lap-graph" class="w-full flex-1 mt-2"></canvas>
+                </div>
+            </div>
+
+            <!-- WIDGET 10: TELEMETRÍA COMBINADA (Fila 4 y 5) -->
+            <div id="w-combined" class="tv-widget col-span-1 md:col-span-6 lg:col-span-5 xl:col-span-5 row-span-2 tv-panel flex flex-col relative group cursor-move border-t-4 border-cyan-500/50">
+                <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+                </div>
+                <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
+                </div>
+                <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
+                    <div class="flex justify-between items-center mb-1 z-10">
+                        <span class="cq-text-xs text-cyan-400 font-rajdhani font-bold uppercase tracking-widest">Análisis Telemetría Vivo</span>
+                        <div class="flex space-x-3 cq-text-xxs font-rajdhani font-bold">
+                            <span class="text-cyan-400 flex items-center"><div class="w-2 h-2 rounded-full bg-cyan-400 mr-1"></div> Tiempo</span>
+                            <span class="text-yellow-400 flex items-center"><div class="w-2 h-2 rounded-full bg-yellow-400 mr-1 opacity-70"></div> Vel.</span>
+                            <span class="text-slate-300 flex items-center ml-1"><div class="w-1.5 h-3 bg-pink-500 mr-px"></div><div class="w-1.5 h-3 bg-emerald-500 mr-1.5"></div> Delta</span>
+                        </div>
+                    </div>
+                    <canvas id="tv-combined-graph" class="w-full flex-1 mt-2"></canvas>
+                </div>
+            </div>
+
+            <!-- WIDGET 11: GRÁFICO DE VELOCIDAD (Fila 6 y 7) -->
+            <div id="w-speed-graph" class="tv-widget col-span-1 md:col-span-6 lg:col-span-6 xl:col-span-6 row-span-2 tv-panel flex flex-col relative group cursor-move">
+                <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+                </div>
+                <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
+                </div>
+                <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
+                    <span class="cq-text-xs text-yellow-400 font-rajdhani font-bold uppercase tracking-widest mb-1 z-10">Curva de Velocidad (Km/h)</span>
+                    <canvas id="tv-speed-graph" class="w-full flex-1 mt-2"></canvas>
+                </div>
+            </div>
+
+            <!-- WIDGET 12: EVOLUCIÓN DE CONSISTENCIA (Fila 6 y 7) -->
+            <div id="w-consistency" class="tv-widget col-span-1 md:col-span-6 lg:col-span-6 xl:col-span-6 row-span-2 tv-panel flex flex-col relative group cursor-move border-t-4 border-blue-500/50">
+                <div class="drag-handle absolute top-3 right-3 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-400 hover:text-cyan-400 z-20 p-2 -m-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+                </div>
+                <div class="resize-widget-handle absolute bottom-0 right-0 w-8 h-8 cursor-se-resize z-30 opacity-50 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end justify-end p-2 text-slate-500 hover:text-cyan-400">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 21 21 21 21 15"></polyline><line x1="14" y1="14" x2="21" y2="21"></line></svg>
+                </div>
+                <div class="p-4 flex-1 flex flex-col h-full relative pointer-events-none">
+                    <span class="cq-text-xs text-blue-400 font-rajdhani font-bold uppercase tracking-widest mb-1 z-10">Evolución Consistencia (%)</span>
+                    <canvas id="tv-consistency-graph" class="w-full flex-1 mt-2"></canvas>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -2748,6 +2748,8 @@
                 raceStartTime: raceStartTime,     
                 lapStartTimestamp: lapStartTimestamp,
                 currentLang: currentLang,
+                voiceEnabled: document.getElementById('voice-toggle').checked, // NUEVO: Preferencia de voz
+                selectedSoundIndex: parseInt(document.getElementById('soundSelect').value) || 0, // NUEVO: Tipo de tono
                 timestamp: Date.now()
             };
         }
@@ -2777,6 +2779,12 @@
         let tvData = {};
         let lastReceivedLocalTime = Date.now(); // NUEVO: Para sincronizar relojes relativos
         
+        // Variables para detectar transiciones y lanzar audios en la TV
+        let isTvAudioEnabled = false;
+        let tvLastLapCount = 0;
+        let tvLastRaceActive = false;
+        let tvLastAborted = false;
+
         window.startTVMode = function(roomCode) {
             isTVMode = true;
             cloudRoomCode = roomCode;
@@ -2841,10 +2849,11 @@
                             const gridStyle = window.getComputedStyle(grid);
                             // Calcula columnas actuales basándose en el CSS (responsive)
                             const cols = gridStyle.gridTemplateColumns.split(' ').length;
-                            const gap = parseFloat(gridStyle.gap) || 20;
+                            const gap = parseFloat(gridStyle.gap) || 16;
                             // Calcula el tamaño virtual de cada celda y fila
                             const colW = (grid.clientWidth - (gap * (cols - 1))) / cols;
-                            const rowH = 120; // Hardcoded desde el CSS .tv-grid-snapping
+                            const totalRows = 7;
+                            const rowH = (grid.clientHeight - (gap * (totalRows - 1))) / totalRows; // Alto dinámico
                             
                             // Calcula en qué casillas "encaja" el ratón (Snap)
                             let spanCol = Math.max(1, Math.round(targetW / (colW + gap)));
@@ -3277,6 +3286,54 @@
             const tvLapDelta = document.getElementById('tv-lap-delta'); 
             const tvLapDeltaContainer = document.getElementById('tv-lap-delta-container'); 
             
+            // --- NUEVO: FUNCIONES DE AUDIO EXCLUSIVAS PARA TV ---
+            function speakTv(text, lang) {
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(text);
+                let langCode = lang === 'en' ? 'en-US' : (lang === 'fr' ? 'fr-FR' : 'es-ES');
+                u.lang = langCode;
+                const voices = window.speechSynthesis.getVoices();
+                let voice = voices.find(v => v.lang === langCode) || voices.find(v => v.lang.startsWith(langCode.substring(0, 2)));
+                if (voice) u.voice = voice;
+                window.speechSynthesis.speak(u);
+            }
+
+            function announceLapTv(n, t, best, xtra, voiceEnabled, lang) {
+                if(!voiceEnabled || n<=0) return;
+                const sec = Math.floor(t/1000); const dec = (t%1000).toString().padStart(3,'0');
+                let txt = `${sec} ${translations[lang].voicePoint} ${dec}`;
+                if(best && n>1) txt = translations[lang].voiceFastest + " " + txt;
+                if(xtra) txt += ". " + xtra;
+                speakTv(txt, lang);
+            }
+
+            // Lógica de activación manual del Audio en TV
+            const tvAudioBtn = document.getElementById('tv-audio-btn');
+            const tvAudioOff = document.getElementById('tv-audio-off');
+            const tvAudioOn = document.getElementById('tv-audio-on');
+            
+            if (tvAudioBtn) {
+                tvAudioBtn.addEventListener('click', async () => {
+                    if (!isTvAudioEnabled) {
+                        if (Tone.context.state !== 'running') await Tone.start();
+                        if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+                        synth.triggerAttackRelease("C6", "0.01", undefined, 0.01); // Unlock audio silente
+                        
+                        isTvAudioEnabled = true;
+                        tvAudioOff.classList.add('hidden');
+                        tvAudioOn.classList.remove('hidden');
+                        tvAudioBtn.classList.add('text-green-400', 'border-green-500/50', 'bg-green-900/20');
+                        tvAudioBtn.classList.remove('text-slate-400');
+                    } else {
+                        isTvAudioEnabled = false;
+                        tvAudioOn.classList.add('hidden');
+                        tvAudioOff.classList.remove('hidden');
+                        tvAudioBtn.classList.remove('text-green-400', 'border-green-500/50', 'bg-green-900/20');
+                        tvAudioBtn.classList.add('text-slate-400');
+                    }
+                });
+            }
+
             // --- SISTEMA DE METAMORFOSIS IA (TOTALMENTE ALEATORIO Y PERFECTO) ---
             const aiThemeBtn = document.getElementById('tv-ai-theme-btn');
             const tvBg = document.getElementById('tv-dashboard');
@@ -3297,6 +3354,50 @@
 
             function updateTVUI() {
                 if(!tvData) return;
+
+                // --- LÓGICA DE DISPARO DE AUDIO EN LA TV ---
+                if (isTvAudioEnabled && typeof tvLastLapCount !== 'undefined') {
+                    // 1. Detectar Nueva Vuelta
+                    if (tvData.currentLap > tvLastLapCount && tvData.lastCompletedLapTime > 0) {
+                        const snd = soundOptions[tvData.selectedSoundIndex || 0];
+                        if (Tone.context.state !== 'running') Tone.context.resume();
+                        synth.triggerAttackRelease(snd.freq, snd.dur);
+
+                        let extraMsg = "";
+                        let remaining = tvData.totalLaps !== Infinity ? tvData.totalLaps - tvData.currentLap : Infinity;
+                        if (remaining === 5) extraMsg = `${translations[tvData.currentLang].voiceRemaining} 5 ${translations[tvData.currentLang].voiceLaps}.`;
+                        if (remaining === 1) { 
+                            extraMsg = translations[tvData.currentLang].voiceLastLap; 
+                            polySynth.triggerAttackRelease(["G5", "C6"], "0.2"); 
+                        }
+
+                        const isBest = tvData.lastCompletedLapTime === tvData.bestLapTime;
+                        announceLapTv(tvData.currentLap, tvData.lastCompletedLapTime, isBest, extraMsg, tvData.voiceEnabled, tvData.currentLang);
+                    }
+
+                    // 2. Detectar Inicio de Carrera (Pasa de Countdown a Race Active)
+                    if (tvData.isRaceActive && !tvLastRaceActive && !tvData.isPaused) {
+                        if (Tone.context.state !== 'running') Tone.context.resume();
+                        polySynth.triggerAttackRelease(["C5", "E5", "G5"], "0.5");
+                    }
+
+                    // 3. Detectar Salida Nula
+                    if (tvData.raceAborted && !tvLastAborted) {
+                        if (Tone.context.state !== 'running') Tone.context.resume();
+                        polySynth.triggerAttackRelease(["C2", "F#2"], "1");
+                        if (tvData.voiceEnabled) speakTv(translations[tvData.currentLang].voiceFalseStart, tvData.currentLang);
+                    }
+
+                    // 4. Detectar Final de Carrera
+                    if (!tvData.isRaceActive && tvLastRaceActive && tvData.currentLap > 0 && !tvData.isPaused && !tvData.raceAborted) {
+                        if (tvData.voiceEnabled) speakTv(`${translations[tvData.currentLang].voiceFinished} ${tvData.pilot}`, tvData.currentLang);
+                    }
+                }
+
+                // Actualizar rastreadores de estado locales
+                tvLastLapCount = tvData.currentLap || 0;
+                tvLastRaceActive = tvData.isRaceActive || false;
+                tvLastAborted = tvData.raceAborted || false;
 
                 // ANTI-GHOST RACES: Si los datos de Firebase son de hace más de 2 horas, caducamos la sesión
                 const STALE_TIME_MS = 2 * 60 * 60 * 1000; 
