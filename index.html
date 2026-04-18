@@ -244,7 +244,7 @@
         }
         
         function updateMailLink() {
-            const userEmail = emailInput.value || " "
+            const userEmail = emailInput.value || "";
             const subject = "Interés Licencia Krono Personal TV";
             const body = `Hola, equipo de SLOTSOFTWARE,%0D%0A%0D%0AEstoy interesado en adquirir la licencia de Krono Personal TV por el Precio de 10 Euros.%0D%0A%0D%0AQuedo a la espera de sus instrucciones para proceder con el pago.%0D%0A%0D%0AGracias y un saludo.`;
             mailLink.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
