@@ -161,10 +161,10 @@
         }
         .roi-locked #test-msg { display: block; color: #f59e0b; text-shadow: 0 0 5px #000; font-size: 14px; font-weight: 900;}
 
-        .roi-hidden {
+        .traffic-hidden {
             opacity: 0 !important;
+            max-height: 0 !important;
             pointer-events: none !important;
-            transition: opacity 0.4s ease-in-out !important;
         }
 
         /* --- MANIJAS TÁCTILES --- */
@@ -617,12 +617,14 @@
             <div class="flex flex-col items-center bg-gray-100/60 rounded-xl p-3 sm:p-4 border border-gray-300 shadow-inner gap-4">
                 
                 <!-- Semáforo Centrado y Más Grande -->
-                <div id="traffic-light-module" class="traffic-light-container five-lights transform scale-[1.1] sm:scale-[1.3] origin-center mt-2 mb-1 sm:mt-3 sm:mb-2">
-                    <div id="light-1" class="light"></div>
-                    <div id="light-2" class="light"></div>
-                    <div id="light-3" class="light"></div>
-                    <div id="light-4" class="light"></div>
-                    <div id="light-5" class="light"></div>
+                <div id="traffic-light-wrapper" class="w-full flex justify-center transition-all duration-500 ease-in-out overflow-hidden max-h-[100px] opacity-100">
+                    <div id="traffic-light-module" class="traffic-light-container five-lights transform scale-[1.1] sm:scale-[1.3] origin-center mt-2 mb-1 sm:mt-3 sm:mb-2">
+                        <div id="light-1" class="light"></div>
+                        <div id="light-2" class="light"></div>
+                        <div id="light-3" class="light"></div>
+                        <div id="light-4" class="light"></div>
+                        <div id="light-5" class="light"></div>
+                    </div>
                 </div>
 
                 <!-- Tiempos -->
@@ -2128,7 +2130,7 @@
             polySynth.triggerAttackRelease(["C5", "E5", "G5"], "0.5");
             
             isRaceActive = true;
-            movableRectangle.classList.add('roi-hidden');
+            document.getElementById('traffic-light-wrapper').classList.add('traffic-hidden');
             isPaused = false;
             pauseBtn.disabled = false; 
             updatePauseUI();
@@ -2195,9 +2197,10 @@
             // Limpieza forzada del fondo para evitar que el ROI se quede verde
             referencePixels = null;
             if (movableRectangle) {
-                movableRectangle.classList.remove('roi-detected', 'roi-locked', 'roi-hidden');
+                movableRectangle.classList.remove('roi-detected', 'roi-locked');
                 testMsg.style.display = "none";
             }
+            document.getElementById('traffic-light-wrapper')?.classList.remove('traffic-hidden');
 
             if (raceIntervalId) clearInterval(raceIntervalId);
             if (lapIntervalId) clearInterval(lapIntervalId);
