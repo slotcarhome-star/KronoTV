@@ -679,13 +679,14 @@
                 
                 <!-- Botones y Estado Cam -->
                 <div class="flex items-center w-full sm:w-auto justify-between sm:justify-start gap-2">
-                    <div class="flex space-x-1 shrink-0">
+                    <div class="flex items-center space-x-1.5 shrink-0">
                         <button id="camera-on-btn" class="p-1.5 rounded-lg bg-green-500 hover:bg-green-600 text-white transition shadow-sm border border-green-600 disabled:opacity-30">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                         </button>
                         <button id="camera-off-btn" class="p-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white transition shadow-sm border border-red-600 disabled:opacity-30" disabled>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l20 20"/><path d="M4.5 17H4a2 2 0 0 1-2-2v-3h18.5"/><path d="M22 15a2 2 0 0 0-2-2h-1l-2.5-3h-2.5"/><path d="M9.5 4h5L17 7h3a2 2 0 0 1 2 2v1"/><path d="M14.5 17a3 3 0 1 1-5.6-2.5"/></svg>
                         </button>
+                        <button id="calibrate-btn" class="p-1.5 px-3 rounded-lg bg-slate-600 hover:bg-slate-700 text-white text-[10px] font-bold uppercase transition shadow-sm border border-slate-500 disabled:opacity-30 disabled:cursor-not-allowed shrink-0">AUTO</button>
                     </div>
                     <span id="video-status" class="text-[10px] font-bold px-2 py-1 rounded bg-white/60 text-gray-600 border border-gray-300 shadow-sm" data-i18n="camLoading">Sensor Inactivo</span>
                 </div>
@@ -697,8 +698,6 @@
                      <button id="threshold-minus" class="w-6 h-6 rounded-full bg-white hover:bg-gray-100 text-gray-700 flex items-center justify-center font-bold text-sm shrink-0 border border-gray-300 shadow-sm">-</button>
                      <input type="range" id="threshold-slider" min="5" max="40" value="15" class="flex-1 h-1.5 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-blue-600 max-w-[100px] sm:max-w-[130px]">
                      <button id="threshold-plus" class="w-6 h-6 rounded-full bg-white hover:bg-gray-100 text-gray-700 flex items-center justify-center font-bold text-sm shrink-0 border border-gray-300 shadow-sm">+</button>
-                     
-                     <button id="calibrate-btn" class="ml-1 p-1.5 px-3 rounded-lg bg-slate-600 hover:bg-slate-700 text-white text-[10px] font-bold uppercase transition shadow-sm border border-slate-500 disabled:opacity-30 disabled:cursor-not-allowed shrink-0">AUTO</button>
                 </div>
             </div>
             
