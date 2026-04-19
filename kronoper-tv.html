@@ -161,6 +161,12 @@
         }
         .roi-locked #test-msg { display: block; color: #f59e0b; text-shadow: 0 0 5px #000; font-size: 14px; font-weight: 900;}
 
+        .roi-hidden {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transition: opacity 0.4s ease-in-out !important;
+        }
+
         /* --- MANIJAS TÁCTILES --- */
         .resize-handle {
             position: absolute; 
@@ -563,7 +569,7 @@
         <div class="silver-panel w-full p-3 sm:p-4 flex flex-col gap-3 pointer-events-auto">
             
             <!-- ROW 1: Título y Utilidades -->
-            <div class="flex justify-between items-center w-full overflow-hidden border-b border-gray-300/60 pb-2">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full border-b border-gray-300/60 pb-3 gap-3 sm:gap-0">
                 <div class="flex flex-col shrink-0 mr-2">
                     <h1 class="text-xl sm:text-2xl font-black font-rajdhani tracking-widest leading-none text-gray-800 drop-shadow-sm">
                         KRONO V.4
@@ -571,7 +577,7 @@
                     <span class="text-[10px] font-bold text-gray-500 tracking-widest mt-1 uppercase">By Albert Closa</span>
                 </div>
                 
-                <div class="flex items-center overflow-x-auto no-scrollbar gap-1.5 pb-1 justify-end">
+                <div class="flex flex-wrap items-center gap-1.5 justify-start sm:justify-end w-full sm:w-auto">
                     <button id="history-btn" class="shrink-0 flex items-center text-gray-600 hover:text-gray-900 transition-colors px-2 py-1 rounded-lg bg-white/60 hover:bg-white border border-gray-300 shadow-sm" title="Ver Historial">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1">
                             <circle cx="12" cy="13" r="8" fill="currentColor" fill-opacity="0.15"/><path d="M12 9v4l2 2"/><path d="M5 3L2 6"/><path d="m22 6-3-3"/><path d="M6.38 18.7 4 21"/><path d="M17.64 18.67 20 21"/>
@@ -2122,6 +2128,7 @@
             polySynth.triggerAttackRelease(["C5", "E5", "G5"], "0.5");
             
             isRaceActive = true;
+            movableRectangle.classList.add('roi-hidden');
             isPaused = false;
             pauseBtn.disabled = false; 
             updatePauseUI();
@@ -2188,7 +2195,7 @@
             // Limpieza forzada del fondo para evitar que el ROI se quede verde
             referencePixels = null;
             if (movableRectangle) {
-                movableRectangle.classList.remove('roi-detected', 'roi-locked');
+                movableRectangle.classList.remove('roi-detected', 'roi-locked', 'roi-hidden');
                 testMsg.style.display = "none";
             }
 
