@@ -133,9 +133,9 @@
         }
         
         #webcam-feed {
-            max-height: 60vh; aspect-ratio: 4/3; object-fit: cover; width: 100%;
+            height: 55vh; max-height: 75vh; object-fit: contain; width: 100%;
             display: block; transform: scaleX(1);
-            filter: contrast(1.1) grayscale(0.1); 
+            filter: contrast(1.15) brightness(1.05) grayscale(0.1); 
         }
 
         /* --- ROI MINIMALISTA (HITBOX MEJORADO) --- */
@@ -253,7 +253,7 @@
         @media (max-width: 640px) {
             .light { width: 32px; height: 32px; border-width: 2px; }
             .traffic-light-container.five-lights { gap: 8px; }
-            #webcam-feed { max-height: 60vh; }
+            #webcam-feed { height: 60vh; max-height: 75vh; }
         }
         
         #lap-graph-canvas {
@@ -1637,9 +1637,9 @@
         let stuckFrameCount = 0; 
         
         const OBSTRUCTION_THRESHOLD = 85; 
-        const PIXEL_DIFF_TOLERANCE = 30; 
-        const CHROMA_TOLERANCE = 0.15; 
-        const SHADOW_DARKNESS_LIMIT = 0.35; 
+        const PIXEL_DIFF_TOLERANCE = 25; // Más sensible al color del coche (antes 30)
+        const CHROMA_TOLERANCE = 0.35; // Rechaza sombras mucho más agresivamente (antes 0.15)
+        const SHADOW_DARKNESS_LIMIT = 0.15; // Ignora sombras muy oscuras (antes 0.35)
 
         // Carrera
         let raceStartTime = 0;
@@ -1771,34 +1771,44 @@
                 return;
             }
             
-            // --- CORRECCIÓN OBJECT-FIT PARA MÓVILES ---
-            // Asegura que las coordenadas del ROI coincidan con la parte visible del video recortado
-            const intrinsicRatio = vw / vh;
-            const displayRatio = videoRect.width / videoRect.height;
+            // --- NUEVA CORRECCIÓN OBJECT-FIT: CONTAIN PARA MÁXIMO ÁNGULO (FOV) ---
+            const cw = videoRect.width;
+            const ch = videoRect.height;
+            
+            const scale = Math.min(cw / vw, ch / vh);
+            const displayedW = vw * scale;
+            const displayedH = vh * scale;
+            const offsetX = (cw - displayedW) / 2;
+            const offsetY = (ch - displayedH) / 2;
 
-            let renderW, renderH, offsetX = 0, offsetY = 0;
+            const roiLeftPx = cw * (getRoiPercentage('left') / 100);
+            const roiTopPx = ch * (getRoiPercentage('top') / 100);
+            const roiWidthPx = cw * (getRoiPercentage('width') / 100);
+            const roiHeightPx = ch * (getRoiPercentage('height') / 100);
 
-            if (intrinsicRatio > displayRatio) {
-                renderH = vh;
-                renderW = vh * displayRatio;
-                offsetX = (vw - renderW) / 2;
-            } else {
-                renderW = vw;
-                renderH = vw / displayRatio;
-                offsetY = (vh - renderH) / 2;
-            }
+            // Mapear píxeles del DOM a la resolución original de la cámara sin importar las franjas
+            let srcX = (roiLeftPx - offsetX) / scale;
+            let srcY = (roiTopPx - offsetY) / scale;
+            let srcW = roiWidthPx / scale;
+            let srcH = roiHeightPx / scale;
 
-            const l = offsetX + (renderW * (getRoiPercentage('left')/100));
-            const t = offsetY + (renderH * (getRoiPercentage('top')/100));
-            const w = Math.max(1, renderW * (getRoiPercentage('width')/100));
-            const h = Math.max(1, renderH * (getRoiPercentage('height')/100));
+            // Clampear para que no intente leer fuera de la imagen (las franjas negras)
+            const finalX = Math.max(0, Math.min(vw, srcX));
+            const finalY = Math.max(0, Math.min(vh, srcY));
+            const finalR = Math.max(0, Math.min(vw, srcX + srcW));
+            const finalB = Math.max(0, Math.min(vh, srcY + srcH));
+            
+            const l = finalX;
+            const t = finalY;
+            const w = Math.max(1, finalR - finalX);
+            const h = Math.max(1, finalB - finalY);
 
             const canvas = document.getElementById('video-canvas');
             
-            // Optimización de rendimiento móvil: resolución fija para estabilizar FPS
-            const scale = 60 / Math.max(w, h);
-            const targetW = Math.max(10, Math.floor(w * scale));
-            const targetH = Math.max(10, Math.floor(h * scale));
+            // Optimización de rendimiento móvil y precisión para coches rápidos
+            const canvasScale = 100 / Math.max(w, h); 
+            const targetW = Math.max(15, Math.floor(w * canvasScale)); 
+            const targetH = Math.max(15, Math.floor(h * canvasScale)); 
             
             canvas.width = targetW; 
             canvas.height = targetH; 
@@ -1820,7 +1830,9 @@
                     let changedPixels = 0;
                     let totalSampled = 0;
                     
-                    for (let i = 0; i < data.length; i += 8) {
+                    // Escaneamos TODOS los píxeles (i += 4) en lugar de saltarnos la mitad (i += 8)
+                    // Esto evita que coches muy rápidos o finos pasen desapercibidos
+                    for (let i = 0; i < data.length; i += 4) {
                         const R = data[i], G = data[i+1], B = data[i+2];
                         const refR = referencePixels[i], refG = referencePixels[i+1], refB = referencePixels[i+2];
 
@@ -2621,7 +2633,15 @@
             
             cameraOnBtn.addEventListener('click', async () => {
                 try {
-                    const s = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+                    // Pedimos alta resolución para evitar el zoom/recorte digital del móvil
+                    const constraints = {
+                        video: { 
+                            facingMode: "environment",
+                            width: { ideal: 1920 },
+                            height: { ideal: 1080 }
+                        }
+                    };
+                    const s = await navigator.mediaDevices.getUserMedia(constraints);
                     cameraStream = s; videoElement.srcObject = s;
                     videoElement.play(); movableRectangle.style.display='block';
                     isProcessing=true; processVideo(); calibrateBtn.disabled = false;
