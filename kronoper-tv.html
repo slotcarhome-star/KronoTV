@@ -133,7 +133,7 @@
         }
         
         #webcam-feed {
-            max-height: 320px; object-fit: cover; width: 100%;
+            max-height: 60vh; aspect-ratio: 4/3; object-fit: cover; width: 100%;
             display: block; transform: scaleX(1);
             filter: contrast(1.1) grayscale(0.1); 
         }
@@ -253,7 +253,7 @@
         @media (max-width: 640px) {
             .light { width: 32px; height: 32px; border-width: 2px; }
             .traffic-light-container.five-lights { gap: 8px; }
-            #webcam-feed { max-height: 200px; }
+            #webcam-feed { max-height: 60vh; }
         }
         
         #lap-graph-canvas {
@@ -1762,27 +1762,54 @@
                 return;
             }
 
-            const vw = videoElement.videoWidth; const vh = videoElement.videoHeight;
-            if(!vw || !vh) {
+            const vw = videoElement.videoWidth; 
+            const vh = videoElement.videoHeight;
+            const videoRect = videoElement.getBoundingClientRect();
+
+            if(!vw || !vh || !videoRect.width || !videoRect.height) {
                 requestAnimationFrame(processVideo);
                 return;
             }
             
-            const l = Math.floor(vw * (getRoiPercentage('left')/100));
-            const t = Math.floor(vh * (getRoiPercentage('top')/100));
-            const w = Math.ceil(vw * (getRoiPercentage('width')/100));
-            const h = Math.ceil(vh * (getRoiPercentage('height')/100));
-            
+            // --- CORRECCIÓN OBJECT-FIT PARA MÓVILES ---
+            // Asegura que las coordenadas del ROI coincidan con la parte visible del video recortado
+            const intrinsicRatio = vw / vh;
+            const displayRatio = videoRect.width / videoRect.height;
+
+            let renderW, renderH, offsetX = 0, offsetY = 0;
+
+            if (intrinsicRatio > displayRatio) {
+                renderH = vh;
+                renderW = vh * displayRatio;
+                offsetX = (vw - renderW) / 2;
+            } else {
+                renderW = vw;
+                renderH = vw / displayRatio;
+                offsetY = (vh - renderH) / 2;
+            }
+
+            const l = offsetX + (renderW * (getRoiPercentage('left')/100));
+            const t = offsetY + (renderH * (getRoiPercentage('top')/100));
+            const w = Math.max(1, renderW * (getRoiPercentage('width')/100));
+            const h = Math.max(1, renderH * (getRoiPercentage('height')/100));
+
             const canvas = document.getElementById('video-canvas');
-            canvas.width = w; canvas.height = h; 
+            
+            // Optimización de rendimiento móvil: resolución fija para estabilizar FPS
+            const scale = 60 / Math.max(w, h);
+            const targetW = Math.max(10, Math.floor(w * scale));
+            const targetH = Math.max(10, Math.floor(h * scale));
+            
+            canvas.width = targetW; 
+            canvas.height = targetH; 
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
-            ctx.drawImage(videoElement, l, t, w, h, 0, 0, w, h); 
+            ctx.drawImage(videoElement, l, t, w, h, 0, 0, targetW, targetH); 
             
             let crossed = false;
             let isObstruction = false;
 
             try {
-                const imageData = ctx.getImageData(0, 0, w, h);
+                const imageData = ctx.getImageData(0, 0, targetW, targetH);
                 const data = imageData.data;
                 
                 if (!referencePixels || referencePixels.length !== data.length) {
